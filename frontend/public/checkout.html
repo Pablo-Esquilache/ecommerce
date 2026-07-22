@@ -67,14 +67,16 @@
                     </select>
                 </div>
                 
-                <h3 style="margin-top: 20px;">Dirección de Envío</h3>
-                <div class="form-group"><label class="required">Dirección Completa</label><input type="text" id="direccion" required></div>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Provincia</label><select id="provincia" required><option value="">Cargando...</option></select></div>
-                    <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Partido/Depto</label><select id="partido" required disabled><option value="">Elija Provincia...</option></select></div>
-                    <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Localidad</label><select id="ciudad" required disabled><option value="">Elija Partido...</option></select></div>
+                <div id="seccion-envio">
+                    <h3 style="margin-top: 20px;">Dirección de Envío</h3>
+                    <div class="form-group"><label class="required">Dirección Completa</label><input type="text" id="direccion" required></div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Provincia</label><select id="provincia" required><option value="">Cargando...</option></select></div>
+                        <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Partido/Depto</label><select id="partido" required disabled><option value="">Elija Provincia...</option></select></div>
+                        <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Localidad</label><select id="ciudad" required disabled><option value="">Elija Partido...</option></select></div>
+                    </div>
+                    <div class="form-group"><label class="required">Código Postal</label><input type="text" id="codigo_postal" required onchange="calcularEnvio()"></div>
                 </div>
-                <div class="form-group"><label class="required">Código Postal</label><input type="text" id="codigo_postal" required onchange="calcularEnvio()"></div>
 
                 <h3 style="margin-top: 20px;">Método de Pago</h3>
                 <div class="form-group">

@@ -45,8 +45,11 @@ function renderSummary() {
     let carrito = JSON.parse(localStorage.getItem('cart')) || [];
     const container = document.getElementById('checkout-items');
     subtotalCheckout = 0;
-    
+    let todosDigitales = carrito.length > 0;
     carrito.forEach(item => {
+        if (item.tipo_producto !== 'digital') {
+            todosDigitales = false;
+        }
         subtotalCheckout += item.precio * item.cantidad;
         container.innerHTML += `
             <div class="summary-item">
@@ -57,6 +60,30 @@ function renderSummary() {
     });
     
     document.getElementById('resumen-subtotal').innerText = `$${subtotalCheckout.toFixed(2)}`;
+    
+    const seccionEnvio = document.getElementById('seccion-envio');
+    if (seccionEnvio) {
+        if (todosDigitales) {
+            seccionEnvio.style.display = 'none';
+            document.getElementById('direccion').removeAttribute('required');
+            document.getElementById('provincia').removeAttribute('required');
+            document.getElementById('partido').removeAttribute('required');
+            document.getElementById('ciudad').removeAttribute('required');
+            document.getElementById('codigo_postal').removeAttribute('required');
+            document.getElementById('direccion').value = '-';
+            document.getElementById('provincia').innerHTML = '<option value="-">-</option>';
+            document.getElementById('partido').innerHTML = '<option value="-">-</option>';
+            document.getElementById('ciudad').innerHTML = '<option value="-">-</option>';
+            document.getElementById('codigo_postal').value = '0000';
+        } else {
+            seccionEnvio.style.display = 'block';
+            document.getElementById('direccion').setAttribute('required', 'true');
+            document.getElementById('provincia').setAttribute('required', 'true');
+            document.getElementById('partido').setAttribute('required', 'true');
+            document.getElementById('ciudad').setAttribute('required', 'true');
+            document.getElementById('codigo_postal').setAttribute('required', 'true');
+        }
+    }
 }
 
 async function calcularEnvio() {

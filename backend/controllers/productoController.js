@@ -68,6 +68,7 @@ const productoController = {
         if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
         if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
         if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
+        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0]);
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;
@@ -99,6 +100,7 @@ const productoController = {
         if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
         if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
         if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
+        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0]);
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;

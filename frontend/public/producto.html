@@ -113,7 +113,7 @@
 
                         <div class="add-to-cart-section">
                             <input type="number" id="detail-qty" class="qty-input" value="1" min="1" max="${p.stock}">
-                            <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, '${img1}')">
+                            <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, '${img1}', '${p.tipo_producto || 'fisico'}')">
                                 <i class="fas fa-cart-plus"></i> Agregar al Carrito
                             </button>
                         </div>
@@ -125,7 +125,7 @@
             }
         });
 
-        function agregarMultipleAlCarrito(id, nombre, precio, img) {
+        function agregarMultipleAlCarrito(id, nombre, precio, img, tipo_producto) {
             const qtyInput = document.getElementById('detail-qty');
             if (!qtyInput) return;
             const cant = parseInt(qtyInput.value) || 1;
@@ -135,7 +135,7 @@
             if (itemExistente) {
                 itemExistente.cantidad += cant;
             } else {
-                carrito.push({ id, nombre, precio, img, cantidad: cant });
+                carrito.push({ id, nombre, precio, img, tipo_producto, cantidad: cant });
             }
             saveCart();
             toggleCart();

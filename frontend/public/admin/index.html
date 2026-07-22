@@ -293,13 +293,21 @@
                 <!-- El formulario subiría como multipart/form-data -->
                 <form id="form-producto">
                     <input type="hidden" id="prod-id">
+                    <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                        <div class="form-group" style="flex:1"><label>Tipo de Producto</label>
+                            <select id="prod-tipo" onchange="toggleProductType()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-weight:bold; color:#2c3e50;">
+                                <option value="fisico">📦 Producto Físico</option>
+                                <option value="digital">💻 Producto Digital (PDF/Video)</option>
+                            </select>
+                        </div>
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <div class="form-group" style="flex:2"><label>Nombre</label><input type="text" id="prod-nombre" required></div>
                         <div class="form-group" style="flex:1"><label>ID</label><input type="text" id="prod-display-id" readonly placeholder="Auto-generado"></div>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod-precio" required></div>
-                        <div class="form-group"><label>Stock</label><input type="number" id="prod-stock" required></div>
+                        <div class="form-group" id="container-stock"><label>Stock</label><input type="number" id="prod-stock" required></div>
                         <div class="form-group"><label>Categoría</label>
                             <select id="prod-cat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
                                 <option value="libros">Libros</option>
@@ -310,10 +318,25 @@
                             </select>
                         </div>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1"><label>Peso (kg)</label><input type="number" step="0.01" id="prod-peso" placeholder="0.5" required></div>
-                        <div class="form-group" style="flex:1"><label>Dimensiones</label><input type="text" id="prod-dimensiones" placeholder="Ej: 20x15x5 cm" required></div>
+                    
+                    <!-- Físicos -->
+                    <div id="container-fisicos" style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1"><label>Peso (kg)</label><input type="number" step="0.01" id="prod-peso" placeholder="0.5"></div>
+                        <div class="form-group" style="flex:1"><label>Dimensiones</label><input type="text" id="prod-dimensiones" placeholder="Ej: 20x15x5 cm"></div>
                     </div>
+
+                    <!-- Digitales -->
+                    <div id="container-digitales" style="display:none; gap:10px; padding: 15px; background: #f0f8ff; border: 1px solid #cce5ff; border-radius: 6px; margin-bottom: 10px;">
+                        <div class="form-group" style="flex:1">
+                            <label style="color:#004085;"><i class="fas fa-file-pdf"></i> Archivo Descargable (Opcional)</label>
+                            <input type="file" id="prod-archivo" accept=".pdf,.zip,.rar,.mp3">
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label style="color:#004085;"><i class="fab fa-youtube"></i> Enlace Video (Opcional)</label>
+                            <input type="url" id="prod-video" placeholder="https://youtube.com/...">
+                        </div>
+                    </div>
+
                     <div class="form-group"><label>Descripción</label><textarea id="prod-desc" required rows="3"></textarea></div>
                     
                     <h4 style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">Imágenes</h4>

@@ -68,6 +68,25 @@ const emailService = {
     },
 
     enviarCorreoPago: async (clienteMail, detallesPedido) => {
+        let digitalContent = '';
+        if (detallesPedido.detalles && detallesPedido.detalles.length > 0) {
+            const digitalItems = detallesPedido.detalles.filter(d => d.tipo_producto === 'digital');
+            if (digitalItems.length > 0) {
+                digitalContent = '<h2>Tus Productos Digitales</h2><ul>';
+                digitalItems.forEach(item => {
+                    digitalContent += `<li><strong>${item.producto_nombre}</strong>: `;
+                    if (item.archivo_digital) {
+                        digitalContent += `<br><a href="${item.archivo_digital}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:4px;">Descargar Archivo</a>`;
+                    }
+                    if (item.video_url) {
+                        digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:4px;">Ver Video</a>`;
+                    }
+                    digitalContent += `</li>`;
+                });
+                digitalContent += '</ul>';
+            }
+        }
+
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: clienteMail,
@@ -75,7 +94,8 @@ const emailService = {
             html: `<h1>¡Gracias por tu compra!</h1>
                    <p>Hemos recibido el pago de tu pedido #${detallesPedido.id}.</p>
                    <p>Total pagado: $${detallesPedido.total}</p>
-                   <p>Pronto comenzaremos a prepararlo para su envío. Te notificaremos cuando esté en camino.</p>`
+                   ${digitalContent}
+                   <p>Pronto comenzaremos a prepararlo para su envío (si contiene productos físicos). Te notificaremos cuando esté en camino.</p>`
         };
 
         if (useRealEmail) {

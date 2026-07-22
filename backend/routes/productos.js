@@ -11,7 +11,8 @@ const upload = multer({ storage: storage });
 const uploadImages = upload.fields([
   { name: 'imagen_1', maxCount: 1 },
   { name: 'imagen_2', maxCount: 1 },
-  { name: 'imagen_3', maxCount: 1 }
+  { name: 'imagen_3', maxCount: 1 },
+  { name: 'archivo_digital', maxCount: 1 }
 ]);
 
 // Rutas Públicas (Cualquiera puede ver productos)

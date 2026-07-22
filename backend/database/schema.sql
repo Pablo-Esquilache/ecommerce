@@ -46,6 +46,9 @@ CREATE TABLE "productos" (
   "imagen_1" VARCHAR(255),
   "imagen_2" VARCHAR(255),
   "imagen_3" VARCHAR(255),
+  "tipo_producto" VARCHAR(50) DEFAULT 'fisico',
+  "archivo_digital" VARCHAR(255),
+  "video_url" VARCHAR(255),
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

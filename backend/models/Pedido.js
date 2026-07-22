@@ -67,7 +67,7 @@ const Pedido = {
 
     // Info de los detalles
     const { rows: detalles } = await db.query(`
-      SELECT d.*, pr.nombre as producto_nombre, pr.imagen_1 
+      SELECT d.*, pr.nombre as producto_nombre, pr.imagen_1, pr.tipo_producto, pr.archivo_digital, pr.video_url
       FROM detalles_pedido d
       JOIN productos pr ON d.producto_id = pr.id
       WHERE d.pedido_id = $1

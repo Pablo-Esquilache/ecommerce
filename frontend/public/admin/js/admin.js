@@ -452,6 +452,10 @@ async function editarProducto(id) {
         document.getElementById('prod-desc').value = p.descripcion || '';
         document.getElementById('prod-cat').value = p.categoria || 'otros';
         document.getElementById('prod-display-id').value = p.id;
+        document.getElementById('prod-tipo').value = p.tipo_producto || 'fisico';
+        document.getElementById('prod-video').value = p.video_url || '';
+        
+        toggleProductType();
         
         // Reset file and url inputs since we can't pre-fill them easily for files
         document.getElementById('prod-img1').value = '';
@@ -486,6 +490,31 @@ function closeModal(id) {
     }
 }
 
+function toggleProductType() {
+    const tipo = document.getElementById('prod-tipo').value;
+    const contFisicos = document.getElementById('container-fisicos');
+    const contDigitales = document.getElementById('container-digitales');
+    const inputStock = document.getElementById('prod-stock');
+    const contStock = document.getElementById('container-stock');
+    const inputPeso = document.getElementById('prod-peso');
+    const inputDimensiones = document.getElementById('prod-dimensiones');
+
+    if (tipo === 'digital') {
+        contFisicos.style.display = 'none';
+        contDigitales.style.display = 'flex';
+        contStock.style.display = 'none';
+        inputStock.value = 9999;
+        inputPeso.removeAttribute('required');
+        inputDimensiones.removeAttribute('required');
+    } else {
+        contFisicos.style.display = 'flex';
+        contDigitales.style.display = 'none';
+        contStock.style.display = 'block';
+        inputPeso.setAttribute('required', 'true');
+        inputDimensiones.setAttribute('required', 'true');
+    }
+}
+
 const formProducto = document.getElementById('form-producto');
 if (formProducto) {
     formProducto.addEventListener('submit', async (e) => {
@@ -500,6 +529,12 @@ if (formProducto) {
         formData.append('dimensiones', document.getElementById('prod-dimensiones').value);
         formData.append('descripcion', document.getElementById('prod-desc').value);
         formData.append('categoria', document.getElementById('prod-cat').value);
+        
+        formData.append('tipo_producto', document.getElementById('prod-tipo').value);
+        formData.append('video_url', document.getElementById('prod-video').value);
+        
+        const archivoDigital = document.getElementById('prod-archivo').files[0];
+        if (archivoDigital) formData.append('archivo_digital', archivoDigital);
         
         // Adjuntar enlace externo si existe
         const imgUrl = document.getElementById('prod-img-url').value;

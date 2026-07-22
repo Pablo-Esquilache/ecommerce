@@ -165,7 +165,7 @@ function renderProductos(arrayProductos) {
                 </div>
             </a>
             <div style="padding: 0 20px 20px;">
-                <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, '${img}')">
+                <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, '${img}', '${prod.tipo_producto || 'fisico'}')">
                     Agregar al Carrito
                 </button>
             </div>
@@ -237,12 +237,12 @@ function toggleCart() {
     document.getElementById('overlay').classList.toggle('open');
 }
 
-function agregarAlCarrito(id, nombre, precio, img) {
+function agregarAlCarrito(id, nombre, precio, img, tipo_producto) {
     const itemExistente = carrito.find(item => item.id === id);
     if (itemExistente) {
         itemExistente.cantidad++;
     } else {
-        carrito.push({ id, nombre, precio, img, cantidad: 1 });
+        carrito.push({ id, nombre, precio, img, tipo_producto, cantidad: 1 });
     }
     saveCart();
     toggleCart(); // Abre el carrito al añadir
