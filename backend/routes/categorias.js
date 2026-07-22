@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // GET /api/categorias - Obtener todas las categorías
 router.get('/', async (req, res) => {
@@ -14,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/categorias - Crear una nueva categoría
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
     try {
         const { nombre } = req.body;
         if (!nombre) {
@@ -39,7 +40,7 @@ router.post('/', async (req, res) => {
 });
 
 // DELETE /api/categorias/:nombre - Eliminar categoría por nombre
-router.delete('/:nombre', async (req, res) => {
+router.delete('/:nombre', authMiddleware, async (req, res) => {
     try {
         const { nombre } = req.params;
         const result = await db.query('DELETE FROM categorias WHERE nombre = $1 RETURNING *', [nombre]);

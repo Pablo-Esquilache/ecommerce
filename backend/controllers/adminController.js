@@ -24,7 +24,7 @@ const adminController = {
       // Crear token
       const token = jwt.sign(
         { id: admin.id, email: admin.email, rol: 'admin' }, 
-        process.env.JWT_SECRET || 'secreto_fallback', 
+        process.env.JWT_SECRET, 
         { expiresIn: '24h' }
       );
 

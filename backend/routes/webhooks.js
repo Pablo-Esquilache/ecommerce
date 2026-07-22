@@ -77,7 +77,7 @@ router.post('/mercadopago', async (req, res) => {
             const axios = require('axios');
 
             try {
-                const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-1820948726187185-031112-fa79402b7e04f39e0761f2412dca98c0-1266560690';
+                const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
                 const response = await axios.get(`https://api.mercadopago.com/v1/payments/${dataId}`, {
                     headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
                 });
