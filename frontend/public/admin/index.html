@@ -240,6 +240,8 @@
                         </div>
                     </div>
 
+                    <!-- Oculto a petición del usuario: Conexión Omnicanal -->
+                    <!--
                     <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; margin-top: 30px; color: #2c3e50;"><i class="fas fa-network-wired"></i> Conexión Omnicanal (Local Físico)</h4>
                     <div style="background:#f4f6f8; padding:20px; border-radius:6px; border: 1px solid #e1e5e8; margin-bottom: 20px;">
                         <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 15px;">
@@ -258,6 +260,7 @@
                             <small style="color: #7f8c8d; display:block; margin-top: 5px;">Mantené este token en secreto. Sirve para que tu software de mostrador dialogue y modifique esta tienda online.</small>
                         </div>
                     </div>
+                    -->
 
                     <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; margin-top: 30px; color: #e74c3c;"><i class="fas fa-lock"></i> Seguridad</h4>
                     <form id="form-cambiar-password" style="background:#fff3f3; padding:20px; border-radius:6px; border: 1px solid #fbdada; max-width: 400px;">
@@ -308,14 +311,18 @@
                     <div style="display:flex; gap:10px;">
                         <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod-precio" required></div>
                         <div class="form-group" id="container-stock"><label>Stock</label><input type="number" id="prod-stock" required></div>
-                        <div class="form-group"><label>Categoría</label>
-                            <select id="prod-cat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                                <option value="libros">Libros</option>
-                                <option value="tecnologia">Tecnología</option>
-                                <option value="hogar">Hogar</option>
-                                <option value="ropa">Ropa</option>
-                                <option value="otros">Otros</option>
-                            </select>
+                        <div class="form-group" style="flex:1"><label>Categoría</label>
+                            <div style="display:flex; gap:5px; margin-bottom:5px;">
+                                <select id="prod-cat" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                                    <option value="">Selecciona...</option>
+                                    <!-- Generado dinámicamente -->
+                                </select>
+                                <button type="button" class="btn btn-danger" onclick="eliminarCategoriaSeleccionada()" title="Eliminar categoría seleccionada" style="padding:10px;"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="nueva-categoria-input" placeholder="Nueva categoría..." style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                                <button type="button" class="btn btn-primary" onclick="crearNuevaCategoria()" style="padding:8px 12px; background:#27ae60;"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                     </div>
                     

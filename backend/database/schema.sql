@@ -7,6 +7,13 @@ DROP TABLE IF EXISTS "productos";
 DROP TABLE IF EXISTS "clientes";
 DROP TABLE IF EXISTS "administradores";
 DROP TABLE IF EXISTS "configuracion";
+DROP TABLE IF EXISTS "categorias";
+
+-- Tabla de Categorias
+CREATE TABLE "categorias" (
+  "id" SERIAL PRIMARY KEY,
+  "nombre" VARCHAR(100) UNIQUE NOT NULL
+);
 
 -- Tabla de Administradores
 CREATE TABLE "administradores" (

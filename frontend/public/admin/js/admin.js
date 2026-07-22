@@ -101,6 +101,7 @@ async function initDashboard() {
     fetchPedidos(); // Precargar pedidos
     fetchClientes(); // Precargar clientes
     fetchConfiguracion(); // Precargar Módulo de Ajustes
+    fetchCategorias(); // Cargar categorías para el modal de productos
 
     // Restaurar última pestaña activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
@@ -450,10 +451,20 @@ async function editarProducto(id) {
         document.getElementById('prod-peso').value = p.peso || '';
         document.getElementById('prod-dimensiones').value = p.dimensiones || '';
         document.getElementById('prod-desc').value = p.descripcion || '';
-        document.getElementById('prod-cat').value = p.categoria || 'otros';
         document.getElementById('prod-display-id').value = p.id;
         document.getElementById('prod-tipo').value = p.tipo_producto || 'fisico';
         document.getElementById('prod-video').value = p.video_url || '';
+        
+        // Asignar categoría dinámica
+        const catSelect = document.getElementById('prod-cat');
+        // si la categoría de p.categoria no existe en el select, podemos intentar agregarla temporalmente o dejarla seleccionada si el fetchCategorias ya la trajo
+        if (Array.from(catSelect.options).some(opt => opt.value === p.categoria)) {
+            catSelect.value = p.categoria;
+        } else if (p.categoria) {
+            catSelect.value = ''; // o dejar en blanco si no existe
+        } else {
+            catSelect.value = '';
+        }
         
         toggleProductType();
         
@@ -588,6 +599,73 @@ function logout() {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_name');
     window.location.href = '/admin/login.html';
+}
+
+// --- CATEGORÍAS DINÁMICAS ---
+async function fetchCategorias() {
+    try {
+        const res = await fetch(`${API_URL}/categorias`);
+        const categorias = await res.json();
+        const select = document.getElementById('prod-cat');
+        if (!select) return;
+        
+        // Guardar el valor seleccionado actual
+        const valActual = select.value;
+        
+        select.innerHTML = '<option value="">Selecciona...</option>';
+        categorias.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.nombre;
+            opt.innerText = cat.nombre;
+            select.appendChild(opt);
+        });
+        
+        // Restaurar si existe
+        if (Array.from(select.options).some(o => o.value === valActual)) {
+            select.value = valActual;
+        }
+    } catch(e) { console.error('Error cargando categorias', e); }
+}
+
+async function crearNuevaCategoria() {
+    const input = document.getElementById('nueva-categoria-input');
+    const nombre = input.value.trim();
+    if (!nombre) return alert('Escribe un nombre para la categoría');
+    
+    try {
+        const token = localStorage.getItem('admin_token');
+        const res = await fetch(`${API_URL}/categorias`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ nombre })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        input.value = '';
+        await fetchCategorias();
+        document.getElementById('prod-cat').value = data.nombre;
+    } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function eliminarCategoriaSeleccionada() {
+    const select = document.getElementById('prod-cat');
+    const nombre = select.value;
+    if (!nombre) return alert('Selecciona una categoría primero');
+    
+    if (!confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?`)) return;
+    
+    try {
+        const token = localStorage.getItem('admin_token');
+        const res = await fetch(`${API_URL}/categorias/${nombre}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        await fetchCategorias();
+    } catch(e) { alert('Error: ' + e.message); }
 }
 
 const formExcel = document.getElementById('form-excel');

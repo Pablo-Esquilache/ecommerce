@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchConfigWeb();
     checkMercadoPagoReturn();
     fetchProductos();
+    fetchCategoriasPublic();
     updateCartUI();
     initCarousel();
 
@@ -94,6 +95,29 @@ async function fetchProductos() {
     } catch (error) {
         console.error('Error cargando productos:', error);
         document.getElementById('grid-productos').innerHTML = `<p style="color:red">Error al cargar productos: ${error.message}</p>`;
+    }
+}
+
+// Obtener categorías dinámicas de la API
+async function fetchCategoriasPublic() {
+    try {
+        const response = await fetch(`${API_URL}/categorias`);
+        const categorias = await response.json();
+        
+        const select = document.getElementById('categoria-filtro');
+        if (!select) return;
+        
+        // Mantener "Todas las categorías"
+        select.innerHTML = '<option value="">Todas las categorías</option>';
+        
+        categorias.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.nombre;
+            opt.innerText = cat.nombre;
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error('Error cargando categorias:', error);
     }
 }
 
