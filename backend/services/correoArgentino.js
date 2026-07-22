@@ -1,7 +1,7 @@
 // Usaremos fetch nativo para enviar a API
 const API_BASE_URL = 'https://api.correoargentino.com.ar/micorreo/v1';
-const USER = process.env.CORREO_ARG_USER || 'pabloesquilache@gmail.com';
-const PASS = process.env.CORREO_ARG_PASS || 'Pablo3454!';
+const USER = process.env.CORREO_ARG_USER;
+const PASS = process.env.CORREO_ARG_PASS;
 
 // Cache the token to avoid authenticating on every request
 let cachedToken = null;
