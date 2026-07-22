@@ -27,10 +27,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos del frontend público y admin
-app.use(express.static(path.join(__dirname, '../frontend/public')));
-// Configurar subida de archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Nota: En Netlify, los estáticos se sirven de forma nativa desde el directorio "public".
+// Ya no necesitamos app.use(express.static) ni la carpeta /uploads local.
 
 // ----------------------
 // Montar Rutas API REST
@@ -46,18 +44,7 @@ app.use('/api/sync', syncRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
-// --- AUTO-MIGRACIÓN DE BASE DE DATOS (Ajustes de Transferencia Bancaria) ---
-const db = require('./config/database');
-db.query(`
-    ALTER TABLE configuracion 
-    ADD COLUMN IF NOT EXISTS banco_nombre VARCHAR(100),
-    ADD COLUMN IF NOT EXISTS banco_titular VARCHAR(150),
-    ADD COLUMN IF NOT EXISTS banco_cuit VARCHAR(50),
-    ADD COLUMN IF NOT EXISTS banco_cbu VARCHAR(100),
-    ADD COLUMN IF NOT EXISTS banco_alias VARCHAR(100);
-`).then(() => console.log("Migración de DB OK (Transferencias)"))
-  .catch(e => console.error("Aviso: Error migrando DB:", e.message));
-
+// Migraciones automáticas movidas a scripts manuales para no saturar las funciones Serverless.
 // --- DIAGNÓSTICO EMAIL (RENDER BUG ESCÁNER) ---
 app.get('/api/diagnostico-email', async (req, res) => {
     const nodemailer = require('nodemailer');
@@ -73,16 +60,13 @@ app.get('/api/diagnostico-email', async (req, res) => {
     }
 });
 
-// Ruta fallback pura para SPA en el admin o el frontend principal
-app.use((req, res) => {
-  if (req.originalUrl.startsWith('/admin')) {
-    // Si estuviéramos usando una SPA de admin, aquí recaería
-    res.sendFile(path.join(__dirname, '../frontend/public/admin/index.html'));
-  } else {
-    res.sendFile(path.join(__dirname, '../frontend/public/index.html'));
-  }
-});
+// Exportar la app envuelta para Netlify Functions
+const serverless = require('serverless-http');
+module.exports.handler = serverless(app);
 
-app.listen(PORT, () => {
-    console.log(`Servidor iniciado en http://localhost:${PORT}`);
-});
+// Mantener capacidad de correr localmente (ej: npm start)
+if (require.main === module) {
+  app.listen(PORT, () => {
+      console.log(`Servidor iniciado en http://localhost:${PORT}`);
+  });
+}

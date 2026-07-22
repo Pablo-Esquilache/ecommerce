@@ -1,4 +1,27 @@
 const Producto = require('../models/Producto');
+const supabase = require('../config/supabase');
+
+async function uploadToSupabase(file) {
+  if (!file) return null;
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const ext = file.originalname.split('.').pop();
+  const filename = `${uniqueSuffix}.${ext}`;
+  
+  const { data, error } = await supabase
+    .storage
+    .from('productos')
+    .upload(filename, file.buffer, {
+      contentType: file.mimetype
+    });
+    
+  if (error) {
+    console.error('Error uploading to Supabase:', error);
+    return null;
+  }
+  
+  const { data: publicUrlData } = supabase.storage.from('productos').getPublicUrl(filename);
+  return publicUrlData.publicUrl;
+}
 
 const productoController = {
   getAllProductos: async (req, res) => {
@@ -42,9 +65,9 @@ const productoController = {
       const data = { ...req.body };
       
       if (req.files) {
-        if (req.files.imagen_1) data.imagen_1 = `/uploads/${req.files.imagen_1[0].filename}`;
-        if (req.files.imagen_2) data.imagen_2 = `/uploads/${req.files.imagen_2[0].filename}`;
-        if (req.files.imagen_3) data.imagen_3 = `/uploads/${req.files.imagen_3[0].filename}`;
+        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
+        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
+        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;
@@ -73,9 +96,9 @@ const productoController = {
       const data = { ...req.body };
 
       if (req.files) {
-        if (req.files.imagen_1) data.imagen_1 = `/uploads/${req.files.imagen_1[0].filename}`;
-        if (req.files.imagen_2) data.imagen_2 = `/uploads/${req.files.imagen_2[0].filename}`;
-        if (req.files.imagen_3) data.imagen_3 = `/uploads/${req.files.imagen_3[0].filename}`;
+        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
+        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
+        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;
@@ -116,7 +139,7 @@ const productoController = {
       if (!req.file) return res.status(400).json({ error: 'No se subió ningún archivo' });
 
       const xlsx = require('xlsx');
-      const workbook = xlsx.readFile(req.file.path);
+      const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
       const sheetName = workbook.SheetNames[0];
       const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
