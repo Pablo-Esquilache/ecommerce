@@ -43,7 +43,7 @@ const Admin = {
     const stats = {};
     
     // Total de ventas (pedidos pagados, enviados o entregados)
-    const ventasQ = "SELECT SUM(total) as total_ingresos, COUNT(*) as cantidad_pedidos FROM pedidos WHERE estado != 'pendiente'";
+    const ventasQ = "SELECT SUM(total) as total_ingresos, COUNT(*) as cantidad_pedidos FROM pedidos WHERE estado NOT IN ('pendiente', 'cancelado')";
     const { rows: ventas } = await db.query(ventasQ);
     stats.ventas = ventas[0];
 

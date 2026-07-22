@@ -79,6 +79,9 @@ const pedidoController = {
 
       const emailService = require('../services/emailService');
       emailService.notificarAdminNuevoPedido(nuevoPedido).catch(e => console.error('Error notif admin nuevo pedido', e));
+      if (clienteRecord.email) {
+          emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido).catch(e => console.error('Error notif cliente nuevo pedido', e));
+      }
 
       // 4. Integraciones (MercadoPago si aplica, y enviar Email)
       let preferenciaMpId = null;

@@ -210,6 +210,24 @@ const emailService = {
         } else { simularEnvio(mailOptions); }
     },
 
+    enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData) => {
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
+            to: clienteEmail,
+            subject: `¡Hemos recibido tu pedido #${pedidoData.id}!`,
+            html: `<h1>¡Gracias por tu compra!</h1>
+                   <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de $${pedidoData.total}.</p>
+                   <p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>
+                   <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
+                   <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>`
+        };
+
+        if (useRealEmail) {
+            try { await transporter.sendMail(mailOptions); console.log(`Correo de nuevo pedido enviado al cliente ${clienteEmail}.`); } 
+            catch (error) { simularEnvio(mailOptions); }
+        } else { simularEnvio(mailOptions); }
+    },
+
     notificarAdminNuevoPedido: async (pedidoData) => {
         const adminEmail = await getAdminEmail();
         const mailOptions = {
