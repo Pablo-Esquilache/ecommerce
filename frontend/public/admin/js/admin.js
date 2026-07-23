@@ -526,6 +526,43 @@ function toggleProductType() {
     }
 }
 
+// Helper para comprimir imágenes en el cliente antes de subirlas
+async function compressImage(file, maxWidth = 800, quality = 0.8) {
+    if (!file || !file.type.startsWith('image/')) return file; // Si no es imagen, no tocar
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    // Recrear un objeto File a partir del Blob comprimido
+                    const compressedFile = new File([blob], file.name, {
+                        type: file.type,
+                        lastModified: Date.now(),
+                    });
+                    resolve(compressedFile);
+                }, file.type, quality);
+            };
+        };
+    });
+}
+
 const formProducto = document.getElementById('form-producto');
 if (formProducto) {
     formProducto.addEventListener('submit', async (e) => {
@@ -555,14 +592,14 @@ if (formProducto) {
         const imgUrl3 = document.getElementById('prod-img3-url').value;
         if (imgUrl3) formData.append('imagen_3_url', imgUrl3);
         
-        // Attach image files if present
+        // Attach image files if present (Comprimiendo si existen)
         const file1 = document.getElementById('prod-img1').files[0];
         const file2 = document.getElementById('prod-img2').files[0];
         const file3 = document.getElementById('prod-img3').files[0];
         
-        if (file1) formData.append('imagen_1', file1);
-        if (file2) formData.append('imagen_2', file2);
-        if (file3) formData.append('imagen_3', file3);
+        if (file1) formData.append('imagen_1', await compressImage(file1));
+        if (file2) formData.append('imagen_2', await compressImage(file2));
+        if (file3) formData.append('imagen_3', await compressImage(file3));
 
         try {
             const token = localStorage.getItem('admin_token');
