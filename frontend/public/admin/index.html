@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/admin/css/admin.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body id="dashboard-body" style="display:none;"> <!-- Oculto hasta validar auth -->
     <div class="sidebar">
@@ -50,17 +49,9 @@
                 </div>
             </div>
 
-            <!-- Gráfico de Ventas -->
-            <div class="table-card" style="margin-bottom: 20px;">
-                <h3>Evolución de Últimos Pedidos</h3>
-                <div style="position: relative; height: 300px; width: 100%;">
-                    <canvas id="ventasChart"></canvas>
-                </div>
-            </div>
-
             <div class="tables-grid">
                 <div class="table-card">
-                    <h3>Últimos Pedidos</h3>
+                    <h3>Pedidos de Hoy</h3>
                     <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
                         <table>
                             <thead>

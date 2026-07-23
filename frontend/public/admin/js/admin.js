@@ -4,7 +4,7 @@ const API_URL = '/api';
 let currentAdminPageProductos = 1;
 let currentAdminPagePedidos = 1;
 let currentAdminPageClientes = 1;
-const ITEMS_PER_PAGE_ADMIN = 20;
+const ITEMS_PER_PAGE_ADMIN = 10;
 
 function renderAdminPagination(containerId, totalPages, currentPage, onPageClick) {
     const cont = document.getElementById(containerId);
@@ -364,41 +364,6 @@ async function fetchDashboardStats() {
             } else {
                 alertBox.style.display = 'none';
                 okBox.style.display = 'block';
-            }
-        }
-
-        // --- RENDER CHART ---
-        if (stats.pedidosRecientes && stats.pedidosRecientes.length > 0) {
-            const ctx = document.getElementById('ventasChart');
-            if (ctx) {
-                if (window.ventasChartInstance) {
-                    window.ventasChartInstance.destroy();
-                }
-                const labels = stats.pedidosRecientes.map(p => '#' + p.id).reverse();
-                const data = stats.pedidosRecientes.map(p => p.total).reverse();
-                
-                window.ventasChartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Monto del Pedido ($)',
-                            data: data,
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { beginAtZero: true }
-                        }
-                    }
-                });
             }
         }
 
