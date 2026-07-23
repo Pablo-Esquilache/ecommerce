@@ -1,7 +1,7 @@
 const Producto = require('../models/Producto');
 const supabase = require('../config/supabase');
 
-async function uploadToSupabase(file) {
+async function uploadToSupabase(file, bucket = 'productos') {
   if (!file) return null;
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
   const ext = file.originalname.split('.').pop();
@@ -9,7 +9,7 @@ async function uploadToSupabase(file) {
   
   const { data, error } = await supabase
     .storage
-    .from('productos')
+    .from(bucket)
     .upload(filename, file.buffer, {
       contentType: file.mimetype
     });
@@ -19,7 +19,11 @@ async function uploadToSupabase(file) {
     return null;
   }
   
-  const { data: publicUrlData } = supabase.storage.from('productos').getPublicUrl(filename);
+  if (bucket === 'digitales') {
+      return filename; // Solo retornamos el nombre del archivo para generar links temporales luego
+  }
+  
+  const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(filename);
   return publicUrlData.publicUrl;
 }
 
@@ -28,7 +32,12 @@ const productoController = {
     try {
       const all = req.query.all === 'true';
       const productos = await Producto.getAll(all);
-      res.json(productos);
+      // Eliminar campos digitales para respuestas públicas
+      const productosPublicos = productos.map(p => {
+        const { archivo_digital, video_url, ...resto } = p;
+        return resto;
+      });
+      res.json(productosPublicos);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error al obtener productos: ' + error.message, code: error.code });
@@ -52,6 +61,31 @@ const productoController = {
       const { id } = req.params;
       const producto = await Producto.getById(id);
       if (!producto) return res.status(404).json({ error: 'Producto no encontrado' });
+      // Eliminar campos digitales para respuesta pública
+      const { archivo_digital, video_url, ...productoPublico } = producto;
+      res.json(productoPublico);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener producto' });
+    }
+  },
+
+  getAdminProductos: async (req, res) => {
+    try {
+      const all = req.query.all === 'true';
+      const productos = await Producto.getAll(all);
+      res.json(productos);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener productos: ' + error.message });
+    }
+  },
+
+  getAdminProductoById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const producto = await Producto.getById(id);
+      if (!producto) return res.status(404).json({ error: 'Producto no encontrado' });
       res.json(producto);
     } catch (error) {
       console.error(error);
@@ -65,10 +99,10 @@ const productoController = {
       const data = { ...req.body };
       
       if (req.files) {
-        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
-        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
-        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
-        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0]);
+        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0], 'productos');
+        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0], 'productos');
+        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0], 'productos');
+        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0], 'digitales');
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;
@@ -97,10 +131,10 @@ const productoController = {
       const data = { ...req.body };
 
       if (req.files) {
-        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0]);
-        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0]);
-        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0]);
-        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0]);
+        if (req.files.imagen_1) data.imagen_1 = await uploadToSupabase(req.files.imagen_1[0], 'productos');
+        if (req.files.imagen_2) data.imagen_2 = await uploadToSupabase(req.files.imagen_2[0], 'productos');
+        if (req.files.imagen_3) data.imagen_3 = await uploadToSupabase(req.files.imagen_3[0], 'productos');
+        if (req.files.archivo_digital) data.archivo_digital = await uploadToSupabase(req.files.archivo_digital[0], 'digitales');
       }
       if (data.imagen_url) {
         data.imagen_1 = data.imagen_url;

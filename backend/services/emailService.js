@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const supabase = require('../config/supabase');
 const dns = require('dns');
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
@@ -73,16 +74,23 @@ const emailService = {
             const digitalItems = detallesPedido.detalles.filter(d => d.tipo_producto === 'digital');
             if (digitalItems.length > 0) {
                 digitalContent = '<h2>Tus Productos Digitales</h2><ul>';
-                digitalItems.forEach(item => {
+                for (const item of digitalItems) {
                     digitalContent += `<li><strong>${item.producto_nombre}</strong>: `;
-                    if (item.archivo_digital) {
-                        digitalContent += `<br><a href="${item.archivo_digital}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:4px;">Descargar Archivo</a>`;
+                    
+                    let archivoUrl = item.archivo_digital;
+                    if (archivoUrl && !archivoUrl.startsWith('http')) {
+                        const { data } = await supabase.storage.from('digitales').createSignedUrl(archivoUrl, 7 * 24 * 60 * 60);
+                        if (data) archivoUrl = data.signedUrl;
+                    }
+
+                    if (archivoUrl) {
+                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:4px;">Descargar Archivo</a>`;
                     }
                     if (item.video_url) {
                         digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:4px;">Ver Video</a>`;
                     }
                     digitalContent += `</li>`;
-                });
+                }
                 digitalContent += '</ul>';
             }
         }

@@ -175,7 +175,7 @@ function renderProductos(arrayProductos) {
         card.innerHTML = `
             <a href="/producto.html?id=${prod.id}" style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height: 100%;">
                 <div class="producto-img-container">
-                    <img src="${img}" alt="${prod.nombre}">
+                    <img src="${img}" alt="${prod.nombre}" loading="lazy">
                 </div>
                 <div class="producto-info">
                     <h3>${prod.nombre}</h3>

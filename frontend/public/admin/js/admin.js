@@ -373,7 +373,7 @@ let adminProductosCache = [];
 
 async function fetchProductos() {
     try {
-        const res = await fetch(`${API_URL}/productos?all=true`); 
+        const res = await fetch(`${API_URL}/productos/admin/all?all=true`, { headers: authHeaders() }); 
         adminProductosCache = await res.json();
         renderAdminProductos(adminProductosCache);
     } catch(e) { console.error(e); }
@@ -439,7 +439,7 @@ async function toggleProductoActivo(id) {
 
 async function editarProducto(id) {
     try {
-        const res = await fetch(`${API_URL}/productos/${id}`);
+        const res = await fetch(`${API_URL}/productos/admin/${id}`, { headers: authHeaders() });
         if (!res.ok) throw new Error('Error al cargar producto');
         const p = await res.json();
         

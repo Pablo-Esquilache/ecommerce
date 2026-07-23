@@ -20,6 +20,8 @@ router.get('/', productoController.getAllProductos);
 router.get('/:id', productoController.getProductoById);
 
 // Rutas Privadas (Admin)
+router.get('/admin/all', authMiddleware, productoController.getAdminProductos);
+router.get('/admin/:id', authMiddleware, productoController.getAdminProductoById);
 router.post('/upload', authMiddleware, upload.single('file'), productoController.uploadExcel);
 router.post('/', authMiddleware, uploadImages, productoController.createProducto);
 router.put('/:id', authMiddleware, uploadImages, productoController.updateProducto);
