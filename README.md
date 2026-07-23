@@ -14,9 +14,7 @@ Este es un ecommerce completo y estructurado de forma sencilla utilizando **HTML
 1. Abre **pgAdmin** o tu terminal de psql.
 2. Crea una base de datos llamada `ecommerce` (o el nombre que prefieras).
 3. Abre el archivo localizado en `backend/database/schema.sql` y ejecuta todo su contenido dentro de tu nueva base de datos.
-> **Nota:** Esto creará todas las tablas (productos, clientes, pedidos, administradores, etc.) e insertará automáticamente un usuario administrador por defecto:
-> - **Email:** `admin@ecommerce.com`
-> - **Contraseña:** `admin123`
+> **Nota:** Esto creará todas las tablas (productos, clientes, pedidos, administradores, etc.) e insertará automáticamente un usuario administrador por defecto. **Por razones de seguridad, asegúrate de cambiar estas credenciales una vez que inicies sesión por primera vez.**
 
 ### Paso 2: Configurar las Variables de Entorno
 
@@ -33,8 +31,8 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=ecommerce
 
-# JWT Secret para el login de admin
-JWT_SECRET=super_secreto_ecommerce
+# JWT Secret para el login de admin (Usa una cadena larga y aleatoria)
+JWT_SECRET=tu_jwt_secret_largo_y_aleatorio_aqui
 ```
 
 ### Paso 3: Instalar Dependencias
