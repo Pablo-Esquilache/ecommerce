@@ -274,6 +274,48 @@ const adminController = {
       console.error('Error confirmando OTP:', e);
       res.status(500).json({ error: 'Fallo interno alterando la cuenta.' });
     }
+  },
+
+  getAllAdmins: async (req, res) => {
+    try {
+      const admins = await Admin.getAll();
+      res.json(admins);
+    } catch (e) {
+      console.error('Error getAllAdmins:', e);
+      res.status(500).json({ error: 'Error obteniendo administradores' });
+    }
+  },
+
+  createAdmin: async (req, res) => {
+    try {
+      const { email, password, nombre } = req.body;
+      if (!email || !password || !nombre) return res.status(400).json({ error: 'Faltan datos obligatorios' });
+      
+      const exists = await Admin.getByEmail(email);
+      if (exists) return res.status(400).json({ error: 'El email ya está registrado' });
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newAdmin = await Admin.create(email, hashedPassword, nombre);
+      res.status(201).json(newAdmin);
+    } catch (e) {
+      console.error('Error createAdmin:', e);
+      res.status(500).json({ error: 'Error creando administrador' });
+    }
+  },
+
+  deleteAdmin: async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Prevenir que un admin se borre a sí mismo accidentalmente o borrar el único admin
+      if (req.user.id == id) {
+          return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta.' });
+      }
+      await Admin.delete(id);
+      res.json({ success: true });
+    } catch (e) {
+      console.error('Error deleteAdmin:', e);
+      res.status(500).json({ error: 'Error eliminando administrador' });
+    }
   }
 };
 

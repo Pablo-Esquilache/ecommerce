@@ -8,8 +8,8 @@ if (dns.setDefaultResultOrder) {
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp-relay.brevo.com',
     port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: process.env.EMAIL_PORT === '465', // true si usarán el 465 de Brevo
-    connectionTimeout: 8000, // Limite de 8 seg para evitar colapso de "Enviando..."
+    secure: process.env.EMAIL_PORT === '465',
+    connectionTimeout: 8000,
     socketTimeout: 10000,
     auth: {
         user: process.env.EMAIL_USER || '',
@@ -17,8 +17,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Forzamos el uso de SMTP independientemente del tiempo de arranque del servidor.
-// Esto evita falsos negativos (bloqueos permanentes) de red al reiniciar Render.
 const useRealEmail = process.env.EMAIL_USER && process.env.EMAIL_PASS ? true : false;
 
 if (useRealEmail) {
@@ -42,8 +40,28 @@ const simularEnvio = (opciones) => {
     console.log(`De: ${opciones.from || 'Sistema'}`);
     console.log(`Para: ${opciones.to}`);
     console.log(`Asunto: ${opciones.subject}`);
-    console.log(`Contenido:\n${opciones.text || opciones.html}`);
     console.log('----------------------------------------\n');
+};
+
+const getHtmlTemplate = (titulo, contenido) => {
+    const publicUrl = process.env.PUBLIC_URL || 'https://tumarca.com';
+    return `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #2C3E50;">
+            <h1 style="color: #2C3E50; margin: 0; font-size: 24px;">E-Shopper</h1>
+        </div>
+        <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h2 style="color: #2C3E50; margin-top: 0;">${titulo}</h2>
+            <div style="color: #555555; font-size: 16px; line-height: 1.5;">
+                ${contenido}
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #999999; font-size: 12px;">
+            <p>© ${new Date().getFullYear()} E-Shopper. Todos los derechos reservados.</p>
+            <p><a href="${publicUrl}" style="color: #3498db; text-decoration: none;">Visitar Tienda</a></p>
+        </div>
+    </div>
+    `;
 };
 
 const emailService = {
@@ -52,20 +70,15 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: process.env.EMAIL_CONTACTO || process.env.EMAIL_FROM || 'admin@tienda.com',
             subject: `Nuevo mensaje de contacto: ${asunto}`,
-            text: `Has recibido un nuevo mensaje de contacto.\n\nNombre: ${nombre}\nEmail: ${email}\n\nMensaje:\n${mensaje}`
+            html: getHtmlTemplate('Nuevo Mensaje de Contacto', `
+                <p><strong>Nombre:</strong> ${nombre}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <div style="padding: 15px; background-color: #f1f2f6; border-left: 4px solid #3498db; margin-top: 15px;">
+                    ${mensaje.replace(/\n/g, '<br>')}
+                </div>
+            `)
         };
-
-        if (useRealEmail) {
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log(`Correo de contacto enviado exitosamente de ${email}.`);
-            } catch (error) {
-                console.error('Error al enviar correo de contacto (real):', error);
-                simularEnvio(mailOptions);
-            }
-        } else {
-            simularEnvio(mailOptions);
-        }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoPago: async (clienteMail, detallesPedido) => {
@@ -73,21 +86,19 @@ const emailService = {
         if (detallesPedido.detalles && detallesPedido.detalles.length > 0) {
             const digitalItems = detallesPedido.detalles.filter(d => d.tipo_producto === 'digital');
             if (digitalItems.length > 0) {
-                digitalContent = '<h2>Tus Productos Digitales</h2><ul>';
+                digitalContent = '<h3 style="color:#2C3E50; margin-top:25px; border-top: 1px solid #eee; padding-top: 15px;">Tus Productos Digitales</h3><ul style="list-style-type:none; padding:0;">';
                 for (const item of digitalItems) {
-                    digitalContent += `<li><strong>${item.producto_nombre}</strong>: `;
-                    
+                    digitalContent += `<li style="background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:10px;"><strong>${item.producto_nombre}</strong>`;
                     let archivoUrl = item.archivo_digital;
                     if (archivoUrl && !archivoUrl.startsWith('http')) {
                         const { data } = await supabase.storage.from('digitales').createSignedUrl(archivoUrl, 7 * 24 * 60 * 60);
                         if (data) archivoUrl = data.signedUrl;
                     }
-
                     if (archivoUrl) {
-                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:4px;">Descargar Archivo</a>`;
+                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">📥 Descargar Archivo</a>`;
                     }
                     if (item.video_url) {
-                        digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:5px; padding:8px 15px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:4px;">Ver Video</a>`;
+                        digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:10px; margin-left: 5px; padding:10px 20px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">▶ Ver Video</a>`;
                     }
                     digitalContent += `</li>`;
                 }
@@ -99,87 +110,56 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: clienteMail,
             subject: `¡Pago confirmado! Pedido #${detallesPedido.id}`,
-            html: `<h1>¡Gracias por tu compra!</h1>
-                   <p>Hemos recibido el pago de tu pedido #${detallesPedido.id}.</p>
-                   <p>Total pagado: $${detallesPedido.total}</p>
-                   ${digitalContent}
-                   <p>Pronto comenzaremos a prepararlo para su envío (si contiene productos físicos). Te notificaremos cuando esté en camino.</p>`
+            html: getHtmlTemplate('¡Gracias por tu compra!', `
+                <p>Hemos recibido el pago exitoso de tu pedido <strong>#${detallesPedido.id}</strong>.</p>
+                <div style="background-color: #f1f2f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                    <p style="margin:0; font-size: 18px;">Total pagado: <strong>$${detallesPedido.total}</strong></p>
+                </div>
+                ${digitalContent}
+                <p style="margin-top:20px;">Pronto comenzaremos a prepararlo para su envío (si contiene productos físicos). Te notificaremos cuando esté en camino.</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log(`Correo de pago confirmado enviado a ${clienteMail}.`);
-            } catch (error) {
-                console.error('Error al enviar correo de pago (real):', error);
-                simularEnvio(mailOptions);
-            }
-        } else {
-            simularEnvio(mailOptions);
-        }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoPreparandoEnvio: async (cliente_email, pedidoData) => {
-        const pId = pedidoData.id;
-        const nombreCliente = pedidoData.nombre || 'Cliente';
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: cliente_email,
-            subject: `Tu pedido #${pId} está siendo preparado 📦`,
-            html: `<h1>¡Manos a la obra con tu pedido!</h1>
-                   <p>Hola ${nombreCliente}, te confirmamos que tu orden #${pId} ya se encuentra registrada en la etapa de empaquetado y muy pronto será despachada.</p>
-                   <p>Si compraste con retiro en sucursal, te avisaremos cuando esté listo. Si es con envío, pronto saldrá en camino.</p>
-                   <p>¡Gracias por tu paciencia!</p>`
+            subject: `Tu pedido #${pedidoData.id} está siendo preparado 📦`,
+            html: getHtmlTemplate('¡Manos a la obra con tu pedido!', `
+                <p>Hola ${pedidoData.nombre || 'Cliente'}, te confirmamos que tu orden <strong>#${pedidoData.id}</strong> ya se encuentra registrada en la etapa de empaquetado y muy pronto será despachada.</p>
+                <p>Si compraste con retiro en sucursal, te avisaremos cuando esté listo. Si es con envío, pronto saldrá en camino.</p>
+                <p>¡Gracias por tu paciencia!</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`Correo preparando envio enviado a ${cliente_email}.`); }
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoEnvio: async (cliente_email, pedidoData) => {
-        const pId = pedidoData.id;
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: cliente_email,
-            subject: `Tu pedido #${pId} está en camino 🚚`,
-            html: `<h1>¡Tu pedido ha sido despachado!</h1>
-                   <p>El pedido #${pId} ya se encuentra en camino hacia tu domicilio o sucursal seleccionada.</p>
-                   <p>¡Esperamos que lo disfrutes!</p>`
+            subject: `Tu pedido #${pedidoData.id} está en camino 🚚`,
+            html: getHtmlTemplate('¡Tu pedido ha sido despachado!', `
+                <p>El pedido <strong>#${pedidoData.id}</strong> ya se encuentra en camino hacia tu domicilio o sucursal seleccionada.</p>
+                <p>¡Esperamos que lo disfrutes!</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log(`Correo de orden enviada notificado a ${cliente_email}.`);
-            } catch (error) {
-                console.error('Error al enviar correo de despacho (real):', error);
-                simularEnvio(mailOptions);
-            }
-        } else {
-            console.log('\n=======================================');
-            console.log(`[MOCK EMAIL] "Orden Enviada" => Para el Cliente: ${cliente_email}`);
-            console.log(`Orden #${pId} en camino.`);
-            console.log('=======================================\n');
-        }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoEntregado: async (cliente_email, pedidoData) => {
-        const pId = pedidoData.id;
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: cliente_email,
-            subject: `¡Tu pedido #${pId} ha sido Entregado! 🎉`,
-            html: `<h1>¡Pedido Entregado!</h1>
-                   <p>Hola, queríamos confirmarte que tu pedido #${pId} figura como entregado.</p>
-                   <p>Esperamos que lo disfrutes mucho. ¡Gracias por confiar en nosotros!</p>`
+            subject: `¡Tu pedido #${pedidoData.id} ha sido Entregado! 🎉`,
+            html: getHtmlTemplate('¡Pedido Entregado!', `
+                <p>Hola, queríamos confirmarte que tu pedido <strong>#${pedidoData.id}</strong> figura como entregado.</p>
+                <p>Esperamos que lo disfrutes mucho. ¡Gracias por confiar en nosotros!</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`Correo de entrega enviado a ${cliente_email}.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoCancelado: async (clienteMail, detallesPedido) => {
@@ -187,15 +167,12 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: clienteMail,
             subject: `Pedido #${detallesPedido.id} Cancelado`,
-            html: `<h1>Pedido Cancelado</h1>
-                   <p>Hola, te informamos que tu pedido #${detallesPedido.id} ha sido cancelado.</p>
-                   <p>Si tienes alguna duda o consideras que se trata de un error, por favor contáctanos respondiendo a este correo.</p>`
+            html: getHtmlTemplate('Pedido Cancelado', `
+                <p>Hola, te informamos que tu pedido <strong>#${detallesPedido.id}</strong> ha sido cancelado.</p>
+                <p>Si tienes alguna duda o consideras que se trata de un error, por favor contáctanos respondiendo a este correo.</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`Correo de cancelación enviado a ${clienteMail}.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoHtml: async (toEmail, subject, htmlContent) => {
@@ -203,20 +180,9 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: toEmail,
             subject: subject,
-            html: htmlContent
+            html: getHtmlTemplate(subject, htmlContent)
         };
-
-        if (useRealEmail) {
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log(`Correo HTML enviado exitosamente a ${toEmail}.`);
-            } catch (error) {
-                console.error('Error al enviar correo HTML (real):', error);
-                simularEnvio(mailOptions);
-            }
-        } else {
-            simularEnvio(mailOptions);
-        }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoNuevaVentaAdmin: async (detallesPedido) => {
@@ -225,17 +191,14 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online Venta" <noreply@tienda.com>',
             to: adminEmail,
             subject: `💰 ¡Nueva Venta! Pedido #${detallesPedido.id}`,
-            html: `<h1>¡Felicitaciones, ingresó una nueva venta!</h1>
-                   <p>El sistema acaba de procesar el pago del <strong>Pedido #${detallesPedido.id}</strong>.</p>
-                   <p>Monto total cobrado: <strong>$${detallesPedido.total}</strong></p>
-                   <p>Email del cliente: ${detallesPedido.email || 'No registrado'}</p>
-                   <p>Por favor, revisa tu Panel de Administrador para prepararlo.</p>`
+            html: getHtmlTemplate('¡Felicitaciones, ingresó una nueva venta!', `
+                <p>El sistema acaba de procesar el pago del <strong>Pedido #${detallesPedido.id}</strong>.</p>
+                <p>Monto total cobrado: <strong>$${detallesPedido.total}</strong></p>
+                <p>Email del cliente: ${detallesPedido.email || 'No registrado'}</p>
+                <p>Por favor, revisa tu Panel de Administrador para prepararlo.</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`[Admin] Correo de nueva venta enviado al administrador.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData) => {
@@ -243,17 +206,14 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: clienteEmail,
             subject: `¡Hemos recibido tu pedido #${pedidoData.id}!`,
-            html: `<h1>¡Gracias por tu compra!</h1>
-                   <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de $${pedidoData.total}.</p>
-                   <p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>
-                   <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
-                   <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>`
+            html: getHtmlTemplate('¡Gracias por tu compra!', `
+                <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de <strong>$${pedidoData.total}</strong>.</p>
+                <p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>
+                <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
+                <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`Correo de nuevo pedido enviado al cliente ${clienteEmail}.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     notificarAdminNuevoPedido: async (pedidoData) => {
@@ -262,16 +222,13 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Sistema Tienda" <noreply@tienda.com>',
             to: adminEmail,
             subject: `[NUEVO PEDIDO] #${pedidoData.id} Creado en estado Pendiente`,
-            html: `<h3>Se ha creado un nuevo pedido en el sistema.</h3>
-                   <p>El cliente ha finalizado el carrito y se generó el pedido <strong>#${pedidoData.id}</strong> por $${pedidoData.total}.</p>
-                   <p>El estado actual es <strong>Pendiente</strong>.</p>
-                   <p>Método de pago seleccionado: ${pedidoData.metodo_pago}</p>`
+            html: getHtmlTemplate('Nuevo Pedido Registrado', `
+                <p>El cliente ha finalizado el carrito y se generó el pedido <strong>#${pedidoData.id}</strong> por <strong>$${pedidoData.total}</strong>.</p>
+                <p>El estado actual es <strong>Pendiente</strong>.</p>
+                <p>Método de pago seleccionado: ${pedidoData.metodo_pago}</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`[Admin] Aviso de nuevo pedido enviado al admin.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     },
 
     notificarAdminCambioEstado: async (pedidoData, nuevoEstado) => {
@@ -280,15 +237,29 @@ const emailService = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Sistema Tienda" <noreply@tienda.com>',
             to: adminEmail,
             subject: `[CAMBIO DE ESTADO] Pedido #${pedidoData.id} -> ${nuevoEstado.toUpperCase()}`,
-            html: `<h3>Actualización de Pedido</h3>
-                   <p>El pedido <strong>#${pedidoData.id}</strong> ha cambiado su estado a: <strong>${nuevoEstado.toUpperCase()}</strong>.</p>
-                   <p>Total del pedido: $${pedidoData.total}</p>`
+            html: getHtmlTemplate('Actualización de Pedido', `
+                <p>El pedido <strong>#${pedidoData.id}</strong> ha cambiado su estado a: <strong>${nuevoEstado.toUpperCase()}</strong>.</p>
+                <p>Total del pedido: $${pedidoData.total}</p>
+            `)
         };
-
-        if (useRealEmail) {
-            try { await transporter.sendMail(mailOptions); console.log(`[Admin] Aviso de cambio de estado a ${nuevoEstado} enviado.`); } 
-            catch (error) { simularEnvio(mailOptions); }
-        } else { simularEnvio(mailOptions); }
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+    },
+    
+    enviarAlertaStock: async (productoId, productoNombre, stockRestante) => {
+        const adminEmail = await getAdminEmail();
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Sistema Tienda" <noreply@tienda.com>',
+            to: adminEmail,
+            subject: `⚠️ ALERTA DE STOCK: ${productoNombre}`,
+            html: getHtmlTemplate('Alerta de Bajo Stock', `
+                <p>El producto <strong>${productoNombre}</strong> (ID: ${productoId}) tiene niveles críticos de inventario.</p>
+                <div style="background-color: #fee2e2; border: 1px solid #fca5a5; padding: 15px; border-radius: 6px; margin: 15px 0; color: #991b1b;">
+                    <p style="margin:0; font-size: 18px;">Stock restante: <strong>${stockRestante} unidades</strong></p>
+                </div>
+                <p>Por favor, revisa tu Panel de Administrador para reponer el inventario pronto y no perder ventas.</p>
+            `)
+        };
+        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
     }
 };
 

@@ -83,6 +83,16 @@ const pedidoController = {
           emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido).catch(e => console.error('Error notif cliente nuevo pedido', e));
       }
 
+      // [NUEVO] Check for low stock alerts (<= 3)
+      for (let det of detalles) {
+          try {
+              const { rows } = await db.query('SELECT stock, nombre FROM productos WHERE id = $1', [det.producto_id]);
+              if (rows.length > 0 && rows[0].stock <= 3) {
+                  emailService.enviarAlertaStock(det.producto_id, rows[0].nombre, rows[0].stock).catch(e => console.error(e));
+              }
+          } catch(e) { console.error('Error enviando alerta stock', e); }
+      }
+
       // 4. Integraciones (MercadoPago si aplica, y enviar Email)
       let preferenciaMpId = null;
       let initPoint = null;

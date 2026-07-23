@@ -31,4 +31,9 @@ router.post('/change-password', authMiddleware, adminController.changePassword);
 router.post('/request-change-otp', authMiddleware, adminController.requestChangeOtp);
 router.post('/confirm-change-otp', authMiddleware, adminController.confirmChangeOtp);
 
+// [NUEVO] Gestión de Administradores
+router.get('/usuarios', authMiddleware, adminController.getAllAdmins);
+router.post('/usuarios', authMiddleware, adminController.createAdmin);
+router.delete('/usuarios/:id', authMiddleware, adminController.deleteAdmin);
+
 module.exports = router;

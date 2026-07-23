@@ -41,23 +41,35 @@ const Admin = {
   
   getDashboardStats: async () => {
     const stats = {};
-    
-    // Total de ventas (pedidos pagados, enviados o entregados)
     const ventasQ = "SELECT SUM(total) as total_ingresos, COUNT(*) as cantidad_pedidos FROM pedidos WHERE estado NOT IN ('pendiente', 'cancelado')";
     const { rows: ventas } = await db.query(ventasQ);
     stats.ventas = ventas[0];
-
-    // Productos con bajo stock (<= 3)
     const bajoStockQ = "SELECT id, nombre, stock FROM productos WHERE stock <= 3 ORDER BY stock ASC LIMIT 10";
     const { rows: bajoStock } = await db.query(bajoStockQ);
     stats.bajoStock = bajoStock;
-
-    // Pedidos recientes listos para procesar (Solo los de hoy)
     const recientesQ = "SELECT id, total, estado, metodo_pago, creado_en FROM pedidos WHERE DATE(creado_en) = CURRENT_DATE ORDER BY id DESC";
     const { rows: recientes } = await db.query(recientesQ);
     stats.pedidosRecientes = recientes;
-
     return stats;
+  },
+
+  // [NUEVO] Gestión de Múltiples Administradores
+  getAll: async () => {
+    const query = 'SELECT id, email, nombre, creado_en FROM administradores ORDER BY id ASC';
+    const { rows } = await db.query(query);
+    return rows;
+  },
+  
+  create: async (email, hashedPassword, nombre) => {
+    const query = 'INSERT INTO administradores (email, password, nombre) VALUES ($1, $2, $3) RETURNING id, email, nombre, creado_en';
+    const { rows } = await db.query(query, [email, hashedPassword, nombre]);
+    return rows[0];
+  },
+  
+  delete: async (id) => {
+    const query = 'DELETE FROM administradores WHERE id = $1 RETURNING id';
+    const { rows } = await db.query(query, [id]);
+    return rows[0];
   }
 };
 

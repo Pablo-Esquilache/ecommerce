@@ -16,6 +16,7 @@
             <li onclick="switchTab('productos', this)"><i class="fas fa-box"></i> Productos</li>
             <li onclick="switchTab('pedidos', this)"><i class="fas fa-shopping-cart"></i> Pedidos</li>
             <li onclick="switchTab('clientes', this)"><i class="fas fa-users"></i> Clientes</li>
+            <li onclick="switchTab('usuarios', this)"><i class="fas fa-user-shield"></i> Usuarios</li>
             <li onclick="switchTab('ajustes', this)"><i class="fas fa-cog"></i> Ajustes</li>
         </ul>
         <div class="logout">
@@ -420,6 +421,48 @@
                         <tbody id="historial-tb"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+    </div>
+
+        <!-- VIEW: USUARIOS (Admins) -->
+        <section id="view-usuarios" class="view-section">
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openModal('usuario-modal')">Nuevo Administrador</button>
+            </div>
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Email</th><th>Nombre</th><th>Creado</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="usuarios-tb"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- MODAL USUARIO -->
+        <div class="modal" id="usuario-modal">
+            <div class="modal-content" style="max-width:400px;">
+                <div class="modal-header">
+                    <h2>Nuevo Administrador</h2>
+                    <span class="close" onclick="closeModal('usuario-modal')">&times;</span>
+                </div>
+                <form id="usuario-form" onsubmit="saveUsuario(event)">
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="u-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="u-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="u-password" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Crear Administrador</button>
+                </form>
             </div>
         </div>
 

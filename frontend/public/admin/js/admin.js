@@ -126,8 +126,10 @@ function switchTab(tabId, el) {
     const section = document.getElementById(`view-${tabId}`);
     if(section) section.classList.add('active'); // Added safety check
 
-    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes' };
+    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Administradores', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
+    
+    if (tabId === 'usuarios') loadUsuarios();
 }
 
 let adminPedidosCache = [];
@@ -1027,3 +1029,79 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ==========================================
+// GESTION DE ADMINISTRADORES
+// ==========================================
+
+async function loadUsuarios() {
+    try {
+        const res = await fetch(`${API_URL}/admin/usuarios`, { headers: authHeaders() });
+        if (!res.ok) throw new Error('Error al obtener administradores');
+        const admins = await res.json();
+        
+        const tb = document.getElementById('usuarios-tb');
+        tb.innerHTML = '';
+        admins.forEach(u => {
+            tb.innerHTML += `<tr>
+                <td>${u.id}</td>
+                <td>${u.email}</td>
+                <td>${u.nombre || 'N/A'}</td>
+                <td>${new Date(u.creado_en).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn" style="background:#e74c3c; color:white; padding: 2px 6px; font-size:12px;" onclick="deleteUsuario(${u.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+    } catch (e) {
+        console.error('Error loadUsuarios:', e);
+        alert('Hubo un error cargando los usuarios administradores.');
+    }
+}
+
+async function saveUsuario(e) {
+    e.preventDefault();
+    const nombre = document.getElementById('u-nombre').value;
+    const email = document.getElementById('u-email').value;
+    const password = document.getElementById('u-password').value;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/usuarios`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ nombre, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            closeModal('usuario-modal');
+            document.getElementById('usuario-form').reset();
+            loadUsuarios();
+            alert('Administrador creado exitosamente.');
+        } else {
+            alert(data.error || 'Error al crear administrador.');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Ocurrió un error al guardar el administrador.');
+    }
+}
+
+async function deleteUsuario(id) {
+    if (!confirm('¿Estás seguro de que deseas eliminar a este administrador? Perderá acceso inmediato.')) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/admin/usuarios/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+            loadUsuarios();
+        } else {
+            alert(data.error || 'Error al eliminar.');
+        }
+    } catch(err) {
+        alert('Ocurrió un error de conexión.');
+    }
+}
+
