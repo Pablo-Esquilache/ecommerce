@@ -62,6 +62,8 @@ const getHtmlTemplate = (titulo, contenido) => {
         </div>
     </div>
     `;
+};
+
 const enviarOConsola = async (mailOptions) => {
     if (useRealEmail) {
         try {

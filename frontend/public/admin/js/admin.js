@@ -147,7 +147,7 @@ function renderAdminPedidos(pedidos) {
     if(!pTB) return;
     pTB.innerHTML = '';
     
-    if(pedidos.length === 0) {
+    if(!Array.isArray(pedidos) || pedidos.length === 0) {
         pTB.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No hay pedidos registrados en este estado</td></tr>';
         const pCont = document.getElementById('pedidos-pagination');
         if(pCont) pCont.innerHTML = '';
@@ -268,7 +268,7 @@ function renderAdminClientes(clientes) {
     const cTB = document.getElementById('clientes-list-tb');
     if(!cTB) return;
     cTB.innerHTML = '';
-    if(clientes.length === 0) {
+    if(!Array.isArray(clientes) || clientes.length === 0) {
         cTB.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No se encontraron clientes</td></tr>';
         const cCont = document.getElementById('clientes-pagination');
         if(cCont) cCont.innerHTML = '';
@@ -387,7 +387,7 @@ function renderAdminProductos(lista) {
     if (!pTB) return;
     pTB.innerHTML = '';
     
-    if (lista.length === 0) {
+    if (!Array.isArray(lista) || lista.length === 0) {
         pTB.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No se encontraron productos</td></tr>';
         const pCont = document.getElementById('productos-pagination');
         if(pCont) pCont.innerHTML = '';
@@ -402,12 +402,16 @@ function renderAdminProductos(lista) {
     const paginatedItems = lista.slice(start, start + ITEMS_PER_PAGE_ADMIN);
 
     paginatedItems.forEach(p => {
+        const stockDisplay = p.stock <= 3
+            ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">⚠️ ${p.stock} (Bajo)</span>`
+            : `<span style="font-weight: 500;">${p.stock}</span>`;
+
         pTB.innerHTML += `<tr>
             <td>${p.id}</td>
             <td><img src="${p.imagen_1 || ''}" width="40" height="40" style="object-fit:cover; border-radius:4px; background:#f0f0f0;"></td>
             <td>${p.nombre}</td>
             <td>$${p.precio}</td>
-            <td>${p.stock}</td>
+            <td>${stockDisplay}</td>
             <td style="display:flex; gap:10px; align-items:center;">
                 <button class="btn" style="background:#f1c40f; color:#fff; padding: 4px 8px;" onclick="editarProducto(${p.id})">Editar</button>
                 <label class="switch" title="Activar/Desactivar Producto">
