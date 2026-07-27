@@ -21,7 +21,10 @@ router.get('/mercadopago/return', async (req, res) => {
                 if (pedidoDetails.email) {
                     emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
                 }
-                await Promise.allSettled(emailPromises);
+                await Promise.race([
+                    Promise.allSettled(emailPromises),
+                    new Promise(r => setTimeout(() => { console.warn('⚠️ [Webhooks Return] Emails excedieron 4500ms'); r(); }, 4500))
+                ]);
             }
             // Redirigimos al Frontend limpecito
             return res.redirect('/?pago=exitoso');
@@ -101,7 +104,10 @@ router.post('/mercadopago', async (req, res) => {
                         if (pedidoDetails.email) {
                             emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
                         }
-                        await Promise.allSettled(emailPromises);
+                        await Promise.race([
+                            Promise.allSettled(emailPromises),
+                            new Promise(r => setTimeout(() => { console.warn('⚠️ [Webhooks POST] Emails excedieron 4500ms'); r(); }, 4500))
+                        ]);
                     }
                 }
             } catch(apiError) {

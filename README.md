@@ -56,9 +56,8 @@ Verás el mensaje: `Servidor iniciado en http://localhost:3000`.
 ## 🌐 Uso del Ecommerce
 
 1. **Cliente Final (Tienda):** Ingresa en tu navegador a `http://localhost:3000/`. Podrás ver la landing, agregar productos de prueba (una vez creados) al carrito, y proceder al checkout.
-2. **Administrador:** Ingresa a `http://localhost:3000/admin/login.html`.
-   - Utiliza las credenciales: `admin@ecommerce.com` / `admin123`.
-   - Podrás ver el dashboard, dar de alta nuevos productos y ver el registro simulado de pedidos y clientes.
+   - Al ejecutar el esquema por primera vez localmente se creará una cuenta temporal. Por razones críticas de seguridad, cámbiala inmediatamente desde la sección "Usuarios" del panel o genera tu propio administrador en producción.
+   - Podrás ver el dashboard, gestionar tu catálogo y supervisar los pedidos.
 
 ## ✨ Características Principales
 

@@ -30,8 +30,8 @@ const pedidoController = {
       const carritoValidado = [];
 
       for (let item of carrito) {
-        // [NUEVO] Leer precio oficial de la base de datos
-        const resultDb = await db.query('SELECT precio, nombre FROM productos WHERE id = $1', [item.id]);
+        // [NUEVO] Leer precio oficial de la base de datos y tipo de producto
+        const resultDb = await db.query('SELECT precio, nombre, tipo_producto FROM productos WHERE id = $1', [item.id]);
         if (resultDb.rows.length === 0) continue; // Ignorar productos que ya no existen
         
         let precioReal = Number(resultDb.rows[0].precio);
@@ -42,13 +42,15 @@ const pedidoController = {
         // Auto-actualizamos los datos del ítem del carrito (silenciosamente)
         item.precio = precioReal;
         item.nombre = resultDb.rows[0].nombre;
+        item.tipo_producto = resultDb.rows[0].tipo_producto;
         
         const itemSubtotal = precioReal * item.cantidad;
         subtotal += itemSubtotal;
         detalles.push({
           producto_id: item.id,
           cantidad: item.cantidad,
-          precio_unitario: precioReal
+          precio_unitario: precioReal,
+          tipo_producto: resultDb.rows[0].tipo_producto
         });
         
         carritoValidado.push(item);
@@ -85,8 +87,9 @@ const pedidoController = {
           emailPromises.push(emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido));
       }
 
-      // [NUEVO] Check for low stock alerts (<= 3)
+      // [NUEVO] Check for low stock alerts (<= 3) únicamente para productos físicos
       for (let det of detalles) {
+          if (det.tipo_producto === 'digital') continue;
           try {
               const { rows } = await db.query('SELECT stock, nombre FROM productos WHERE id = $1', [det.producto_id]);
               if (rows.length > 0 && rows[0].stock <= 3) {
@@ -95,7 +98,14 @@ const pedidoController = {
           } catch(e) { console.error('Error enviando alerta stock', e); }
       }
       
-      await Promise.allSettled(emailPromises);
+      // Proteger el tiempo de ejecución en Serverless (Netlify Lambda timeout): damos máximo 4500ms para emails
+      await Promise.race([
+          Promise.allSettled(emailPromises),
+          new Promise(resolve => setTimeout(() => {
+              console.warn('⚠️ [Email] El envío de correos excedió 4500ms, continuando para evitar timeout.');
+              resolve();
+          }, 4500))
+      ]);
 
       // 4. Integraciones (MercadoPago si aplica, y enviar Email)
       let preferenciaMpId = null;
@@ -172,7 +182,13 @@ const pedidoController = {
                   emailPromises.push(emailService.enviarCorreoEntregado(pedidoDetails.email, pedidoDetails));
               }
           }
-          await Promise.allSettled(emailPromises);
+          await Promise.race([
+              Promise.allSettled(emailPromises),
+              new Promise(resolve => setTimeout(() => {
+                  console.warn('⚠️ [Email] El envío de correos en cambio de estado excedió 4500ms, continuando para evitar timeout.');
+                  resolve();
+              }, 4500))
+          ]);
       }
 
       res.json(pedidoActualizado);
