@@ -78,9 +78,11 @@ const pedidoController = {
       const nuevoPedido = await Pedido.createOrder(pedidoData, detalles);
 
       const emailService = require('../services/emailService');
-      emailService.notificarAdminNuevoPedido(nuevoPedido).catch(e => console.error('Error notif admin nuevo pedido', e));
+      const emailPromises = [
+          emailService.notificarAdminNuevoPedido(nuevoPedido)
+      ];
       if (clienteRecord.email) {
-          emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido).catch(e => console.error('Error notif cliente nuevo pedido', e));
+          emailPromises.push(emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido));
       }
 
       // [NUEVO] Check for low stock alerts (<= 3)
@@ -88,10 +90,12 @@ const pedidoController = {
           try {
               const { rows } = await db.query('SELECT stock, nombre FROM productos WHERE id = $1', [det.producto_id]);
               if (rows.length > 0 && rows[0].stock <= 3) {
-                  emailService.enviarAlertaStock(det.producto_id, rows[0].nombre, rows[0].stock).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarAlertaStock(det.producto_id, rows[0].nombre, rows[0].stock));
               }
           } catch(e) { console.error('Error enviando alerta stock', e); }
       }
+      
+      await Promise.allSettled(emailPromises);
 
       // 4. Integraciones (MercadoPago si aplica, y enviar Email)
       let preferenciaMpId = null;
@@ -150,23 +154,25 @@ const pedidoController = {
       const pedidoDetails = await Pedido.getById(req.params.id);
 
       if (pedidoDetails) {
-          // 1. Siempre notificar al ADMIN de cualquier cambio de estado
-          emailService.notificarAdminCambioEstado(pedidoDetails, estado).catch(e => console.error(e));
+          const emailPromises = [
+              emailService.notificarAdminCambioEstado(pedidoDetails, estado)
+          ];
 
           // 2. Notificar al CLIENTE si corresponde
           if (pedidoDetails.email) {
               if (estado === 'enviado') {
-                  emailService.enviarCorreoEnvio(pedidoDetails.email, pedidoDetails).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarCorreoEnvio(pedidoDetails.email, pedidoDetails));
               } else if (estado === 'pagado') {
-                  emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
               } else if (estado === 'preparando_envio') {
-                  emailService.enviarCorreoPreparandoEnvio(pedidoDetails.email, pedidoDetails).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarCorreoPreparandoEnvio(pedidoDetails.email, pedidoDetails));
               } else if (estado === 'cancelado') {
-                  emailService.enviarCorreoCancelado(pedidoDetails.email, pedidoDetails).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarCorreoCancelado(pedidoDetails.email, pedidoDetails));
               } else if (estado === 'entregado') {
-                  emailService.enviarCorreoEntregado(pedidoDetails.email, pedidoDetails).catch(e => console.error(e));
+                  emailPromises.push(emailService.enviarCorreoEntregado(pedidoDetails.email, pedidoDetails));
               }
           }
+          await Promise.allSettled(emailPromises);
       }
 
       res.json(pedidoActualizado);

@@ -15,10 +15,13 @@ router.get('/mercadopago/return', async (req, res) => {
             if (pedidoDetails && pedidoDetails.estado !== 'pagado') {
                 await Pedido.updateStatus(externalRef, 'pagado');
                 const emailService = require('../services/emailService');
+                const emailPromises = [
+                    emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails)
+                ];
                 if (pedidoDetails.email) {
-                    emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails).catch(e => console.error('Error email webhook return:', e));
+                    emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
                 }
-                emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails).catch(e => console.error('Error admin email return:', e));
+                await Promise.allSettled(emailPromises);
             }
             // Redirigimos al Frontend limpecito
             return res.redirect('/?pago=exitoso');
@@ -35,9 +38,6 @@ router.get('/mercadopago/return', async (req, res) => {
 // Endpoint Oficial de Webhooks (POST) - Seguridad Criptográfica
 router.post('/mercadopago', async (req, res) => {
     try {
-        // En primer lugar, MP exige que respondamos 200 OK inmediatamente
-        res.status(200).send('Webhook recibido');
-
         const queryType = req.query.type || req.query.topic;
         const bodyType = req.body.type || req.body.action;
         const topic = queryType || bodyType;
@@ -93,10 +93,13 @@ router.post('/mercadopago', async (req, res) => {
                         console.log(`[Webhooks] Orden ${paymentInfo.external_reference} marcada como PAGADO.`);
                         
                         const emailService = require('../services/emailService');
+                        const emailPromises = [
+                            emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails)
+                        ];
                         if (pedidoDetails.email) {
-                            emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails).catch(e => console.error('Error email webhook POST:', e));
+                            emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
                         }
-                        emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails).catch(e => console.error('Error admin email POST:', e));
+                        await Promise.allSettled(emailPromises);
                     }
                 }
             } catch(apiError) {
@@ -106,8 +109,12 @@ router.post('/mercadopago', async (req, res) => {
              console.log("Notificación MP ignorada o no es un pago. Type:", topic);
         }
 
+        // Respondemos 200 OK a Mercado Pago DESPUÉS de haber procesado y enviado los correos
+        res.status(200).send('Webhook recibido');
+
     } catch (error) {
         console.error("Error crítico en el receptor POST de Webhooks MP:", error);
+        res.status(500).send('Error interno');
     }
 });
 

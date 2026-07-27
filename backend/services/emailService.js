@@ -62,6 +62,21 @@ const getHtmlTemplate = (titulo, contenido) => {
         </div>
     </div>
     `;
+const enviarOConsola = async (mailOptions) => {
+    if (useRealEmail) {
+        try {
+            console.log(`⏳ [EmailService] Enviando correo a ${mailOptions.to} (${mailOptions.subject})...`);
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`✅ [EmailService] ¡Correo enviado con éxito! MessageId: ${info.messageId}`);
+            return info;
+        } catch (e) {
+            console.error(`❌ [EmailService ERROR CRÍTICO SMTP] No se pudo enviar correo a ${mailOptions.to}. Detalle:`, e.message || e);
+            console.log('⚠️ [EmailService] Falló el envío real. Mostrando simulación de respaldo:');
+            simularEnvio(mailOptions);
+        }
+    } else {
+        simularEnvio(mailOptions);
+    }
 };
 
 const emailService = {
@@ -78,7 +93,7 @@ const emailService = {
                 </div>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoPago: async (clienteMail, detallesPedido) => {
@@ -119,7 +134,7 @@ const emailService = {
                 <p style="margin-top:20px;">Pronto comenzaremos a prepararlo para su envío (si contiene productos físicos). Te notificaremos cuando esté en camino.</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoPreparandoEnvio: async (cliente_email, pedidoData) => {
@@ -133,7 +148,7 @@ const emailService = {
                 <p>¡Gracias por tu paciencia!</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoEnvio: async (cliente_email, pedidoData) => {
@@ -146,7 +161,7 @@ const emailService = {
                 <p>¡Esperamos que lo disfrutes!</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoEntregado: async (cliente_email, pedidoData) => {
@@ -159,7 +174,7 @@ const emailService = {
                 <p>Esperamos que lo disfrutes mucho. ¡Gracias por confiar en nosotros!</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoCancelado: async (clienteMail, detallesPedido) => {
@@ -172,7 +187,7 @@ const emailService = {
                 <p>Si tienes alguna duda o consideras que se trata de un error, por favor contáctanos respondiendo a este correo.</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoHtml: async (toEmail, subject, htmlContent) => {
@@ -182,7 +197,7 @@ const emailService = {
             subject: subject,
             html: getHtmlTemplate(subject, htmlContent)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoNuevaVentaAdmin: async (detallesPedido) => {
@@ -198,7 +213,7 @@ const emailService = {
                 <p>Por favor, revisa tu Panel de Administrador para prepararlo.</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData) => {
@@ -213,7 +228,7 @@ const emailService = {
                 <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     notificarAdminNuevoPedido: async (pedidoData) => {
@@ -228,7 +243,7 @@ const emailService = {
                 <p>Método de pago seleccionado: ${pedidoData.metodo_pago}</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
 
     notificarAdminCambioEstado: async (pedidoData, nuevoEstado) => {
@@ -242,7 +257,7 @@ const emailService = {
                 <p>Total del pedido: $${pedidoData.total}</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     },
     
     enviarAlertaStock: async (productoId, productoNombre, stockRestante) => {
@@ -259,7 +274,7 @@ const emailService = {
                 <p>Por favor, revisa tu Panel de Administrador para reponer el inventario pronto y no perder ventas.</p>
             `)
         };
-        if (useRealEmail) { try { await transporter.sendMail(mailOptions); } catch (e) { simularEnvio(mailOptions); } } else { simularEnvio(mailOptions); }
+        await enviarOConsola(mailOptions);
     }
 };
 
