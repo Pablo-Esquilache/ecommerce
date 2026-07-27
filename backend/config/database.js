@@ -17,10 +17,10 @@ const poolConfig = process.env.DATABASE_URL
 const pool = new Pool(poolConfig);
 
 pool.on('error', (err, client) => {
-    console.error('Error inesperado de PostgreSQL', err);
-    process.exit(-1);
+    console.error('Error inesperado en el pool de PostgreSQL', err);
 });
 
 module.exports = {
     query: (text, params) => pool.query(text, params),
+    connect: () => pool.connect(),
 };

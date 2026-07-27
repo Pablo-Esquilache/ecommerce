@@ -48,28 +48,30 @@ router.post('/mercadopago', async (req, res) => {
             const xSignature = req.headers['x-signature'];
             const xRequestId = req.headers['x-request-id'];
 
-            if (xSignature && xRequestId) {
+            const secret = process.env.MP_WEBHOOK_SECRET;
+            if (secret) {
+                if (!xSignature || !xRequestId) {
+                    console.error('🚨 [Webhooks] ¡ALERTA! Request sin cabeceras de firma de MP.');
+                    return res.status(401).send('Firma faltante');
+                }
                 const tsPart = xSignature.split(',').find(p => p.trim().startsWith('ts='));
                 const v1Part = xSignature.split(',').find(p => p.trim().startsWith('v1='));
-
-                if (tsPart && v1Part) {
-                    const ts = tsPart.split('=')[1];
-                    const v1 = v1Part.split('=')[1];
-                    const secret = process.env.MP_WEBHOOK_SECRET;
-
-                    if (secret) {
-                        const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
-                        const hmac = crypto.createHmac('sha256', secret);
-                        const digest = hmac.update(manifest).digest('hex');
-
-                        if (digest !== v1) {
-                            console.error('🚨 [Webhooks] ¡ALERTA! Firma de MercadoPago inválida. Posible ataque evadido.');
-                            return; // Terminamos la validación sin hacer updates ni emitir correos.
-                        }
-                    } else {
-                        console.warn('⚠️ [Webhooks] MP_WEBHOOK_SECRET no configurado. Validando el pago bajo tu propio riesgo.');
-                    }
+                if (!tsPart || !v1Part) {
+                    console.error('🚨 [Webhooks] ¡ALERTA! Formato de firma inválido.');
+                    return res.status(401).send('Formato de firma inválido');
                 }
+                const ts = tsPart.split('=')[1];
+                const v1 = v1Part.split('=')[1];
+                const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+                const hmac = crypto.createHmac('sha256', secret);
+                const digest = hmac.update(manifest).digest('hex');
+
+                if (digest !== v1) {
+                    console.error('🚨 [Webhooks] ¡ALERTA! Firma de MercadoPago inválida. Posible ataque evadido.');
+                    return res.status(401).send('Firma inválida');
+                }
+            } else {
+                console.warn('⚠️ [Webhooks] MP_WEBHOOK_SECRET no configurado. Validando el pago sin verificación criptográfica.');
             }
 
             // --- 2. CONSULTA Y FULFILLMENT ---

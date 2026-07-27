@@ -2,13 +2,9 @@ const db = require('../config/database');
 
 const Pedido = {
   createOrder: async (pedidoData, detallesData) => {
-    const client = await db.query('SELECT 1'); // Para forzar error si no hay pool, aunque mejor es transacciones raw
-    // Nota: Como db.query envuelve una query base, podemos armar las queries separadas o con transacciones puras de pg.
-    // Aquí implementamos una transacción manual para asegurar consistencia
-    const connection = await require('../config/database').query('BEGIN'); // Start transact (fake, we need pure pg pool client for perfect transaction)
-    // Para simplificar, usaremos las funciones estándar de nuestro db wrapper:
+    const client = await db.connect();
     try {
-      await db.query('BEGIN');
+      await client.query('BEGIN');
       
       const { cliente_id, subtotal, costo_envio, total, metodo_pago } = pedidoData;
       
@@ -17,7 +13,7 @@ const Pedido = {
         VALUES ($1, $2, $3, $4, $5, 'pendiente')
         RETURNING *
       `;
-      const { rows: pedRows } = await db.query(insertPedidoQuery, [cliente_id, subtotal, costo_envio, total, metodo_pago]);
+      const { rows: pedRows } = await client.query(insertPedidoQuery, [cliente_id, subtotal, costo_envio, total, metodo_pago]);
       const pedido = pedRows[0];
 
       const insertDetalleQuery = `
@@ -26,20 +22,21 @@ const Pedido = {
       `;
 
       for (let det of detallesData) {
-        // det = { producto_id, cantidad, precio_unitario }
         const { producto_id, cantidad, precio_unitario } = det;
         const detSubtotal = cantidad * precio_unitario;
-        await db.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal]);
+        await client.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal]);
         
-        // Descontar el stock (si controlamos stock local real)
-        await db.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
+        // Descontar el stock de forma atómica en la misma transacción
+        await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
       }
 
-      await db.query('COMMIT');
+      await client.query('COMMIT');
       return pedido;
     } catch (e) {
-      await db.query('ROLLBACK');
+      await client.query('ROLLBACK');
       throw e;
+    } finally {
+      client.release();
     }
   },
 
@@ -78,8 +75,21 @@ const Pedido = {
 
   updateStatus: async (id, status) => {
     try {
+        const { rows: currRows } = await db.query('SELECT estado FROM pedidos WHERE id = $1', [id]);
+        if (!currRows[0]) throw new Error('Pedido no encontrado');
+        const estadoAnterior = currRows[0].estado;
+
         const query = 'UPDATE pedidos SET estado = $1, sincronizado_local = FALSE WHERE id = $2 RETURNING *';
         const { rows } = await db.query(query, [status, id]);
+        
+        if (status === 'cancelado' && estadoAnterior !== 'cancelado') {
+            const { rows: detalles } = await db.query('SELECT producto_id, cantidad FROM detalles_pedido WHERE pedido_id = $1', [id]);
+            for (let det of detalles) {
+                await db.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [det.cantidad, det.producto_id]);
+            }
+            console.log(`✅ [Stock] Stock restaurado (+unidades) por cancelación del pedido #${id}`);
+        }
+
         return rows[0];
     } catch (e) {
         console.error("Error en updateStatus SQl:", e);
