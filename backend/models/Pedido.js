@@ -23,11 +23,18 @@ const Pedido = {
 
       for (let det of detallesData) {
         const { producto_id, cantidad, precio_unitario } = det;
+        let { tipo_producto } = det;
+        if (!tipo_producto) {
+            const { rows: prodRows } = await client.query('SELECT tipo_producto FROM productos WHERE id = $1', [producto_id]);
+            if (prodRows[0]) tipo_producto = prodRows[0].tipo_producto;
+        }
         const detSubtotal = cantidad * precio_unitario;
         await client.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal]);
         
-        // Descontar el stock de forma atómica en la misma transacción
-        await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
+        // Descontar el stock de forma atómica en la misma transacción SÓLO si NO es producto digital
+        if (tipo_producto !== 'digital') {
+            await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
+        }
       }
 
       await client.query('COMMIT');
