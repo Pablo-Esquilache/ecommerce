@@ -90,11 +90,13 @@ const Pedido = {
         const { rows } = await db.query(query, [status, id]);
         
         if (status === 'cancelado' && estadoAnterior !== 'cancelado') {
-            const { rows: detalles } = await db.query('SELECT producto_id, cantidad FROM detalles_pedido WHERE pedido_id = $1', [id]);
+            const { rows: detalles } = await db.query('SELECT d.producto_id, d.cantidad, p.tipo_producto FROM detalles_pedido d JOIN productos p ON d.producto_id = p.id WHERE d.pedido_id = $1', [id]);
             for (let det of detalles) {
-                await db.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [det.cantidad, det.producto_id]);
+                if (det.tipo_producto !== 'digital') {
+                    await db.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [det.cantidad, det.producto_id]);
+                }
             }
-            console.log(`✅ [Stock] Stock restaurado (+unidades) por cancelación del pedido #${id}`);
+            console.log(`✅ [Stock] Stock restaurado (+unidades) para productos físicos por cancelación del pedido #${id}`);
         }
 
         return rows[0];
