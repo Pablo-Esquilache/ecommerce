@@ -129,7 +129,31 @@ function switchTab(tabId, el) {
     const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Administradores', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
     
+    // Cerrar sidebar en móviles tras hacer clic
+    if (window.innerWidth <= 768) {
+        toggleSidebar(false);
+    }
+    
     if (tabId === 'usuarios') loadUsuarios();
+}
+
+// Lógica de Menú Responsive (Hamburguesa)
+function toggleSidebar(forceState) {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (typeof forceState === 'boolean') {
+        if (forceState) {
+            sidebar.classList.add('open');
+            overlay.classList.add('open');
+        } else {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        }
+    } else {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
 }
 
 let adminPedidosCache = [];

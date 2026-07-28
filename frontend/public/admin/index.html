@@ -23,10 +23,15 @@
             <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
         </div>
     </div>
+    
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <div class="main-content">
         <header>
-            <h1 id="page-title">Dashboard</h1>
+            <div style="display: flex; align-items: center;">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h1 id="page-title">Dashboard</h1>
+            </div>
             <div class="user-info">Hola, <span id="admin-name">Admin</span></div>
         </header>
 
@@ -53,7 +58,8 @@
                 <div class="table-card">
                     <h3>Pedidos de Hoy</h3>
                     <div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
-                        <table>
+                        <div class="table-responsive">
+                            <table>
                             <thead>
                                 <tr><th>ID</th><th>Monto</th><th>Estado</th><th>Método</th></tr>
                             </thead>
@@ -87,12 +93,14 @@
                 <button class="btn btn-primary" style="margin-left: 10px; background-color: #27ae60;" onclick="openModal('excel-modal')"><i class="fas fa-file-excel"></i> Cargar Excel</button>
             </div>
             <div class="table-card">
-                <table>
+                <div class="table-responsive">
+                    <table>
                     <thead>
                         <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
                     </thead>
                     <tbody id="productos-tb"></tbody>
-                </table>
+                    </table>
+                </div>
             </div>
             <div id="productos-pagination" class="pagination" style="text-align:center; margin-top:15px;"></div>
         </section>
@@ -114,12 +122,14 @@
                 </div>
             </div>
             <div class="table-card">
-                <table>
+                <div class="table-responsive">
+                    <table>
                     <thead>
                         <tr><th>ID</th><th>Cliente (Email)</th><th>Monto</th><th>Estado</th><th>Método</th><th>Actualizar Estado</th><th>Ver Ticket</th></tr>
                     </thead>
                     <tbody id="pedidos-list-tb"></tbody>
-                </table>
+                    </table>
+                </div>
             </div>
             <div id="pedidos-pagination" class="pagination" style="text-align:center; margin-top:15px;"></div>
         </section>
@@ -134,12 +144,14 @@
                 </div>
             </div>
             <div class="table-card">
-                <table>
+                <div class="table-responsive">
+                    <table>
                     <thead>
                         <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Género</th><th>DNI</th><th>Historial</th></tr>
                     </thead>
                     <tbody id="clientes-list-tb"></tbody>
-                </table>
+                    </table>
+                </div>
             </div>
             <div id="clientes-pagination" class="pagination" style="text-align:center; margin-top:15px;"></div>
         </section>
@@ -414,12 +426,14 @@
                     <span class="close" onclick="closeModal('historial-modal')">&times;</span>
                 </div>
                 <div class="table-card">
-                    <table>
+                    <div class="table-responsive">
+                        <table>
                         <thead>
                             <tr><th>Pedido ID</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Ticket</th></tr>
                         </thead>
                         <tbody id="historial-tb"></tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -430,12 +444,14 @@
                 <button class="btn btn-primary" onclick="openModal('usuario-modal')">Nuevo Administrador</button>
             </div>
             <div class="table-card">
-                <table>
+                <div class="table-responsive">
+                    <table>
                     <thead>
                         <tr><th>ID</th><th>Email</th><th>Nombre</th><th>Creado</th><th>Acciones</th></tr>
                     </thead>
                     <tbody id="usuarios-tb"></tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </section>
 
