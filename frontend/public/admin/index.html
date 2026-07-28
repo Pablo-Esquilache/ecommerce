@@ -464,6 +464,24 @@
             </div>
         </div>
 
+        <!-- MODAL OTP CAMBIO CLAVE -->
+        <div class="modal" id="otp-modal">
+            <div class="modal-content" style="max-width:400px; text-align: center;">
+                <div class="modal-header">
+                    <h2 style="margin:0 auto;">🛡️ Seguridad 2FA</h2>
+                    <span class="close" onclick="closeModal('otp-modal')">&times;</span>
+                </div>
+                <div style="padding: 10px 0;">
+                    <p id="otp-modal-msg" style="color: #34495e; font-size: 14px; margin-bottom: 15px;"></p>
+                    <div class="form-group">
+                        <label style="text-align: left; display: block; margin-bottom: 5px;">Revisa tu correo e ingresa el PIN:</label>
+                        <input type="text" id="otp-pin-input" placeholder="000000" maxlength="6" style="text-align: center; font-size: 28px; letter-spacing: 15px; font-weight: bold; width: 100%;">
+                    </div>
+                    <button type="button" id="btn-confirm-otp" class="btn btn-primary" style="width:100%; margin-top:10px; font-size: 16px; padding: 12px;">Confirmar y Cambiar Clave</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="/admin/js/admin.js"></script>

@@ -996,34 +996,56 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Paso 2: Interceptar UI (Prompt Sencillo)
-                const pin = prompt(`🛡️ ${dataOtp.message}\nRevisa tu bandeja de entrada y escribe aquí el PIN de seguridad de 6 dígitos:`);
+                // Paso 2: Interceptar UI (Modal Fijo)
+                document.getElementById('otp-modal-msg').innerText = dataOtp.message;
+                const pinInput = document.getElementById('otp-pin-input');
+                pinInput.value = '';
                 
-                if(!pin) {
-                    msg.innerText = 'Trámite cancelado por el usuario.';
-                    btn.innerHTML = 'Cambiar Clave';
-                    btn.disabled = false;
-                    return;
-                }
+                openModal('otp-modal');
+                pinInput.focus();
 
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando PIN...';
+                // Detenemos el flujo aquí y pasamos la responsabilidad al botón del Modal
+                const btnConfirmOtp = document.getElementById('btn-confirm-otp');
+                
+                // Clonar botón para remover listeners antiguos y evitar ejecuciones múltiples
+                const newBtnConfirm = btnConfirmOtp.cloneNode(true);
+                btnConfirmOtp.parentNode.replaceChild(newBtnConfirm, btnConfirmOtp);
 
-                // Paso 3: Confirmar y Guardar
-                const resConf = await fetch(`${API_URL}/admin/confirm-change-otp`, {
-                    method: 'POST',
-                    headers: authHeaders(),
-                    body: JSON.stringify({ otp: pin, newPassword: nueva })
+                newBtnConfirm.addEventListener('click', async () => {
+                    const pin = pinInput.value.trim();
+                    if(!pin || pin.length < 5) {
+                        alert('Por favor ingresa el PIN completo.');
+                        return;
+                    }
+                    
+                    newBtnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+                    newBtnConfirm.disabled = true;
+
+                    try {
+                        const resConf = await fetch(`${API_URL}/admin/confirm-change-otp`, {
+                            method: 'POST',
+                            headers: authHeaders(),
+                            body: JSON.stringify({ otp: pin, newPassword: nueva })
+                        });
+                        const dataConf = await resConf.json();
+
+                        if(resConf.ok) {
+                            closeModal('otp-modal');
+                            msg.style.color = '#27ae60';
+                            msg.innerText = dataConf.message;
+                            formPwd.reset();
+                        } else {
+                            alert(dataConf.error || 'Falla de seguridad. Verifica tu PIN.');
+                            newBtnConfirm.innerHTML = 'Confirmar y Cambiar Clave';
+                            newBtnConfirm.disabled = false;
+                        }
+                    } catch(e) {
+                        alert('Servidor inaccesible.');
+                        newBtnConfirm.innerHTML = 'Confirmar y Cambiar Clave';
+                        newBtnConfirm.disabled = false;
+                    }
                 });
-                const dataConf = await resConf.json();
 
-                if(resConf.ok) {
-                    msg.style.color = '#27ae60';
-                    msg.innerText = dataConf.message;
-                    formPwd.reset();
-                } else {
-                    msg.style.color = '#e74c3c';
-                    msg.innerText = dataConf.error || 'Falla de seguridad.';
-                }
             } catch(e) {
                 msg.innerText = 'Servidor inaccesible.';
             } finally {
