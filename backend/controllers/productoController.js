@@ -16,7 +16,7 @@ async function uploadToSupabase(file, bucket = 'productos') {
     
   if (error) {
     console.error('Error uploading to Supabase:', error);
-    return null;
+    throw new Error(`Error subiendo archivo al bucket "${bucket}": ${error.message || JSON.stringify(error)}`);
   }
   
   if (bucket === 'digitales') {
@@ -120,8 +120,8 @@ const productoController = {
       const nuevoProducto = await Producto.create(data);
       res.status(201).json(nuevoProducto);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al crear producto' });
+      console.error('Error creando producto:', error);
+      res.status(500).json({ error: error.message || 'Error al crear producto', detail: error.detail, code: error.code });
     }
   },
 
@@ -153,8 +153,8 @@ const productoController = {
       if (!productoActualizado) return res.status(404).json({ error: 'Producto no encontrado' });
       res.json(productoActualizado);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al actualizar producto' });
+      console.error('Error actualizando producto:', error);
+      res.status(500).json({ error: error.message || 'Error al actualizar producto', detail: error.detail, code: error.code });
     }
   },
 
