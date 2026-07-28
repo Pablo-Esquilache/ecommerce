@@ -272,7 +272,7 @@ const adminController = {
       res.json({ success: true, message: '¡2FA Exitoso! Contraseña blindada y cambiada.' });
     } catch (e) {
       console.error('Error confirmando OTP:', e);
-      res.status(500).json({ error: 'Fallo interno alterando la cuenta.' });
+      res.status(500).json({ error: `Fallo interno alterando la cuenta: ${e.message}` });
     }
   },
 

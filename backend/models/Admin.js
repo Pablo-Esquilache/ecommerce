@@ -5,6 +5,8 @@ async function ensureOtpColumn() {
     if (checkedOtpColumn) return;
     try {
         await db.query(`ALTER TABLE administradores ADD COLUMN IF NOT EXISTS otp_code VARCHAR(10);`);
+        await db.query(`ALTER TABLE administradores ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`);
+        await db.query(`ALTER TABLE administradores ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;`);
         checkedOtpColumn = true;
     } catch (e) {
         console.warn('No se pudo verificar la columna otp_code:', e.message);
@@ -27,17 +29,20 @@ const Admin = {
   },
 
   setResetToken: async (id, token, expires) => {
+    await ensureOtpColumn();
     const query = 'UPDATE administradores SET reset_token = $1, reset_token_expires = $2 WHERE id = $3';
     await db.query(query, [token, expires, id]);
   },
 
   getByResetToken: async (token) => {
+    await ensureOtpColumn();
     const query = 'SELECT * FROM administradores WHERE reset_token = $1';
     const { rows } = await db.query(query, [token]);
     return rows[0];
   },
 
   updatePassword: async (id, hashedPassword) => {
+    await ensureOtpColumn();
     const query = 'UPDATE administradores SET password = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2';
     await db.query(query, [hashedPassword, id]);
   },
