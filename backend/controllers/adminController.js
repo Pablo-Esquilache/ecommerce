@@ -249,7 +249,7 @@ const adminController = {
       res.json({ success: true, message: 'Código OTP enviado al correo del comercio.' });
     } catch (e) {
       console.error('Error solicitando OTP:', e);
-      res.status(500).json({ error: 'Error del servidor al intentar mandar el código de verificación.' });
+      res.status(500).json({ error: `Error del servidor al intentar mandar el código de verificación: ${e.message}` });
     }
   },
 

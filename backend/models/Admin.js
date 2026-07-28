@@ -1,13 +1,26 @@
 const db = require('../config/database');
 
+let checkedOtpColumn = false;
+async function ensureOtpColumn() {
+    if (checkedOtpColumn) return;
+    try {
+        await db.query(`ALTER TABLE administradores ADD COLUMN IF NOT EXISTS otp_code VARCHAR(10);`);
+        checkedOtpColumn = true;
+    } catch (e) {
+        console.warn('No se pudo verificar la columna otp_code:', e.message);
+    }
+}
+
 const Admin = {
   getByEmail: async (email) => {
+    await ensureOtpColumn();
     const query = 'SELECT * FROM administradores WHERE email = $1';
     const { rows } = await db.query(query, [email]);
     return rows[0];
   },
   
   getById: async (id) => {
+    await ensureOtpColumn();
     const query = 'SELECT * FROM administradores WHERE id = $1';
     const { rows } = await db.query(query, [id]);
     return rows[0];
@@ -30,11 +43,13 @@ const Admin = {
   },
   
   setOtp: async (id, otp) => {
+    await ensureOtpColumn();
     const query = 'UPDATE administradores SET otp_code = $1 WHERE id = $2';
     await db.query(query, [otp, id]);
   },
   
   clearOtp: async (id) => {
+    await ensureOtpColumn();
     const query = 'UPDATE administradores SET otp_code = NULL WHERE id = $1';
     await db.query(query, [id]);
   },
