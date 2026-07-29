@@ -219,14 +219,44 @@ const emailService = {
     },
 
     enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData) => {
+        let bankDetailsHtml = '';
+        
+        if (pedidoData.metodo_pago && pedidoData.metodo_pago.toLowerCase().includes('transferencia')) {
+            try {
+                const { rows } = await db.query('SELECT banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias FROM configuracion WHERE id = 1');
+                if (rows.length > 0) {
+                    const b = rows[0];
+                    if (b.banco_cbu || b.banco_alias) {
+                        bankDetailsHtml = `
+                            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                                <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">💳 Datos para la Transferencia</h3>
+                                <p style="margin-bottom: 10px;">Por favor, transfiere el total exacto de <strong>$${pedidoData.total}</strong> a la siguiente cuenta:</p>
+                                <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0;">
+                                    ${b.banco_nombre ? `<li><strong>Banco:</strong> ${b.banco_nombre}</li>` : ''}
+                                    ${b.banco_titular ? `<li><strong>Titular:</strong> ${b.banco_titular}</li>` : ''}
+                                    ${b.banco_cuit ? `<li><strong>CUIT/CUIL:</strong> ${b.banco_cuit}</li>` : ''}
+                                    ${b.banco_cbu ? `<li><strong>CBU/CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${b.banco_cbu}</span></li>` : ''}
+                                    ${b.banco_alias ? `<li><strong>Alias:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${b.banco_alias}</span></li>` : ''}
+                                </ul>
+                                <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #7f8c8d;">Una vez realizado el pago, recuerda enviarnos el comprobante para procesar tu pedido a la brevedad.</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error("Error obteniendo datos bancarios para el mail:", e);
+            }
+        }
+
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: clienteEmail,
             subject: `¡Hemos recibido tu pedido #${pedidoData.id}!`,
             html: getHtmlTemplate('¡Gracias por tu compra!', `
                 <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de <strong>$${pedidoData.total}</strong>.</p>
-                <p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>
                 <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
+                ${bankDetailsHtml}
+                ${!bankDetailsHtml ? '<p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>' : ''}
                 <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>
             `)
         };
