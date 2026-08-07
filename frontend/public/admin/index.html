@@ -10,7 +10,11 @@
 </head>
 <body id="dashboard-body" style="display:none;"> <!-- Oculto hasta validar auth -->
     <div class="sidebar">
-        <div class="logo"><h2>Sidhartta Hilados</h2><span>Admin</span></div>
+        <div class="logo" style="text-align: center; padding: 20px 10px;">
+            <img src="/img/favicon.png" alt="Logo Redondo" style="width: 70px; margin-bottom: 10px; border-radius: 50%;">
+            <h2 style="font-size: 1.2rem; margin: 0;">Sidhartta Hilados</h2>
+            <span style="font-size: 0.9rem; opacity: 0.8;">Admin</span>
+        </div>
         <ul class="nav">
             <li class="active" onclick="switchTab('dashboard', this)"><i class="fas fa-home"></i> Resumen</li>
             <li onclick="switchTab('productos', this)"><i class="fas fa-box"></i> Productos</li>
