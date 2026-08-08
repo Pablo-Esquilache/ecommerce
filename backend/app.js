@@ -49,7 +49,9 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }
 
 // Exportar la app envuelta para Netlify Functions
 const serverless = require('serverless-http');
-module.exports.handler = serverless(app);
+module.exports.handler = serverless(app, {
+  binary: ['image/*', 'multipart/form-data', '*/*']
+});
 
 // Mantener capacidad de correr localmente (ej: npm start)
 if (require.main === module) {
