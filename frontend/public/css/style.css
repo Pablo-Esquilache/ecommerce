@@ -281,8 +281,8 @@ body {
 /* Nuevo layout envolvente para textos largos */
 .about-article {
     margin-bottom: 50px;
-    font-size: 17px;
-    line-height: 1.8;
+    font-size: 15.5px;
+    line-height: 1.55;
     color: var(--text);
 }
 .about-article::after {
