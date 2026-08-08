@@ -96,7 +96,7 @@
                     </div>
                     <div class="product-info-detail">
                         <h1>${p.nombre}</h1>
-                        <p class="price">$${parseFloat(p.precio).toLocaleString('es-AR')}</p>
+                        ${renderPriceHTML(p)}
                         <p class="stock-info">Stock disponible: <strong>${p.stock} unidades</strong></p>
                         
                         <div class="description">
@@ -113,7 +113,7 @@
 
                         <div class="add-to-cart-section">
                             <input type="number" id="detail-qty" class="qty-input" value="1" min="1" max="${p.stock}">
-                            <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, '${img1}', '${p.tipo_producto || 'fisico'}')">
+                            <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, ${parseFloat(p.precio_usd) || 0}, '${img1}', '${p.tipo_producto || 'fisico'}')">
                                 <i class="fas fa-cart-plus"></i> Agregar al Carrito
                             </button>
                         </div>
@@ -125,7 +125,7 @@
             }
         });
 
-        function agregarMultipleAlCarrito(id, nombre, precio, img, tipo_producto) {
+        function agregarMultipleAlCarrito(id, nombre, precio, precio_usd, img, tipo_producto) {
             const qtyInput = document.getElementById('detail-qty');
             if (!qtyInput) return;
             const cant = parseInt(qtyInput.value) || 1;
@@ -135,7 +135,7 @@
             if (itemExistente) {
                 itemExistente.cantidad += cant;
             } else {
-                carrito.push({ id, nombre, precio, img, tipo_producto, cantidad: cant });
+                carrito.push({ id, nombre, precio, precio_usd, img, tipo_producto, cantidad: cant });
             }
             saveCart();
             toggleCart();

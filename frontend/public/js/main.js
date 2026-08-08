@@ -2,8 +2,27 @@ const API_URL = '/api';
 let productos = [];
 let carrito = JSON.parse(localStorage.getItem('cart')) || [];
 let globalConfig = null;
+let userCurrency = localStorage.getItem('currency') || null;
+
+async function detectCurrency() {
+    if (userCurrency) return;
+    try {
+        const res = await fetch('https://get.geojs.io/v1/ip/country.json');
+        const data = await res.json();
+        if (data && data.country) {
+            userCurrency = data.country === 'AR' ? 'ARS' : 'USD';
+            localStorage.setItem('currency', userCurrency);
+            if (productos && productos.length > 0) renderProductos(productos);
+        }
+    } catch (e) {
+        console.warn('Error detectando país:', e);
+        userCurrency = 'ARS';
+        localStorage.setItem('currency', 'ARS');
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    detectCurrency();
     fetchConfigWeb();
     checkMercadoPagoReturn();
     fetchProductos();
@@ -179,17 +198,11 @@ function renderProductos(arrayProductos) {
                 </div>
                 <div class="producto-info">
                     <h3>${prod.nombre}</h3>
-                    ${globalConfig && globalConfig.descuento_activo ? 
-                        `<p class="producto-precio">
-                            <del style="color:#999; font-size:14px; margin-right:5px;">$${parseFloat(prod.precio).toFixed(2)}</del> 
-                            <span style="color:#e74c3c; font-weight:bold;">$${(prod.precio * (1 - globalConfig.descuento_porcentaje / 100)).toFixed(2)}</span>
-                        </p>` 
-                        : `<p class="producto-precio">$${parseFloat(prod.precio).toFixed(2)}</p>`
-                    }
+                    ${renderPriceHTML(prod)}
                 </div>
             </a>
             <div style="padding: 0 20px 20px;">
-                <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, '${img}', '${prod.tipo_producto || 'fisico'}')">
+                <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, ${parseFloat(prod.precio_usd) || 0}, '${img}', '${prod.tipo_producto || 'fisico'}')">
                     Agregar al Carrito
                 </button>
             </div>
@@ -261,12 +274,12 @@ function toggleCart() {
     document.getElementById('overlay').classList.toggle('open');
 }
 
-function agregarAlCarrito(id, nombre, precio, img, tipo_producto) {
+function agregarAlCarrito(id, nombre, precio, precio_usd, img, tipo_producto) {
     const itemExistente = carrito.find(item => item.id === id);
     if (itemExistente) {
         itemExistente.cantidad++;
     } else {
-        carrito.push({ id, nombre, precio, img, tipo_producto, cantidad: 1 });
+        carrito.push({ id, nombre, precio, precio_usd, img, tipo_producto, cantidad: 1 });
     }
     saveCart();
     toggleCart(); // Abre el carrito al añadir
@@ -305,7 +318,14 @@ function updateCartUI() {
     let hayInvalidos = false;
 
     carrito.forEach(item => {
-        let precioItem = parseFloat(item.precio);
+        const isUSD = userCurrency === 'USD';
+        const itemPrecioARS = parseFloat(item.precio) || 0;
+        const itemPrecioUSD = parseFloat(item.precio_usd) || 0;
+        
+        let precioBase = isUSD && itemPrecioUSD > 0 ? itemPrecioUSD : itemPrecioARS;
+        let sign = isUSD && itemPrecioUSD > 0 ? 'USD $' : '$';
+        
+        let precioItem = precioBase;
         let precioOriginalHtml = '';
         
         if (item.invalido) {
@@ -314,7 +334,7 @@ function updateCartUI() {
             if (globalConfig && globalConfig.descuento_activo) {
                 const desc = globalConfig.descuento_porcentaje;
                 precioItem = precioItem * (1 - desc / 100);
-                precioOriginalHtml = `<del style="color:#999; font-size:12px; margin-right:5px;">$${parseFloat(item.precio).toFixed(2)}</del>`;
+                precioOriginalHtml = `<del style="color:#999; font-size:12px; margin-right:5px;">${sign}${precioBase.toFixed(2)}</del>`;
             }
             totalItems += item.cantidad;
             subtotal += precioItem * item.cantidad;
@@ -328,7 +348,7 @@ function updateCartUI() {
                 <img src="${item.img}" alt="${item.nombre}" class="cart-item-img">
                 <div class="cart-item-info">
                     <h4>${item.nombre}</h4>
-                    <p>${precioOriginalHtml} <span style="color:#e74c3c; font-weight:bold;">$${precioItem.toFixed(2)}</span></p>
+                    <p>${precioOriginalHtml} <span style="color:#e74c3c; font-weight:bold;">${sign}${precioItem.toFixed(2)}</span></p>
                     ${dangerMsg}
                     <div class="cart-item-qty">
                         <button onclick="updateQuantity(${item.id}, -1)" ${item.invalido ? 'disabled' : ''}>-</button>
@@ -342,19 +362,30 @@ function updateCartUI() {
     });
 
     cartCount.innerText = totalItems;
+    const isUSD = userCurrency === 'USD';
+    const sign = isUSD ? 'USD $' : '$';
     
     // Evaluar envío gratis
     let avisoEnvio = '';
-    if (globalConfig && globalConfig.envio_gratis_activo && subtotal > 0) {
+    if (globalConfig && globalConfig.envio_gratis_activo && subtotal > 0 && !isUSD) {
         if (subtotal >= globalConfig.envio_gratis_limite) {
             avisoEnvio = `<div style="color:#27ae60; font-weight:bold; font-size:14px; margin-top:5px;"><i class="fas fa-truck"></i> ¡Tenes Envío Gratis activado!</div>`;
         } else {
             const falta = (globalConfig.envio_gratis_limite - subtotal).toFixed(2);
-            avisoEnvio = `<div style="color:#e67e22; font-size:13px; margin-top:5px;">Te faltan $${falta} para envío gratis.</div>`;
+            avisoEnvio = `<div style="color:#f39c12; font-size:13px; margin-top:5px;">Te faltan $${falta} para envío gratis.</div>`;
         }
     }
+
+    cartSubtotal.innerText = `${sign}${subtotal.toFixed(2)}`;
     
-    cartSubtotal.innerHTML = `$${subtotal.toFixed(2)} <br> ${avisoEnvio}`;
+    // Contenedor de aviso
+    let contAviso = document.getElementById('cart-aviso-envio');
+    if (!contAviso) {
+        contAviso = document.createElement('div');
+        contAviso.id = 'cart-aviso-envio';
+        cartSubtotal.parentElement.parentElement.insertBefore(contAviso, cartSubtotal.parentElement.nextSibling);
+    }
+    contAviso.innerHTML = avisoEnvio;
 
     // Bloquear Botón de Checkout Frontend si hay inválidos
     const checkoutBtn = document.querySelector('.cart-footer .btn-block');
@@ -429,5 +460,34 @@ async function fetchConfigWeb() {
         }
     } catch(e) {
         console.error('Error obteniendo configuracion global:', e);
+    }
+}
+
+function renderPriceHTML(prod) {
+    const isUSD = userCurrency === 'USD';
+    const hasDiscount = globalConfig && globalConfig.descuento_activo;
+    const discountMult = hasDiscount ? (1 - globalConfig.descuento_porcentaje / 100) : 1;
+    
+    const priceARS = parseFloat(prod.precio) || 0;
+    const finalARS = (priceARS * discountMult).toFixed(2);
+    const priceUSD = parseFloat(prod.precio_usd || 0);
+    const finalUSD = (priceUSD * discountMult).toFixed(2);
+
+    if (isUSD && priceUSD > 0) {
+        return `
+            <p class="producto-precio">
+                ${hasDiscount ? `<del style="color:#999; font-size:14px; margin-right:5px;">USD $${priceUSD.toFixed(2)}</del>` : ''}
+                <span style="color:#e74c3c; font-weight:bold; font-size: 1.2em;">USD $${finalUSD}</span>
+                <span style="display:block; color:#7f8c8d; font-size:0.85em; margin-top:2px;">(ARS $${finalARS})</span>
+            </p>
+        `;
+    } else {
+        return `
+            <p class="producto-precio">
+                ${hasDiscount ? `<del style="color:#999; font-size:14px; margin-right:5px;">$${priceARS.toFixed(2)}</del>` : ''}
+                <span style="color:#e74c3c; font-weight:bold; font-size: 1.2em;">$${finalARS}</span>
+                ${priceUSD > 0 ? `<span style="display:inline-block; color:#7f8c8d; font-size:0.85em; margin-left:5px;">(USD $${finalUSD})</span>` : ''}
+            </p>
+        `;
     }
 }
