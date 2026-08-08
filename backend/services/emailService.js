@@ -223,20 +223,38 @@ const emailService = {
         
         if (pedidoData.metodo_pago && pedidoData.metodo_pago.toLowerCase().includes('transferencia')) {
             try {
-                const { rows } = await db.query('SELECT banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias FROM configuracion WHERE id = 1');
+                const isUSD = pedidoData.metodo_pago === 'transferencia_usd';
+                const sign = isUSD ? 'USD $' : '$';
+                
+                const { rows } = await db.query('SELECT banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias, banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias FROM configuracion WHERE id = 1');
                 if (rows.length > 0) {
                     const b = rows[0];
-                    if (b.banco_cbu || b.banco_alias) {
+                    
+                    const bankData = isUSD ? {
+                        nombre: b.banco_usd_nombre,
+                        titular: b.banco_usd_titular,
+                        cuit: b.banco_usd_cuit,
+                        cbu: b.banco_usd_cbu,
+                        alias: b.banco_usd_alias
+                    } : {
+                        nombre: b.banco_nombre,
+                        titular: b.banco_titular,
+                        cuit: b.banco_cuit,
+                        cbu: b.banco_cbu,
+                        alias: b.banco_alias
+                    };
+
+                    if (bankData.cbu || bankData.alias) {
                         bankDetailsHtml = `
                             <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 25px 0;">
-                                <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">💳 Datos para la Transferencia</h3>
-                                <p style="margin-bottom: 10px;">Por favor, transfiere el total exacto de <strong>$${pedidoData.total}</strong> a la siguiente cuenta:</p>
+                                <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">💳 Datos para la Transferencia ${isUSD ? '(USD)' : ''}</h3>
+                                <p style="margin-bottom: 10px;">Por favor, transfiere el total exacto de <strong>${sign}${pedidoData.total}</strong> a la siguiente cuenta:</p>
                                 <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0;">
-                                    ${b.banco_nombre ? `<li><strong>Banco:</strong> ${b.banco_nombre}</li>` : ''}
-                                    ${b.banco_titular ? `<li><strong>Titular:</strong> ${b.banco_titular}</li>` : ''}
-                                    ${b.banco_cuit ? `<li><strong>CUIT/CUIL:</strong> ${b.banco_cuit}</li>` : ''}
-                                    ${b.banco_cbu ? `<li><strong>CBU/CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${b.banco_cbu}</span></li>` : ''}
-                                    ${b.banco_alias ? `<li><strong>Alias:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${b.banco_alias}</span></li>` : ''}
+                                    ${bankData.nombre ? `<li><strong>Banco:</strong> ${bankData.nombre}</li>` : ''}
+                                    ${bankData.titular ? `<li><strong>Titular:</strong> ${bankData.titular}</li>` : ''}
+                                    ${bankData.cuit ? `<li><strong>CUIT/CUIL:</strong> ${bankData.cuit}</li>` : ''}
+                                    ${bankData.cbu ? `<li><strong>CBU/CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.cbu}</span></li>` : ''}
+                                    ${bankData.alias ? `<li><strong>Alias:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.alias}</span></li>` : ''}
                                 </ul>
                                 <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #7f8c8d;">Una vez realizado el pago, recuerda enviarnos el comprobante para procesar tu pedido a la brevedad.</p>
                             </div>
@@ -253,7 +271,7 @@ const emailService = {
             to: clienteEmail,
             subject: `¡Hemos recibido tu pedido #${pedidoData.id}!`,
             html: getHtmlTemplate('¡Gracias por tu compra!', `
-                <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de <strong>$${pedidoData.total}</strong>.</p>
+                <p>Hemos registrado correctamente tu pedido <strong>#${pedidoData.id}</strong> por un total de <strong>${pedidoData.metodo_pago === 'transferencia_usd' ? 'USD $' : '$'}${pedidoData.total}</strong>.</p>
                 <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
                 ${bankDetailsHtml}
                 ${!bankDetailsHtml ? '<p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>' : ''}
@@ -270,7 +288,7 @@ const emailService = {
             to: adminEmail,
             subject: `[NUEVO PEDIDO] #${pedidoData.id} Creado en estado Pendiente`,
             html: getHtmlTemplate('Nuevo Pedido Registrado', `
-                <p>El cliente ha finalizado el carrito y se generó el pedido <strong>#${pedidoData.id}</strong> por <strong>$${pedidoData.total}</strong>.</p>
+                <p>El cliente ha finalizado el carrito y se generó el pedido <strong>#${pedidoData.id}</strong> por <strong>${pedidoData.metodo_pago === 'transferencia_usd' ? 'USD $' : '$'}${pedidoData.total}</strong>.</p>
                 <p>El estado actual es <strong>Pendiente</strong>.</p>
                 <p>Método de pago seleccionado: ${pedidoData.metodo_pago}</p>
             `)

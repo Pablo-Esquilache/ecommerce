@@ -31,10 +31,12 @@ const pedidoController = {
 
       for (let item of carrito) {
         // [NUEVO] Leer precio oficial de la base de datos y tipo de producto
-        const resultDb = await db.query('SELECT precio, nombre, tipo_producto FROM productos WHERE id = $1', [item.id]);
+        // [NUEVO] Leer precio oficial de la base de datos y tipo de producto
+        const resultDb = await db.query('SELECT precio, precio_usd, nombre, tipo_producto FROM productos WHERE id = $1', [item.id]);
         if (resultDb.rows.length === 0) continue; // Ignorar productos que ya no existen
         
-        let precioReal = Number(resultDb.rows[0].precio);
+        let isUSD = metodo_pago === 'transferencia_usd';
+        let precioReal = isUSD && Number(resultDb.rows[0].precio_usd) > 0 ? Number(resultDb.rows[0].precio_usd) : Number(resultDb.rows[0].precio);
         if (conf.descuento_activo) {
             precioReal = precioReal * (1 - (Number(conf.descuento_porcentaje) || 0) / 100);
         }
@@ -62,7 +64,8 @@ const pedidoController = {
 
       // Costo de envio
       let costo_envio = 0; // Se asume 0 por ahora a falta de API externa
-      if (conf.envio_gratis_activo && subtotal >= conf.envio_gratis_limite) {
+      const isUSD = metodo_pago === 'transferencia_usd';
+      if (conf.envio_gratis_activo && subtotal >= conf.envio_gratis_limite && !isUSD) {
           costo_envio = 0; // Confirmamos que es cero
       }
       

@@ -10,21 +10,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('checkout-form').addEventListener('submit', procesarCheckout);
 
+    const isUSD = localStorage.getItem('currency') === 'USD';
+
     const metodoPagoSelect = document.getElementById('metodo_pago');
     const datosBancariosDiv = document.getElementById('datos-bancarios');
 
+    if (metodoPagoSelect) {
+        if (isUSD) {
+            metodoPagoSelect.innerHTML = `<option value="transferencia_usd">Transferencia Bancaria (USD)</option>`;
+        } else {
+            metodoPagoSelect.innerHTML = `
+                <option value="mercadopago">Mercado Pago</option>
+                <option value="transferencia">Transferencia Bancaria</option>
+            `;
+        }
+    }
+
     if (metodoPagoSelect && datosBancariosDiv) {
         metodoPagoSelect.addEventListener('change', async (e) => {
-            if (e.target.value === 'transferencia') {
+            if (e.target.value === 'transferencia' || e.target.value === 'transferencia_usd') {
                 datosBancariosDiv.style.display = 'block';
                 try {
                     const res = await fetch('/api/configuracion');
                     const conf = await res.json();
-                    document.getElementById('b_banco').innerText = conf.banco_nombre || '-';
-                    document.getElementById('b_titular').innerText = conf.banco_titular || '-';
-                    document.getElementById('b_cuit').innerText = conf.banco_cuit || '-';
-                    document.getElementById('b_cbu').innerText = conf.banco_cbu || '-';
-                    document.getElementById('b_alias').innerText = conf.banco_alias || '-';
+                    if (e.target.value === 'transferencia_usd') {
+                        document.getElementById('b_banco').innerText = conf.banco_usd_nombre || '-';
+                        document.getElementById('b_titular').innerText = conf.banco_usd_titular || '-';
+                        document.getElementById('b_cuit').innerText = conf.banco_usd_cuit || '-';
+                        document.getElementById('b_cbu').innerText = conf.banco_usd_cbu || '-';
+                        document.getElementById('b_alias').innerText = conf.banco_usd_alias || '-';
+                    } else {
+                        document.getElementById('b_banco').innerText = conf.banco_nombre || '-';
+                        document.getElementById('b_titular').innerText = conf.banco_titular || '-';
+                        document.getElementById('b_cuit').innerText = conf.banco_cuit || '-';
+                        document.getElementById('b_cbu').innerText = conf.banco_cbu || '-';
+                        document.getElementById('b_alias').innerText = conf.banco_alias || '-';
+                    }
                 } catch (err) {
                     console.error('Error cargando los datos bancarios:', err);
                 }
@@ -46,20 +67,24 @@ function renderSummary() {
     const container = document.getElementById('checkout-items');
     subtotalCheckout = 0;
     let todosDigitales = carrito.length > 0;
+    const isUSD = localStorage.getItem('currency') === 'USD';
+    const sign = isUSD ? 'USD $' : '$';
+
     carrito.forEach(item => {
         if (item.tipo_producto !== 'digital') {
             todosDigitales = false;
         }
-        subtotalCheckout += item.precio * item.cantidad;
+        let price = isUSD && parseFloat(item.precio_usd) > 0 ? parseFloat(item.precio_usd) : parseFloat(item.precio);
+        subtotalCheckout += price * item.cantidad;
         container.innerHTML += `
             <div class="summary-item">
                 <span>${item.cantidad}x ${item.nombre}</span>
-                <span>$${(item.precio * item.cantidad).toFixed(2)}</span>
+                <span>${sign}${(price * item.cantidad).toFixed(2)}</span>
             </div>
         `;
     });
     
-    document.getElementById('resumen-subtotal').innerText = `$${subtotalCheckout.toFixed(2)}`;
+    document.getElementById('resumen-subtotal').innerText = `${sign}${subtotalCheckout.toFixed(2)}`;
     
     const seccionEnvio = document.getElementById('seccion-envio');
     if (seccionEnvio) {
@@ -90,10 +115,13 @@ async function calcularEnvio() {
     // Shipping is disabled for now, all calculations are skipped and cost is 0.
     costoEnvioFinal = 0;
     
+    const isUSD = localStorage.getItem('currency') === 'USD';
+    const sign = isUSD ? 'USD $' : '$';
+
     const total = subtotalCheckout + costoEnvioFinal;
     const resumenTotalEl = document.getElementById('resumen-total');
     if (resumenTotalEl) {
-        resumenTotalEl.innerText = `$${total.toFixed(2)}`;
+        resumenTotalEl.innerText = `${sign}${total.toFixed(2)}`;
     }
 }
 
