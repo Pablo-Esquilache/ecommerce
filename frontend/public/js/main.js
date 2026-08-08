@@ -454,6 +454,17 @@ async function fetchConfigWeb() {
             if (conf.tiktok_activo && conf.tiktok_url) redesHtml += `<a href="${conf.tiktok_url}" target="_blank" style="color:white;"><i class="fab fa-tiktok"></i></a>`;
             if(document.getElementById('footer-redes')) document.getElementById('footer-redes').innerHTML = redesHtml;
             
+            // Configurar Botón Flotante de WhatsApp
+            if (conf.telefono) {
+                const waBtn = document.getElementById('wa-btn');
+                if (waBtn) {
+                    let cleanPhone = conf.telefono.replace(/\D/g, '');
+                    // Si no tiene codigo de area argentino y arranca con 11, etc., asume AR
+                    if (cleanPhone.length === 10) cleanPhone = '549' + cleanPhone;
+                    waBtn.href = `https://wa.me/${cleanPhone}?text=Hola,%20me%20comunico%20desde%20la%20tienda%20online.`;
+                }
+            }
+            
             // Re-render UI ya que tenemos config ahora
             if(productos && productos.length > 0) renderProductos(productos);
             updateCartUI();
@@ -491,3 +502,20 @@ function renderPriceHTML(prod) {
         `;
     }
 }
+
+// Mostrar/Ocultar botón flotante de WhatsApp según el scroll
+window.addEventListener('scroll', () => {
+    const waBtn = document.getElementById('wa-btn');
+    const heroSection = document.getElementById('inicio');
+    if (waBtn) {
+        // Si no hay hero section, mostramos a partir de los 300px
+        const threshold = heroSection ? (heroSection.offsetHeight || 500) - 100 : 300;
+        if (window.scrollY > threshold) {
+            waBtn.style.opacity = '1';
+            waBtn.style.pointerEvents = 'auto';
+        } else {
+            waBtn.style.opacity = '0';
+            waBtn.style.pointerEvents = 'none';
+        }
+    }
+});
