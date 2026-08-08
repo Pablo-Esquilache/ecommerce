@@ -278,6 +278,51 @@ body {
     color: var(--text);
 }
 
+/* Nuevo layout envolvente para textos largos */
+.about-article {
+    margin-bottom: 50px;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--text);
+}
+.about-article::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.about-article h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    font-size: 24px;
+}
+.about-article p {
+    margin-bottom: 15px;
+    text-align: justify;
+}
+.about-img-wrap {
+    width: 45%;
+    min-width: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.about-img-wrap.left {
+    float: left;
+    margin-right: 30px;
+}
+.about-img-wrap.right {
+    float: right;
+    margin-left: 30px;
+}
+.about-img-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
 .about-mini-gallery {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
