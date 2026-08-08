@@ -434,7 +434,7 @@ function renderAdminProductos(lista) {
             <td>${p.id}</td>
             <td><img src="${p.imagen_1 || ''}" width="40" height="40" style="object-fit:cover; border-radius:4px; background:#f0f0f0;"></td>
             <td>${p.nombre}</td>
-            <td>$${p.precio}</td>
+            <td><div style="font-size:0.9em;font-weight:bold;">ARS ${p.precio}</div><div style="font-size:0.8em;color:gray;">USD ${p.precio_usd || 0}</div></td>
             <td>${stockDisplay}</td>
             <td style="display:flex; gap:10px; align-items:center;">
                 <button class="btn" style="background:#f1c40f; color:#fff; padding: 4px 8px;" onclick="editarProducto(${p.id})">Editar</button>
@@ -478,6 +478,7 @@ async function editarProducto(id) {
         document.getElementById('prod-id').value = p.id;
         document.getElementById('prod-nombre').value = p.nombre;
         document.getElementById('prod-precio').value = p.precio;
+        document.getElementById('prod-precio-usd').value = p.precio_usd || '';
         document.getElementById('prod-stock').value = p.stock;
         document.getElementById('prod-peso').value = p.peso || '';
         document.getElementById('prod-dimensiones').value = p.dimensiones || '';
@@ -603,6 +604,7 @@ if (formProducto) {
         const formData = new FormData();
         formData.append('nombre', document.getElementById('prod-nombre').value);
         formData.append('precio', document.getElementById('prod-precio').value);
+        formData.append('precio_usd', document.getElementById('prod-precio-usd').value || 0);
         formData.append('stock', document.getElementById('prod-stock').value);
         formData.append('peso', document.getElementById('prod-peso').value);
         formData.append('dimensiones', document.getElementById('prod-dimensiones').value);
@@ -887,6 +889,12 @@ async function fetchConfiguracion() {
             document.getElementById('conf-banco-cbu').value = conf.banco_cbu || '';
             document.getElementById('conf-banco-alias').value = conf.banco_alias || '';
             
+            document.getElementById('conf-banco-usd-nombre').value = conf.banco_usd_nombre || '';
+            document.getElementById('conf-banco-usd-titular').value = conf.banco_usd_titular || '';
+            document.getElementById('conf-banco-usd-cuit').value = conf.banco_usd_cuit || '';
+            document.getElementById('conf-banco-usd-cbu').value = conf.banco_usd_cbu || '';
+            document.getElementById('conf-banco-usd-alias').value = conf.banco_usd_alias || '';
+            
             document.getElementById('conf-envio-activo').checked = conf.envio_gratis_activo;
             document.getElementById('conf-envio-limite').value = conf.envio_gratis_limite || 0;
             
@@ -933,6 +941,11 @@ async function guardarConfiguracion() {
         banco_cuit: document.getElementById('conf-banco-cuit').value.trim(),
         banco_cbu: document.getElementById('conf-banco-cbu').value.trim(),
         banco_alias: document.getElementById('conf-banco-alias').value.trim(),
+        banco_usd_nombre: document.getElementById('conf-banco-usd-nombre').value.trim(),
+        banco_usd_titular: document.getElementById('conf-banco-usd-titular').value.trim(),
+        banco_usd_cuit: document.getElementById('conf-banco-usd-cuit').value.trim(),
+        banco_usd_cbu: document.getElementById('conf-banco-usd-cbu').value.trim(),
+        banco_usd_alias: document.getElementById('conf-banco-usd-alias').value.trim(),
         
         envio_gratis_activo: document.getElementById('conf-envio-activo').checked,
         envio_gratis_limite: Number(document.getElementById('conf-envio-limite').value) || 0,

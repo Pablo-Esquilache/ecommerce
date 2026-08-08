@@ -235,6 +235,17 @@
                         <div class="form-group" style="margin-bottom:0;"><label>CBU / CVU</label><input type="text" id="conf-banco-cbu" placeholder="0000000000000000000000"></div>
                     </div>
                     
+                    <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; margin-top: 15px; color: #27ae60;"><i class="fas fa-globe"></i> Datos de Transferencia Bancaria (USD - Extranjero)</h4>
+                    <div style="background:#fafafa; padding:15px; border-radius:6px; border: 1px solid #ecf0f1; margin-bottom: 20px;">
+                        <div class="form-group"><label>Nombre del Banco / Plataforma (Ej: Payoneer, Zelle, Bank of America)</label><input type="text" id="conf-banco-usd-nombre" placeholder="Ej: Bank of America"></div>
+                        <div class="form-group"><label>Titular de la Cuenta</label><input type="text" id="conf-banco-usd-titular" placeholder="Ej: Juan Pérez"></div>
+                        <div style="display:flex; gap: 10px;">
+                            <div class="form-group" style="flex:1;"><label>Routing Number / Identificación</label><input type="text" id="conf-banco-usd-cuit" placeholder="Routing number..."></div>
+                            <div class="form-group" style="flex:1;"><label>Account Number</label><input type="text" id="conf-banco-usd-alias" placeholder="Account number..."></div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;"><label>SWIFT / BIC / IBAN</label><input type="text" id="conf-banco-usd-cbu" placeholder="Código SWIFT..."></div>
+                    </div>
+                    
                     <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; margin-top: 30px;">Reglas Financieras (Suman al Checkout)</h4>
                     <div style="display:flex; align-items:flex-end; gap: 10px; margin-bottom: 10px; padding: 10px; background: #e8f4fd; border-radius: 6px;">
                         <label class="switch" title="Activar/Desactivar Envío Gratis" style="margin-bottom: 10px;">
@@ -327,7 +338,8 @@
                         <div class="form-group" style="flex:1"><label>ID</label><input type="text" id="prod-display-id" readonly placeholder="Auto-generado"></div>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod-precio" required></div>
+                        <div class="form-group"><label>Precio (ARS)</label><input type="number" step="0.01" id="prod-precio" required></div>
+                        <div class="form-group"><label>Precio (USD)</label><input type="number" step="0.01" id="prod-precio-usd" placeholder="Opcional" title="Precio en dólares para clientes extranjeros"></div>
                         <div class="form-group" id="container-stock"><label>Stock</label><input type="number" id="prod-stock" required></div>
                         <div class="form-group" style="flex:1"><label>Categoría</label>
                             <div style="display:flex; gap:5px; margin-bottom:5px;">
