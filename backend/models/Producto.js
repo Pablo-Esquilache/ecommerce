@@ -53,8 +53,8 @@ const Producto = {
     const cleanVideo = video_url || null;
 
     const query = `
-      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, sincronizado_local, tipo_producto, archivo_digital, video_url)
-      VALUES ($1, $2, $3, $15, $4, $5, $6, $7, $8, $9, $10, $11, FALSE, $12, $13, $14)
+      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url)
+      VALUES ($1, $2, $3, $15, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `;
     const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd];
@@ -84,8 +84,7 @@ const Producto = {
           imagen_2 = coalesce($10, imagen_2), imagen_3 = coalesce($11, imagen_3),
           tipo_producto = coalesce($13, tipo_producto),
           archivo_digital = coalesce($14, archivo_digital),
-          video_url = coalesce($15, video_url),
-          sincronizado_local = FALSE
+          video_url = coalesce($15, video_url)
       WHERE id = $12
       RETURNING *
     `;
