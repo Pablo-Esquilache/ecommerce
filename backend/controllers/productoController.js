@@ -7,6 +7,12 @@ async function uploadToSupabase(file, bucket = 'productos') {
   const ext = (file.originalname || '').split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
   const filename = `${uniqueSuffix}.${ext || 'bin'}`;
   
+  console.log("=== DEBUG UPLOAD ===");
+  console.log("Supabase URL:", process.env.SUPABASE_URL);
+  console.log("Bucket:", bucket);
+  console.log("Filename:", filename);
+  console.log("Mimetype:", file.mimetype);
+  
   const { data, error } = await supabase
     .storage
     .from(bucket)
