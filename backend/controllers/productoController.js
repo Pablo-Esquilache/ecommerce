@@ -4,8 +4,8 @@ const supabase = require('../config/supabase');
 async function uploadToSupabase(file, bucket = 'productos') {
   if (!file) return null;
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const ext = file.originalname.split('.').pop();
-  const filename = `${uniqueSuffix}.${ext}`;
+  const ext = (file.originalname || '').split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
+  const filename = `${uniqueSuffix}.${ext || 'bin'}`;
   
   const { data, error } = await supabase
     .storage
