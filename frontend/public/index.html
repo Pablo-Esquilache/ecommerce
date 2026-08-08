@@ -69,10 +69,13 @@
             </div>
         </div>
 
-        <!-- Fondo Fijo (Reemplaza al carrusel) -->
-        <div class="carousel-bg">
-            <div class="carousel-slide active" style="background-image: url('img/banner.jpg'); background-position: center 30%;"></div>
-            <!-- Capa oscura superpuesta eliminada para lucir la foto original -->
+        <!-- Carrusel de Imágenes -->
+        <div class="carousel-bg" id="hero-carousel">
+            <div class="carousel-slide active" style="background-image: url('img/portada1.jpg'); background-position: center 30%;"></div>
+            <div class="carousel-slide" style="background-image: url('img/portada2.jpg'); background-position: center 30%;"></div>
+            <div class="carousel-slide" style="background-image: url('img/portada3.jpg'); background-position: center 30%;"></div>
+            <!-- Capa oscura superpuesta opcional -->
+            <div class="overlay-dark" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.2);"></div>
         </div>
 
         <!-- Contenido Frontal -->
@@ -199,6 +202,20 @@
     </div>
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
-    <script src="/js/main.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Lógica del Carrusel
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('#hero-carousel .carousel-slide');
+            let currentSlide = 0;
+            if(slides.length > 1) {
+                setInterval(() => {
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                }, 5000); // Cambia cada 5 segundos
+            }
+        });
+    </script>
 </body>
 </html>
