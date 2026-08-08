@@ -425,6 +425,22 @@ function initCarousel() {
     }, 5000);
 }
 
+// --- ABOUT SECTION LOGIC ---
+function toggleAbout(btn) {
+    const article = btn.closest('.about-article');
+    const fullContent = article.querySelector('.about-full');
+    
+    if (fullContent.style.display === 'none') {
+        fullContent.style.display = 'block';
+        btn.innerHTML = 'Leer menos <i class="fas fa-chevron-up"></i>';
+    } else {
+        fullContent.style.display = 'none';
+        btn.innerHTML = 'Leer más <i class="fas fa-chevron-down"></i>';
+        // Opcional: hacer un pequeño scroll hacia arriba si el texto era muy largo
+        // article.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
 // --- CONFIG DATA FETCH ---
 async function fetchConfigWeb() {
     try {
