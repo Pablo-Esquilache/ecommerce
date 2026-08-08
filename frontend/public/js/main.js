@@ -477,7 +477,7 @@ async function fetchConfigWeb() {
                     let cleanPhone = conf.telefono.replace(/\D/g, '');
                     // Si no tiene codigo de area argentino y arranca con 11, etc., asume AR
                     if (cleanPhone.length === 10) cleanPhone = '549' + cleanPhone;
-                    waBtn.href = `https://wa.me/${cleanPhone}?text=Hola,%20me%20comunico%20desde%20la%20tienda%20online.`;
+                    waBtn.href = `https://wa.me/${cleanPhone}?text=Hola,%20me%20comunico%20desde%20tu%20página%20web%20y%20quería%20consultarte%20por...`;
                 }
             }
             
