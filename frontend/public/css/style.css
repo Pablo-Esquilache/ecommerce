@@ -97,9 +97,7 @@ body {
 
 /* Hero & Carousel */
 .hero {
-    height: 35vw;
-    min-height: 300px;
-    max-height: 600px;
+    height: 100vh;
     position: relative;
     overflow: hidden;
     display: flex;
