@@ -86,7 +86,7 @@ const Pedido = {
         if (!currRows[0]) throw new Error('Pedido no encontrado');
         const estadoAnterior = currRows[0].estado;
 
-        const query = 'UPDATE pedidos SET estado = $1, sincronizado_local = FALSE WHERE id = $2 RETURNING *';
+        const query = 'UPDATE pedidos SET estado = $1 WHERE id = $2 RETURNING *';
         const { rows } = await db.query(query, [status, id]);
         
         if (status === 'cancelado' && estadoAnterior !== 'cancelado') {
