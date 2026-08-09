@@ -250,10 +250,10 @@ const emailService = {
                                 <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">💳 Datos para la Transferencia ${isUSD ? '(USD)' : ''}</h3>
                                 <p style="margin-bottom: 10px;">Por favor, transfiere el total exacto de <strong>${sign}${pedidoData.total}</strong> a la siguiente cuenta:</p>
                                 <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0;">
-                                    ${bankData.nombre ? `<li><strong>Banco:</strong> ${bankData.nombre}</li>` : ''}
+                                    ${bankData.nombre ? `<li><strong>Banco / Plataforma:</strong> ${bankData.nombre}</li>` : ''}
                                     ${bankData.titular ? `<li><strong>Titular:</strong> ${bankData.titular}</li>` : ''}
-                                    ${bankData.cuit ? `<li><strong>CUIT/CUIL:</strong> ${bankData.cuit}</li>` : ''}
-                                    ${bankData.cbu ? `<li><strong>CBU/CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.cbu}</span></li>` : ''}
+                                    ${bankData.cuit ? `<li><strong>CUIT / Identificación:</strong> ${bankData.cuit}</li>` : ''}
+                                    ${bankData.cbu ? `<li><strong>CBU / CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.cbu}</span></li>` : ''}
                                     ${bankData.alias ? `<li><strong>Alias:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.alias}</span></li>` : ''}
                                 </ul>
                                 <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #7f8c8d;">Una vez realizado el pago, recuerda enviarnos el comprobante para procesar tu pedido a la brevedad.</p>
