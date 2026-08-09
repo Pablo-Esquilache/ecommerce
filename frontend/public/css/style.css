@@ -105,7 +105,7 @@ body {
     justify-content: center;
     text-align: center;
     color: var(--white);
-    margin-top: 85px; /* Offset nav */
+    margin-top: 100px; /* Offset nav */
 }
 .carousel-bg {
     position: absolute;
