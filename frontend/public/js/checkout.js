@@ -66,14 +66,15 @@ function renderSummary() {
     let carrito = JSON.parse(localStorage.getItem('cart')) || [];
     const container = document.getElementById('checkout-items');
     subtotalCheckout = 0;
-    let todosDigitales = carrito.length > 0;
+    let hayDigital = false;
+    let hayFisico = false;
     const isUSD = localStorage.getItem('currency') === 'USD';
     const sign = isUSD ? 'USD $' : '$';
-
+    
     carrito.forEach(item => {
-        if (item.tipo_producto !== 'digital') {
-            todosDigitales = false;
-        }
+        if (item.tipo_producto === 'digital') hayDigital = true;
+        else hayFisico = true;
+        
         let price = isUSD && parseFloat(item.precio_usd) > 0 ? parseFloat(item.precio_usd) : parseFloat(item.precio);
         subtotalCheckout += price * item.cantidad;
         container.innerHTML += `
@@ -106,11 +107,15 @@ function renderSummary() {
             seccionEnvio.appendChild(avisoEnvio);
         }
         
-        if (todosDigitales) {
-            avisoEnvio.innerText = '';
-        } else {
-            avisoEnvio.innerText = '⚠️ El envío de los productos físicos se coordina directamente con el vendedor posterior a la compra.';
+        let mensajes = [];
+        if (hayDigital) {
+            mensajes.push('📧 <b>Producto Digital:</b> Una vez confirmado el pago, recibirás automáticamente un correo con el acceso a tu material.');
         }
+        if (hayFisico) {
+            mensajes.push('⚠️ <b>Producto Físico:</b> El envío se coordina directamente con el vendedor posterior a la compra.');
+        }
+        
+        avisoEnvio.innerHTML = mensajes.join('<br><br>');
     }
 }
 
