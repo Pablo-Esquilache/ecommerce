@@ -88,25 +88,28 @@ function renderSummary() {
     
     const seccionEnvio = document.getElementById('seccion-envio');
     if (seccionEnvio) {
+        seccionEnvio.style.display = 'block';
+        document.getElementById('direccion').setAttribute('required', 'true');
+        document.getElementById('provincia').setAttribute('required', 'true');
+        document.getElementById('partido').setAttribute('required', 'true');
+        document.getElementById('ciudad').setAttribute('required', 'true');
+        document.getElementById('codigo_postal').setAttribute('required', 'true');
+        
+        let avisoEnvio = document.getElementById('aviso-envio-dinamico');
+        if (!avisoEnvio) {
+            avisoEnvio = document.createElement('div');
+            avisoEnvio.id = 'aviso-envio-dinamico';
+            avisoEnvio.style.marginTop = '15px';
+            avisoEnvio.style.fontSize = '14px';
+            avisoEnvio.style.color = '#e67e22';
+            avisoEnvio.style.fontWeight = 'bold';
+            seccionEnvio.appendChild(avisoEnvio);
+        }
+        
         if (todosDigitales) {
-            seccionEnvio.style.display = 'none';
-            document.getElementById('direccion').removeAttribute('required');
-            document.getElementById('provincia').removeAttribute('required');
-            document.getElementById('partido').removeAttribute('required');
-            document.getElementById('ciudad').removeAttribute('required');
-            document.getElementById('codigo_postal').removeAttribute('required');
-            document.getElementById('direccion').value = '-';
-            document.getElementById('provincia').innerHTML = '<option value="-">-</option>';
-            document.getElementById('partido').innerHTML = '<option value="-">-</option>';
-            document.getElementById('ciudad').innerHTML = '<option value="-">-</option>';
-            document.getElementById('codigo_postal').value = '0000';
+            avisoEnvio.innerText = '';
         } else {
-            seccionEnvio.style.display = 'block';
-            document.getElementById('direccion').setAttribute('required', 'true');
-            document.getElementById('provincia').setAttribute('required', 'true');
-            document.getElementById('partido').setAttribute('required', 'true');
-            document.getElementById('ciudad').setAttribute('required', 'true');
-            document.getElementById('codigo_postal').setAttribute('required', 'true');
+            avisoEnvio.innerText = '⚠️ El envío de los productos físicos se coordina directamente con el vendedor posterior a la compra.';
         }
     }
 }
