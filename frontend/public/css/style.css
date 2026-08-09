@@ -46,7 +46,7 @@ body {
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 15px 20px;
+    padding: 5px 20px;
 }
 .logo a {
     font-size: 24px;
@@ -105,7 +105,7 @@ body {
     justify-content: center;
     text-align: center;
     color: var(--white);
-    margin-top: 60px; /* Offset nav */
+    margin-top: 85px; /* Offset nav */
 }
 .carousel-bg {
     position: absolute;
@@ -522,7 +522,7 @@ footer {
    📱 RESPONSIVE DESIGN (MOBILE FIRST)
 ====================================================== */
 @media (max-width: 768px) {
-    .nav-container { padding: 10px 15px; }
+    .nav-container { padding: 5px 15px; }
     
     .menu-toggle { display: block; margin-left: 20px; }
     .nav-links { 
