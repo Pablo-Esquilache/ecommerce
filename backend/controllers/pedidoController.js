@@ -135,7 +135,7 @@ const pedidoController = {
 
     } catch (error) {
       console.error("Error en checkout:", error);
-      res.status(500).json({ error: 'Error al procesar el pedido' });
+      res.status(500).json({ error: `Error al procesar el pedido: ${error.message}`, detail: error.stack });
     }
   },
 
