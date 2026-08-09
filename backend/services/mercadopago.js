@@ -1,7 +1,7 @@
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 // Agregar las credenciales de MP. Como es un test, hardcodeamos u otenemos de env.
-const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
 const client = new MercadoPagoConfig({ accessToken: ACCESS_TOKEN, options: { timeout: 5000 } });
 
 const mercadopagoService = {
