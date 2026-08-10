@@ -26,7 +26,7 @@ body {
     line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6, .logo a {
+h1, h2, h3, h4, h5, h6, .logo a, .nav-links a {
     font-family: 'Playfair Display', serif;
 }
 
@@ -201,16 +201,16 @@ h1, h2, h3, h4, h5, h6, .logo a {
 .producto-card {
     background: var(--white);
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     overflow: hidden;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     border: none;
 }
 .producto-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
 }
 .producto-img-container {
     height: 200px;
@@ -221,10 +221,6 @@ h1, h2, h3, h4, h5, h6, .logo a {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: transform 0.5s ease;
-}
-.producto-card:hover .producto-img-container img {
-    transform: scale(1.05);
 }
 .producto-info {
     padding: 20px;
@@ -315,8 +311,13 @@ h1, h2, h3, h4, h5, h6, .logo a {
     min-width: 300px;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.about-img-wrap:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
 }
 .about-img-wrap.left {
     float: left;
@@ -331,10 +332,6 @@ h1, h2, h3, h4, h5, h6, .logo a {
     height: auto;
     display: block;
     object-fit: cover;
-    transition: transform 0.5s ease;
-}
-.about-img-wrap:hover img {
-    transform: scale(1.03);
 }
 
 .about-mini-gallery {
