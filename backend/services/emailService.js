@@ -218,17 +218,22 @@ const emailService = {
         await enviarOConsola(mailOptions);
     },
 
-    enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData) => {
+    enviarCorreoNuevoPedidoCliente: async (clienteEmail, pedidoData, detalles = []) => {
         let bankDetailsHtml = '';
+        const isDigitalOnly = detalles.length > 0 && detalles.every(d => d.tipo_producto === 'digital');
+        let contactEmail = '';
+        let contactPhone = '';
         
         if (pedidoData.metodo_pago && pedidoData.metodo_pago.toLowerCase().includes('transferencia')) {
             try {
                 const isUSD = pedidoData.metodo_pago === 'transferencia_usd';
                 const sign = isUSD ? 'USD $' : '$';
                 
-                const { rows } = await db.query('SELECT banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias, banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias FROM configuracion WHERE id = 1');
+                const { rows } = await db.query('SELECT banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias, banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias, email, telefono FROM configuracion WHERE id = 1');
                 if (rows.length > 0) {
                     const b = rows[0];
+                    contactEmail = b.email || '';
+                    contactPhone = b.telefono || '';
                     
                     const bankData = isUSD ? {
                         nombre: b.banco_usd_nombre,
@@ -256,7 +261,8 @@ const emailService = {
                                     ${bankData.cbu ? `<li><strong>CBU / CVU:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.cbu}</span></li>` : ''}
                                     ${bankData.alias ? `<li><strong>Alias:</strong> <span style="background: #e8f4fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${bankData.alias}</span></li>` : ''}
                                 </ul>
-                                <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #7f8c8d;">Una vez realizado el pago, recuerda enviarnos el comprobante para procesar tu pedido a la brevedad.</p>
+                                <p style="margin-top: 15px; margin-bottom: 5px; font-size: 13px; color: #7f8c8d;">Una vez realizado el pago, recuerda enviarnos el comprobante para procesar tu pedido a la brevedad.</p>
+                                <p style="margin-top: 5px; margin-bottom: 0; font-size: 13px; color: #7f8c8d;"><strong>Enviar comprobante a:</strong> ${contactEmail || 'Respondiendo a este correo'}${contactPhone ? ` o por WhatsApp al ${contactPhone}` : ''}</p>
                             </div>
                         `;
                     }
@@ -265,6 +271,10 @@ const emailService = {
                 console.error("Error obteniendo datos bancarios para el mail:", e);
             }
         }
+
+        const preparacionTexto = isDigitalOnly 
+            ? '<p>Te avisaremos por esta vía apenas el pago sea confirmado para enviarte automáticamente el acceso a tu material digital.</p>'
+            : '<p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>';
 
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
@@ -275,7 +285,7 @@ const emailService = {
                 <p>El estado actual de tu pedido es: <strong>Pendiente</strong>.</p>
                 ${bankDetailsHtml}
                 ${!bankDetailsHtml ? '<p>Si elegiste abonar mediante Transferencia Bancaria, recuerda enviar el comprobante de pago. Si elegiste Mercado Pago, verificaremos la transacción en breve.</p>' : ''}
-                <p>Te avisaremos por esta vía apenas el pago sea confirmado y tu pedido comience a prepararse.</p>
+                ${preparacionTexto}
             `)
         };
         await enviarOConsola(mailOptions);

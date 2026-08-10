@@ -87,7 +87,7 @@ const pedidoController = {
           emailService.notificarAdminNuevoPedido(nuevoPedido)
       ];
       if (clienteRecord.email) {
-          emailPromises.push(emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido));
+          emailPromises.push(emailService.enviarCorreoNuevoPedidoCliente(clienteRecord.email, nuevoPedido, detalles));
       }
 
       // [NUEVO] Check for low stock alerts (<= 3) únicamente para productos físicos
