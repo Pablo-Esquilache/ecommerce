@@ -26,7 +26,7 @@ body {
     line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6, .logo a, .nav-links a {
+h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-form input, .contacto-form textarea, .btn {
     font-family: 'Playfair Display', serif;
 }
 
