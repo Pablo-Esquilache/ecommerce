@@ -561,6 +561,14 @@ footer {
     }
     
     .product-card { max-width: 100%; margin: 0 auto; }
+    
+    .about-img-wrap.left, .about-img-wrap.right {
+        float: none;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
 }
 
 /* ======================================================
