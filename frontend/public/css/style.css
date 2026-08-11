@@ -478,9 +478,13 @@ footer {
         display: flex;
     }
     .menu-toggle { display: block; }
-    .hero { height: 60vh; min-height: 400px; }
+    .hero { height: 100vh; min-height: 400px; } /* Volvemos a 100vh porque ahora tenemos fotos verticales */
     .hero-content h1 { font-size: 32px; }
     .filters { flex-direction: column; align-items: center; }
+    
+    #slide1 { background-image: url('../img/portada1_vertical.jpg') !important; }
+    #slide2 { background-image: url('../img/portada2_vertical.jpg') !important; }
+    #slide3 { background-image: url('../img/portada3_vertical.jpg') !important; }
 }
 
 /* Contact Form */
