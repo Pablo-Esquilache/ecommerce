@@ -7,7 +7,7 @@ if (dns.setDefaultResultOrder) {
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp-relay.brevo.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
+    port: parseInt(process.env.EMAIL_PORT) || 2525,
     secure: process.env.EMAIL_PORT === '465',
     connectionTimeout: 8000,
     socketTimeout: 10000,
