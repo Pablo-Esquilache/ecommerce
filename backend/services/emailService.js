@@ -112,7 +112,8 @@ const emailService = {
                         if (data) archivoUrl = data.signedUrl;
                     }
                     if (archivoUrl) {
-                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">📥 Descargar Archivo</a>`;
+                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:10px; margin-bottom:5px; padding:10px 20px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">📥 Descargar Archivo</a>
+                        <p style="font-size: 13px; color: #7f8c8d; margin-top: 5px; margin-bottom: 0;"><em>⚠️ Por seguridad, este enlace es válido por 7 días. Te recomendamos descargarlo en tu dispositivo.</em></p>`;
                     }
                     if (item.video_url) {
                         digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:10px; margin-left: 5px; padding:10px 20px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">▶ Ver Video</a>`;

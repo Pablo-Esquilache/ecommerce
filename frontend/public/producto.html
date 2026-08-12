@@ -109,7 +109,12 @@
                             <p><strong>Peso:</strong> ${p.peso ? p.peso + ' kg' : '-'}</p>
                             <p><strong>Dimensiones:</strong> ${p.dimensiones || '-'}</p>
                         </div>
-                        <p style="color: #7f8c8d; font-size: 14px; margin-top: 10px; font-style: italic;">El envío es a cargo del cliente y se abona al momento de la entrega.</p>
+                        ${p.tipo_producto === 'digital' 
+                            ? `<div style="background-color: #fcf6f5; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid var(--primary-color);">
+                                 <p style="color: #2c3e50; font-size: 14px; margin: 0;"><strong>ℹ️ Envío automático por Email</strong><br>El enlace de descarga llegará a tu correo al confirmarse el pago y <strong>tendrá una validez de 7 días</strong> por seguridad.</p>
+                               </div>`
+                            : `<p style="color: #7f8c8d; font-size: 14px; margin-top: 10px; font-style: italic;">El envío es a cargo del cliente y se abona al momento de la entrega.</p>`
+                        }
 
                         <div class="add-to-cart-section">
                             <input type="number" id="detail-qty" class="qty-input" value="1" min="1" max="${p.stock}">
