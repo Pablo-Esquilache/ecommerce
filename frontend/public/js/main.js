@@ -165,27 +165,56 @@ function validarCarrito(productosDB) {
     }
 }
 
-let currentPageMain = 1;
-const itemsPerPageMain = 16;
+let currentPageDigital = 1;
+let currentPageFisico = 1;
+const itemsPerPageMain = 12;
 
 // Renderizar en el DOM
 function renderProductos(arrayProductos) {
-    const grid = document.getElementById('grid-productos');
-    grid.innerHTML = '';
+    const container = document.getElementById('productos-dinamicos-container');
+    if (!container) return;
+    container.innerHTML = '';
     
     if (arrayProductos.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No se encontraron productos.</p>';
-        const pCont = document.getElementById('productos-pagination');
-        if(pCont) pCont.innerHTML = '';
+        container.innerHTML = '<p style="text-align:center; width: 100%;">No se encontraron productos.</p>';
         return;
     }
 
-    const totalPages = Math.ceil(arrayProductos.length / itemsPerPageMain);
-    if(currentPageMain > totalPages) currentPageMain = totalPages;
-    if(currentPageMain < 1) currentPageMain = 1;
+    const digitales = arrayProductos.filter(p => p.tipo_producto === 'digital');
+    const fisicos = arrayProductos.filter(p => p.tipo_producto !== 'digital');
 
-    const start = (currentPageMain - 1) * itemsPerPageMain;
-    const paginatedItems = arrayProductos.slice(start, start + itemsPerPageMain);
+    if (digitales.length > 0) {
+        renderSeccionProductos(container, 'Productos Digitales', digitales, currentPageDigital, (newPage) => {
+            currentPageDigital = newPage;
+            renderProductos(arrayProductos);
+        });
+    }
+
+    if (fisicos.length > 0) {
+        renderSeccionProductos(container, 'Productos Físicos', fisicos, currentPageFisico, (newPage) => {
+            currentPageFisico = newPage;
+            renderProductos(arrayProductos);
+        });
+    }
+}
+
+function renderSeccionProductos(parentContainer, titulo, productos, currentPage, setPageCallback) {
+    // 1. Título de sección
+    const title = document.createElement('h3');
+    title.className = 'section-dynamic-title';
+    title.innerText = titulo;
+    parentContainer.appendChild(title);
+
+    // 2. Grilla
+    const grid = document.createElement('div');
+    grid.className = 'grid-productos';
+    
+    const totalPages = Math.ceil(productos.length / itemsPerPageMain);
+    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * itemsPerPageMain;
+    const paginatedItems = productos.slice(start, start + itemsPerPageMain);
 
     paginatedItems.forEach(prod => {
         const img = prod.imagen_1 || 'https://via.placeholder.com/250';
@@ -209,49 +238,51 @@ function renderProductos(arrayProductos) {
         `;
         grid.appendChild(card);
     });
+    parentContainer.appendChild(grid);
 
-    renderPaginationMain(totalPages, arrayProductos);
-}
+    // 3. Paginación
+    if (totalPages > 1) {
+        const pagContainer = document.createElement('div');
+        pagContainer.className = 'pagination';
+        pagContainer.style.justifyContent = 'center';
+        pagContainer.style.marginTop = '20px';
+        pagContainer.style.marginBottom = '50px';
 
-function renderPaginationMain(totalPages, currentArray) {
-    const pagCont = document.getElementById('productos-pagination');
-    if(!pagCont) return;
-    pagCont.innerHTML = '';
-    
-    if(totalPages <= 1) return;
+        const scrollToSection = () => {
+            title.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
 
-    const scrollToProducts = () => {
-        const section = document.getElementById('productos');
-        if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const btnPrev = document.createElement('button');
+        btnPrev.innerText = '< Anterior';
+        btnPrev.className = 'btn-pag ' + (currentPage === 1 ? 'disabled' : '');
+        if(currentPage > 1) {
+            btnPrev.onclick = () => { setPageCallback(currentPage - 1); scrollToSection(); };
         }
-    };
+        pagContainer.appendChild(btnPrev);
 
-    const btnPrev = document.createElement('button');
-    btnPrev.innerText = '< Anterior';
-    btnPrev.className = 'btn-pag ' + (currentPageMain === 1 ? 'disabled' : '');
-    if(currentPageMain > 1) {
-        btnPrev.onclick = () => { currentPageMain--; renderProductos(currentArray); scrollToProducts(); };
-    }
-    pagCont.appendChild(btnPrev);
-
-    for(let i=1; i<=totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        btn.className = 'btn-pag ' + (i === currentPageMain ? 'active' : '');
-        if(i !== currentPageMain) {
-            btn.onclick = () => { currentPageMain = i; renderProductos(currentArray); scrollToProducts(); };
+        for(let i=1; i<=totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.innerText = i;
+            btn.className = 'btn-pag ' + (i === currentPage ? 'active' : '');
+            if(i !== currentPage) {
+                btn.onclick = () => { setPageCallback(i); scrollToSection(); };
+            }
+            pagContainer.appendChild(btn);
         }
-        pagCont.appendChild(btn);
-    }
 
-    const btnNext = document.createElement('button');
-    btnNext.innerText = 'Siguiente >';
-    btnNext.className = 'btn-pag ' + (currentPageMain === totalPages ? 'disabled' : '');
-    if(currentPageMain < totalPages) {
-        btnNext.onclick = () => { currentPageMain++; renderProductos(currentArray); scrollToProducts(); };
+        const btnNext = document.createElement('button');
+        btnNext.innerText = 'Siguiente >';
+        btnNext.className = 'btn-pag ' + (currentPage === totalPages ? 'disabled' : '');
+        if(currentPage < totalPages) {
+            btnNext.onclick = () => { setPageCallback(currentPage + 1); scrollToSection(); };
+        }
+        pagContainer.appendChild(btnNext);
+        parentContainer.appendChild(pagContainer);
+    } else {
+        const spacer = document.createElement('div');
+        spacer.style.marginBottom = '40px';
+        parentContainer.appendChild(spacer);
     }
-    pagCont.appendChild(btnNext);
 }
 
 function filtrarProductos() {
@@ -264,7 +295,8 @@ function filtrarProductos() {
         return matchTexto && matchCategoria;
     });
 
-    currentPageMain = 1;
+    currentPageDigital = 1;
+    currentPageFisico = 1;
     renderProductos(filtrados);
 }
 

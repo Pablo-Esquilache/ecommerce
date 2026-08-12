@@ -94,17 +94,8 @@
                 </select>
             </div>
 
-            <div class="grid-productos" id="grid-productos">
-                <!-- Productos inyectados por JS -->
-            </div>
-            
-            <!-- Contenedor de Paginación y Botón Arriba -->
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top:30px; margin-bottom: 20px;">
-                <div style="flex: 1; min-width: 50px;"></div> <!-- Spacer Izquierdo -->
-                <div id="productos-pagination" class="pagination" style="margin: 0; flex: 2; display: flex; justify-content: center;"></div>
-                <div style="flex: 1; display: flex; justify-content: flex-end; min-width: 140px;">
-                    <button onclick="window.scrollTo({top: document.getElementById('productos').offsetTop - 80, behavior: 'smooth'})" class="btn" style="padding: 8px 12px; font-size: 13px; background-color: #34495e; min-width:max-content;"><i class="fas fa-arrow-up"></i> Volver Arriba</button>
-                </div>
+            <div id="productos-dinamicos-container">
+                <!-- Productos y paginaciones inyectados por JS -->
             </div>
         </div>
     </section>
