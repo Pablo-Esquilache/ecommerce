@@ -182,20 +182,21 @@ async function calcularEnvio() {
                 seleccionarOpcionEnvio(data.opciones[0].costo, data.opciones[0].nombre, data.opciones[0].id);
             }
         } else {
-            // Fallback (API inactiva, falló, o desactivada en admin)
+            if (!data.success) {
+            // Mostrar fallback (A convenir)
+            console.error("Error devuelto por el servidor:", data.error || data.message || 'Error desconocido');
             opcionesLista.innerHTML = `
-                <div style="padding: 10px; border: 1px solid #f39c12; background:#fdfae2; border-radius: 4px; margin-bottom: 8px; cursor: pointer;">
+                <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background:#fff3cd; color:#856404;">
+                    <p style="margin:0 0 10px 0;"><i class="fas fa-info-circle"></i> A convenir con el vendedor</p>
                     <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
-                        <input type="radio" name="opcion_envio" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR')" style="margin-right: 10px;">
-                        <div style="flex:1;">
-                            <strong style="display:block;">A convenir con el vendedor</strong>
-                            <span style="font-size:12px; color:#d35400;">No se pudo calcular. Continuá la compra y acordaremos el envío.</span>
-                        </div>
-                        <strong style="color:#2c3e50;">A Confirmar</strong>
+                        <input type="radio" name="opcion_envio" id="envio_convenir" value="0" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir')">
+                        <span style="margin-left: 8px;">Pagaré el envío luego de la compra</span>
                     </label>
+                    <p style="font-size: 11px; color: red; margin-top: 10px;"><strong>Error (Solo para debug):</strong> ${data.error || data.message || 'No se devolvió un error específico'}</p>
                 </div>
             `;
-            seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR');
+            seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir');
+            return;
         }
     } catch (e) {
         console.error('Error:', e);
