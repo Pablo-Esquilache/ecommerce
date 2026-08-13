@@ -3,17 +3,8 @@ const API_BASE_URL = 'https://api.correoargentino.com.ar/micorreo/v1';
 const USER = process.env.CORREO_ARG_USER || 'PEsquilacheAPI';
 const PASS = process.env.CORREO_ARG_PASS || 'Alfombra10+';
 
-// Cache the token to avoid authenticating on every request
-let cachedToken = null;
-let tokenExpiriesAt = null;
-
 const correoArgentinoService = {
   getToken: async () => {
-    // If token is valid for at least 5 more minutes, use it
-    if (cachedToken && tokenExpiriesAt && tokenExpiriesAt > Date.now() + 300000) {
-      return cachedToken;
-    }
-
     try {
       const credentials = Buffer.from(`${USER}:${PASS}`).toString('base64');
       
@@ -29,14 +20,7 @@ const correoArgentinoService = {
       }
 
       const data = await response.json();
-      cachedToken = data.token;
-      
-      // Usually tokens expire. Assuming 1 hour if not specified.
-      // If the API returns an expires_in, use it. Otherwise guess.
-      const expiresIn = data.expires_in || 3600; 
-      tokenExpiriesAt = Date.now() + (expiresIn * 1000);
-
-      return cachedToken;
+      return data.token;
     } catch (error) {
       console.error('Error in Correo Argentino getToken:', error.message);
       throw error;
