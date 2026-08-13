@@ -39,7 +39,7 @@ const correoArgentinoService = {
         postalCodeDestination: cpDestino.toString(),
         deliveredType: "D", // "D" para domicilio. En un futuro podríamos agregar sucursal
         dimensions: {
-          weight: Math.max(1, pesoGramos), // Mínimo 1 gramo
+          weight: Math.max(1, Math.round(pesoGramos)), // Mínimo 1 gramo y debe ser Entero
           height: 10,
           width: 20,
           length: 30
