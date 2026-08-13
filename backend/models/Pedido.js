@@ -6,14 +6,14 @@ const Pedido = {
     try {
       await client.query('BEGIN');
       
-      const { cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio } = pedidoData;
+      const { cliente_id, subtotal, costo_envio, total, metodo_pago } = pedidoData;
       
       const insertPedidoQuery = `
-        INSERT INTO pedidos (cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio, estado)
-        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente')
+        INSERT INTO pedidos (cliente_id, subtotal, costo_envio, total, metodo_pago, estado)
+        VALUES ($1, $2, $3, $4, $5, 'pendiente')
         RETURNING *
       `;
-      const { rows: pedRows } = await client.query(insertPedidoQuery, [cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio]);
+      const { rows: pedRows } = await client.query(insertPedidoQuery, [cliente_id, subtotal, costo_envio, total, metodo_pago]);
       const pedido = pedRows[0];
 
       const insertDetalleQuery = `

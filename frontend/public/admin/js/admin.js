@@ -900,9 +900,6 @@ async function fetchConfiguracion() {
             document.getElementById('conf-banco-usd-cbu').value = conf.banco_usd_cbu || '';
             document.getElementById('conf-banco-usd-alias').value = conf.banco_usd_alias || '';
             
-            document.getElementById('conf-correo-activo').checked = conf.correo_activo || false;
-            document.getElementById('conf-correo-cp').value = conf.correo_cp || '';
-
             document.getElementById('conf-envio-activo').checked = conf.envio_gratis_activo;
             document.getElementById('conf-envio-limite').value = conf.envio_gratis_limite || 0;
             
@@ -955,11 +952,8 @@ async function guardarConfiguracion() {
         banco_usd_cbu: document.getElementById('conf-banco-usd-cbu').value.trim(),
         banco_usd_alias: document.getElementById('conf-banco-usd-alias').value.trim(),
         
-        correo_activo: document.getElementById('conf-correo-activo').checked,
-        correo_cp: document.getElementById('conf-correo-cp').value.trim(),
-        
         envio_gratis_activo: document.getElementById('conf-envio-activo').checked,
-        envio_gratis_limite: parseFloat(document.getElementById('conf-envio-limite').value) || 0,
+        envio_gratis_limite: Number(document.getElementById('conf-envio-limite').value) || 0,
         
         descuento_activo: document.getElementById('conf-desc-activo').checked,
         descuento_porcentaje: Number(document.getElementById('conf-desc-porcentaje').value) || 0,
