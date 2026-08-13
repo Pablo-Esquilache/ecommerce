@@ -430,10 +430,15 @@ function renderAdminProductos(lista) {
             ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">⚠️ ${p.stock} (Bajo)</span>`
             : `<span style="font-weight: 500;">${p.stock}</span>`;
 
+        const tipoDisplay = p.tipo_producto === 'digital' 
+            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💻 Digital</span>' 
+            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 Físico</span>';
+
         pTB.innerHTML += `<tr>
             <td>${p.id}</td>
             <td><img src="${p.imagen_1 || ''}" width="40" height="40" style="object-fit:cover; border-radius:4px; background:#f0f0f0;"></td>
             <td>${p.nombre}</td>
+            <td>${tipoDisplay}</td>
             <td><div style="font-size:0.9em;font-weight:bold;">ARS ${p.precio}</div><div style="font-size:0.8em;color:gray;">USD ${p.precio_usd || 0}</div></td>
             <td>${stockDisplay}</td>
             <td style="display:flex; gap:10px; align-items:center;">
