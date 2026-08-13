@@ -44,30 +44,26 @@ const correoArgentinoService = {
     }
   },
 
-  cotizarEnvio: async (cpDestino, pesoKg = 1) => {
+  cotizarEnvio: async (cpOrigen, cpDestino, pesoGramos) => {
     try {
-      // Simulate/mock behavior for testing since we might get 401 if credentials don't have cotizacion access in prod yet
-      // The real endpoint for MiCorreo is usually something like /cotizacion or /envios/cotizacion
-      // I will implement a robust fallback just in case the API call fails due to permissions.
-
       const token = await correoArgentinoService.getToken();
-
-      // Official MiCorreo API expects details like CP origen, CP destino, weight, dimensions.
-      // Assuming a default origin CP and package size for simple E-commerce.
-      const cpOrigen = '1000'; // CABA default
+      
+      const CUSTOMER_ID = '0001215367'; // En duro porque la cuenta es de producción
       
       const bodyParams = {
-        cpO: cpOrigen,
-        cpD: cpDestino,
-        peso: pesoKg,
-        // Default dims
-        alto: 10,
-        ancho: 10,
-        largo: 10,
-        bultos: 1
+        customerId: CUSTOMER_ID,
+        postalCodeOrigin: cpOrigen.toString(),
+        postalCodeDestination: cpDestino.toString(),
+        deliveredType: "D", // "D" para domicilio. En un futuro podríamos agregar sucursal
+        dimensions: {
+          weight: Math.max(1, pesoGramos), // Mínimo 1 gramo
+          height: 10,
+          width: 20,
+          length: 30
+        }
       };
 
-      const response = await fetch(`${API_BASE_URL}/cotizacion`, {
+      const response = await fetch(`${API_BASE_URL}/rates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -77,35 +73,33 @@ const correoArgentinoService = {
       });
 
       if (!response.ok) {
-        throw new Error(`API Correo respondió con status ${response.status}`);
+        const errText = await response.text();
+        throw new Error(`API Correo respondió con status ${response.status}: ${errText}`);
       }
 
       const data = await response.json();
-      return data;
+      
+      // Mapear opciones para el frontend
+      if (data && data.rates && data.rates.length > 0) {
+        return {
+          success: true,
+          opciones: data.rates.map(rate => ({
+            id: rate.productType, // "CP" o "EP"
+            nombre: rate.productName,
+            costo: parseFloat(rate.price),
+            tiempo_entrega: `${rate.deliveryTimeMin}-${rate.deliveryTimeMax} días hábiles`
+          }))
+        };
+      } else {
+        throw new Error('No se devolvieron tarifas para este CP.');
+      }
 
     } catch (error) {
-      console.warn("Fallo la cotización real con Correo Argentino, usando fallback en modo de desarrollo.", error.message);
-      // Fallback in case the credentials are not enabled for the API yet or we get unauthorized
-      // Simulation:
-      const basePrice = 2500;
-      const variablePrice = parseInt(cpDestino) > 2000 ? 1500 : 0; // Mas de CABA/GBA es mas caro
-      const finalPrice = basePrice + variablePrice + (pesoKg * 500);
-
+      console.error("Fallo la cotización real con Correo Argentino:", error.message);
       return {
         success: false,
-        warning: "Usando cotización simulada debido a un error con la API (credenciales/permisos)",
-        opciones: [
-          {
-            nombre: "Envío a Domicilio (Clásico)",
-            costo: finalPrice,
-            tiempo_entrega: "3-5 días hábiles"
-          },
-          {
-            nombre: "Retiro en Sucursal",
-            costo: finalPrice - 800,
-            tiempo_entrega: "2-4 días hábiles"
-          }
-        ]
+        warning: "Error al cotizar con Correo Argentino.",
+        error: error.message
       };
     }
   }

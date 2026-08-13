@@ -95,7 +95,8 @@ const adminController = {
         envio_gratis_activo, envio_gratis_limite,
         sync_activo, sync_api_key,
         banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias,
-        banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias
+        banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias,
+        correo_activo, correo_cp
       } = req.body;
 
       await db.query('INSERT INTO configuracion (id) VALUES (1) ON CONFLICT (id) DO NOTHING');
@@ -111,7 +112,8 @@ const adminController = {
           envio_gratis_activo = $17, envio_gratis_limite = $18,
           sync_activo = $19, sync_api_key = $20, email_admin = $21,
           banco_nombre = $22, banco_titular = $23, banco_cuit = $24, banco_cbu = $25, banco_alias = $26,
-          banco_usd_nombre = $27, banco_usd_titular = $28, banco_usd_cuit = $29, banco_usd_cbu = $30, banco_usd_alias = $31
+          banco_usd_nombre = $27, banco_usd_titular = $28, banco_usd_cuit = $29, banco_usd_cbu = $30, banco_usd_alias = $31,
+          correo_activo = $32, correo_cp = $33
         WHERE id = 1
         RETURNING *
       `;
@@ -125,7 +127,8 @@ const adminController = {
         !!envio_gratis_activo, envio_gratis_limite||0,
         !!sync_activo, sync_api_key||'', email_admin||'',
         banco_nombre||'', banco_titular||'', banco_cuit||'', banco_cbu||'', banco_alias||'',
-        banco_usd_nombre||'', banco_usd_titular||'', banco_usd_cuit||'', banco_usd_cbu||'', banco_usd_alias||''
+        banco_usd_nombre||'', banco_usd_titular||'', banco_usd_cuit||'', banco_usd_cbu||'', banco_usd_alias||'',
+        !!correo_activo, correo_cp||''
       ];
 
       const { rows } = await db.query(query, values);
