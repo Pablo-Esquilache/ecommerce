@@ -20,8 +20,7 @@ const correoArgentinoService = {
       const response = await fetch(`${API_BASE_URL}/token`, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Authorization': `Basic ${credentials}`
         }
       });
 
@@ -46,28 +45,27 @@ const correoArgentinoService = {
 
   cotizarEnvio: async (cpDestino, pesoKg = 1) => {
     try {
-      // Simulate/mock behavior for testing since we might get 401 if credentials don't have cotizacion access in prod yet
-      // The real endpoint for MiCorreo is usually something like /cotizacion or /envios/cotizacion
-      // I will implement a robust fallback just in case the API call fails due to permissions.
-
       const token = await correoArgentinoService.getToken();
 
-      // Official MiCorreo API expects details like CP origen, CP destino, weight, dimensions.
-      // Assuming a default origin CP and package size for simple E-commerce.
-      const cpOrigen = '1000'; // CABA default
-      
+      // Ajustamos el peso a gramos (1kg = 1000g)
+      const pesoGramos = pesoKg * 1000;
+      const cpOrigen = '1000'; // Default
+      const customerId = process.env.CORREO_ARG_CUSTOMER_ID || '0001215367'; // Debe tener 10 dígitos (ceros a la izquierda)
+
       const bodyParams = {
-        cpO: cpOrigen,
-        cpD: cpDestino,
-        peso: pesoKg,
-        // Default dims
-        alto: 10,
-        ancho: 10,
-        largo: 10,
-        bultos: 1
+        customerId: customerId,
+        postalCodeOrigin: cpOrigen,
+        postalCodeDestination: cpDestino,
+        deliveredType: "S", // "S" = Sucursal (Cambiado para prueba según soporte)
+        dimensions: {
+          weight: pesoGramos,
+          height: 10,
+          width: 10,
+          length: 10
+        }
       };
 
-      const response = await fetch(`${API_BASE_URL}/cotizacion`, {
+      const response = await fetch(`${API_BASE_URL}/rates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -77,7 +75,8 @@ const correoArgentinoService = {
       });
 
       if (!response.ok) {
-        throw new Error(`API Correo respondió con status ${response.status}`);
+        const errData = await response.text();
+        throw new Error(`API Correo respondió con status ${response.status}: ${errData}`);
       }
 
       const data = await response.json();

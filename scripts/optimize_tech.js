@@ -5,18 +5,14 @@ const brainDir = 'C:/Users/pablo/.gemini/antigravity/brain/b82eb01a-92d0-4a4b-a3
 const outDir = 'frontend/public/img';
 
 const images = [
-    { src: 'logo_electronics_1786503294469.jpg', dest: 'logo.png', width: null, format: 'png' },
-    { src: 'portada1_gen_1786503307270.jpg', dest: 'portada1.webp', width: 1920, format: 'webp' },
-    { src: 'portada2_gen_1786503319728.jpg', dest: 'portada2.webp', width: 1920, format: 'webp' },
-    { src: 'portada3_gen_1786503346190.jpg', dest: 'portada3.webp', width: 1920, format: 'webp' },
-    { src: 'portada1_vertical_1786503358537.jpg', dest: 'portada1_vertical.webp', width: 1080, format: 'webp' },
-    { src: 'portada2_vertical_1786503488318.jpg', dest: 'portada2_vertical.webp', width: 1080, format: 'webp' },
-    { src: 'portada3_vertical_1786503499011.jpg', dest: 'portada3_vertical.webp', width: 1080, format: 'webp' },
-    { src: 'quienes_somos_1_tech_1786503546336.jpg', dest: 'quienes_somos_1.webp', width: 800, format: 'webp' },
-    { src: 'quienes_somos_2_tech_1786503557273.jpg', dest: 'quienes_somos_2.webp', width: 800, format: 'webp' },
-    { src: 'galeria_1_tech_1786503567468.jpg', dest: 'galeria_mini_1.webp', width: 800, format: 'webp' },
-    { src: 'galeria_2_tech_1786503578163.jpg', dest: 'galeria_mini_2.webp', width: 800, format: 'webp' },
-    { src: 'galeria_3_tech_1786503588152.jpg', dest: 'galeria_mini_3.webp', width: 800, format: 'webp' }
+    { src: 'galeria_4_tech_1786555677731.jpg', dest: 'galeria_mini_4.webp', width: 800, format: 'webp' },
+    { src: 'galeria_5_tech_1786555862902.jpg', dest: 'galeria_mini_5.webp', width: 800, format: 'webp' },
+    { src: 'producto_1_tech_1786555874862.jpg', dest: 'producto_1.webp', width: 800, format: 'webp' },
+    { src: 'producto_2_tech_1786560881069.jpg', dest: 'producto_2.webp', width: 800, format: 'webp' },
+    { src: 'producto_3_tech_1786560897193.jpg', dest: 'producto_3.webp', width: 800, format: 'webp' },
+    { src: 'producto_4_tech_1786560908415.jpg', dest: 'producto_4.webp', width: 800, format: 'webp' },
+    { src: 'producto_5_tech_1786560919563.jpg', dest: 'producto_5.webp', width: 800, format: 'webp' },
+    { src: 'producto_6_tech_1786560930808.jpg', dest: 'producto_6.webp', width: 800, format: 'webp' }
 ];
 
 async function processImages() {

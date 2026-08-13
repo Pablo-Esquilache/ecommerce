@@ -1,11 +1,11 @@
 :root {
-    --primary: #5A999D;
-    --secondary: #B45B2E;
-    --bg: #FAFAFA;
-    --text: #333333;
-    --light-text: #7F8C8D;
+    --primary: #2563EB;
+    --secondary: #06B6D4;
+    --bg: #F8FAFC;
+    --text: #0F172A;
+    --light-text: #64748B;
     --white: #FFFFFF;
-    --border: #EEEEEE;
+    --border: #E2E8F0;
     --shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
@@ -27,7 +27,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-form input, .contacto-form textarea, .btn {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
 }
 
 .container {
