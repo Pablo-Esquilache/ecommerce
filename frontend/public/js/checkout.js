@@ -89,12 +89,21 @@ function renderSummary() {
     
     const seccionEnvio = document.getElementById('seccion-envio');
     if (seccionEnvio) {
-        seccionEnvio.style.display = 'block';
-        document.getElementById('direccion').setAttribute('required', 'true');
-        document.getElementById('provincia').setAttribute('required', 'true');
-        document.getElementById('partido').setAttribute('required', 'true');
-        document.getElementById('ciudad').setAttribute('required', 'true');
-        document.getElementById('codigo_postal').setAttribute('required', 'true');
+        if (!hayFisico && hayDigital) {
+            seccionEnvio.style.display = 'none';
+            document.getElementById('direccion').removeAttribute('required');
+            document.getElementById('provincia').removeAttribute('required');
+            document.getElementById('partido').removeAttribute('required');
+            document.getElementById('ciudad').removeAttribute('required');
+            document.getElementById('codigo_postal').removeAttribute('required');
+        } else {
+            seccionEnvio.style.display = 'block';
+            document.getElementById('direccion').setAttribute('required', 'true');
+            document.getElementById('provincia').setAttribute('required', 'true');
+            document.getElementById('partido').setAttribute('required', 'true');
+            document.getElementById('ciudad').setAttribute('required', 'true');
+            document.getElementById('codigo_postal').setAttribute('required', 'true');
+        }
         
         let avisoEnvio = document.getElementById('aviso-envio-dinamico');
         if (!avisoEnvio) {
@@ -104,7 +113,7 @@ function renderSummary() {
             avisoEnvio.style.fontSize = '14px';
             avisoEnvio.style.color = '#e67e22';
             avisoEnvio.style.fontWeight = 'bold';
-            seccionEnvio.appendChild(avisoEnvio);
+            seccionEnvio.parentNode.insertBefore(avisoEnvio, seccionEnvio.nextSibling); // Puesto afuera de seccionEnvio para que se vea siempre
         }
         
         let mensajes = [];
@@ -137,17 +146,20 @@ async function procesarCheckout(e) {
     e.preventDefault();
     const carrito = JSON.parse(localStorage.getItem('cart')) || [];
     
+    const hayFisico = carrito.some(item => item.tipo_producto !== 'digital');
+    const hayDigital = carrito.some(item => item.tipo_producto === 'digital');
+    
     const cliente = {
         nombre: document.getElementById('nombre').value,
         apellido: document.getElementById('apellido').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('telefono').value,
         genero: document.getElementById('genero').value,
-        direccion: document.getElementById('direccion').value,
+        direccion: (!hayFisico && hayDigital) ? 'Envío Digital' : document.getElementById('direccion').value,
         // Combinamos Partido y Ciudad de forma transparente para el Backend
-        ciudad: document.getElementById('partido').value + ' - ' + document.getElementById('ciudad').value,
-        provincia: document.getElementById('provincia').value,
-        codigo_postal: document.getElementById('codigo_postal').value
+        ciudad: (!hayFisico && hayDigital) ? 'Digital' : (document.getElementById('partido').value + ' - ' + document.getElementById('ciudad').value),
+        provincia: (!hayFisico && hayDigital) ? 'Digital' : document.getElementById('provincia').value,
+        codigo_postal: (!hayFisico && hayDigital) ? '0000' : document.getElementById('codigo_postal').value
     };
 
     const metodo_pago = document.getElementById('metodo_pago').value;
