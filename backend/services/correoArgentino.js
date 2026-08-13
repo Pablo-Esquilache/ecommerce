@@ -1,7 +1,7 @@
 // Usaremos fetch nativo para enviar a API
 const API_BASE_URL = 'https://api.correoargentino.com.ar/micorreo/v1';
-const USER = process.env.CORREO_ARG_USER;
-const PASS = process.env.CORREO_ARG_PASS;
+const USER = process.env.CORREO_ARG_USER || 'PEsquilacheAPI';
+const PASS = process.env.CORREO_ARG_PASS || 'Alfombra10+';
 
 // Cache the token to avoid authenticating on every request
 let cachedToken = null;
@@ -20,8 +20,7 @@ const correoArgentinoService = {
       const response = await fetch(`${API_BASE_URL}/token`, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Authorization': `Basic ${credentials}`
         }
       });
 
