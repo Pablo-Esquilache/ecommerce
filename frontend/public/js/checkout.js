@@ -182,7 +182,6 @@ async function calcularEnvio() {
                 seleccionarOpcionEnvio(data.opciones[0].costo, data.opciones[0].nombre, data.opciones[0].id);
             }
         } else {
-            if (!data.success) {
             // Mostrar fallback (A convenir)
             console.error("Error devuelto por el servidor:", data.error || data.message || 'Error desconocido');
             opcionesLista.innerHTML = `
