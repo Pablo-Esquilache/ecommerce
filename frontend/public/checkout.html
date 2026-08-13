@@ -79,7 +79,17 @@
                         <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Partido/Depto</label><select id="partido" required disabled><option value="">Elija Provincia...</option></select></div>
                         <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Localidad</label><select id="ciudad" required disabled><option value="">Elija Partido...</option></select></div>
                     </div>
-                    <div class="form-group"><label class="required">Código Postal</label><input type="text" id="codigo_postal" required onchange="calcularEnvio()"></div>
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <div class="form-group" style="flex:1;"><label class="required">Código Postal</label><input type="text" id="codigo_postal" required></div>
+                        <div class="form-group"><button type="button" class="btn" style="background:#3498db; color:white; height:42px; padding:0 20px; line-height:42px;" onclick="calcularEnvio()">Calcular Envío</button></div>
+                    </div>
+                    
+                    <div id="opciones-envio-container" style="display:none; background:#f9f9f9; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #e1e8ed;">
+                        <h4 style="margin-top:0; margin-bottom:10px;"><i class="fas fa-truck"></i> Opciones de Envío</h4>
+                        <div id="opciones-envio-lista">
+                            <!-- Opciones cargadas dinámicamente -->
+                        </div>
+                    </div>
                 </div>
 
                 <h3 style="margin-top: 20px;">Método de Pago</h3>

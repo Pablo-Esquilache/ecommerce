@@ -62,11 +62,11 @@ const pedidoController = {
       carrito = carritoValidado;
 
 
-      // Costo de envio
-      let costo_envio = 0; // Se asume 0 por ahora a falta de API externa
+      // Costo de envio (ahora lo manda el frontend, validamos lógicamente)
+      let costo_envio = Number(req.body.costo_envio) || 0;
       const isUSD = metodo_pago === 'transferencia_usd';
       if (conf.envio_gratis_activo && subtotal >= conf.envio_gratis_limite && !isUSD) {
-          costo_envio = 0; // Confirmamos que es cero
+          costo_envio = 0; // Si hay promoción, el envío es gratis sí o sí
       }
       
       let total = subtotal + costo_envio;
@@ -76,7 +76,8 @@ const pedidoController = {
         subtotal,
         costo_envio,
         total,
-        metodo_pago
+        metodo_pago,
+        metodo_envio
       };
 
       // 3. Crear el pedido localmente en la DB

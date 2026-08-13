@@ -129,8 +129,87 @@ function renderSummary() {
 }
 
 async function calcularEnvio() {
-    // Shipping is disabled for now, all calculations are skipped and cost is 0.
-    costoEnvioFinal = 0;
+    const cp = document.getElementById('codigo_postal').value;
+    const opcionesContainer = document.getElementById('opciones-envio-container');
+    const opcionesLista = document.getElementById('opciones-envio-lista');
+    
+    if (!cp || cp.length < 4) return;
+    
+    const isUSD = localStorage.getItem('currency') === 'USD';
+    const sign = isUSD ? 'USD $' : '$';
+
+    try {
+        const carrito = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        opcionesContainer.style.display = 'block';
+        opcionesLista.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Calculando envíos...</p>';
+        
+        const res = await fetch('/api/envios/cotizar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ codigo_postal: cp, carrito })
+        });
+        
+        const data = await res.json();
+        
+        if (data.isDigital) {
+            opcionesLista.innerHTML = '<p style="color:#27ae60;"><i class="fas fa-check-circle"></i> Envío Digital Gratuito</p>';
+            seleccionarOpcionEnvio(0, 'Envío Digital', 'Digital');
+            return;
+        }
+
+        if (data.success) {
+            let html = '';
+            data.opciones.forEach((opcion, index) => {
+                const checked = index === 0 ? 'checked' : '';
+                html += `
+                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer;" onclick="document.getElementById('envio_${index}').click()">
+                        <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
+                            <input type="radio" name="opcion_envio" id="envio_${index}" value="${opcion.costo}" data-nombre="${opcion.nombre}" data-id="${opcion.id}" ${checked} onchange="seleccionarOpcionEnvio(${opcion.costo}, '${opcion.nombre}', '${opcion.id}')" style="margin-right: 10px;">
+                            <div style="flex:1;">
+                                <strong style="display:block;">${opcion.nombre}</strong>
+                                <span style="font-size:12px; color:#7f8c8d;">${opcion.tiempo_entrega}</span>
+                            </div>
+                            <strong style="color:#2c3e50;">${sign}${opcion.costo.toFixed(2)}</strong>
+                        </label>
+                    </div>
+                `;
+            });
+            opcionesLista.innerHTML = html;
+            
+            // Auto select the first one
+            if (data.opciones.length > 0) {
+                seleccionarOpcionEnvio(data.opciones[0].costo, data.opciones[0].nombre, data.opciones[0].id);
+            }
+        } else {
+            // Fallback (API inactiva, falló, o desactivada en admin)
+            opcionesLista.innerHTML = `
+                <div style="padding: 10px; border: 1px solid #f39c12; background:#fdfae2; border-radius: 4px; margin-bottom: 8px; cursor: pointer;">
+                    <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
+                        <input type="radio" name="opcion_envio" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR')" style="margin-right: 10px;">
+                        <div style="flex:1;">
+                            <strong style="display:block;">A convenir con el vendedor</strong>
+                            <span style="font-size:12px; color:#d35400;">No se pudo calcular. Continuá la compra y acordaremos el envío.</span>
+                        </div>
+                        <strong style="color:#2c3e50;">A Confirmar</strong>
+                    </label>
+                </div>
+            `;
+            seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+        opcionesLista.innerHTML = '<p style="color:#e74c3c;">Ocurrió un error al cotizar. Por favor, reintente en unos minutos o continúe y acordaremos el envío.</p>';
+        seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR');
+    }
+}
+
+// Global para la orden
+let envioSeleccionado = { costo: 0, nombre: '', id: '' };
+
+function seleccionarOpcionEnvio(costo, nombre, id) {
+    costoEnvioFinal = parseFloat(costo) || 0;
+    envioSeleccionado = { costo, nombre, id };
     
     const isUSD = localStorage.getItem('currency') === 'USD';
     const sign = isUSD ? 'USD $' : '$';
@@ -164,14 +243,17 @@ async function procesarCheckout(e) {
 
     const metodo_pago = document.getElementById('metodo_pago').value;
     
-    // Método de envío para el backend (podría ser un selector)
-    const metodo_envio = costoEnvioFinal === 0 ? 'promocion' : 'domicilio';
-
+    // Enviar la opción seleccionada al backend
+    const metodo_envio = (envioSeleccionado.id && envioSeleccionado.id !== 'A_CONVENIR' && envioSeleccionado.id !== 'Digital') 
+                          ? `correo_${envioSeleccionado.id}` 
+                          : (envioSeleccionado.id === 'Digital' ? 'digital' : 'a_convenir');
+    
     const payload = {
         cliente,
         carrito,
         metodo_pago,
-        metodo_envio
+        metodo_envio,
+        costo_envio: costoEnvioFinal // Mandamos el costo calculado para que lo sumen en el ticket
     };
 
     try {
