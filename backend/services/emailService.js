@@ -155,12 +155,18 @@ const emailService = {
     },
 
     enviarCorreoEnvio: async (cliente_email, pedidoData) => {
+        let trackingHtml = '';
+        if (pedidoData.tracking_number) {
+            trackingHtml = `<p>Tu código de seguimiento es: <strong>${pedidoData.tracking_number}</strong></p>
+                            <p>Podés hacer el seguimiento en la web de Correo Argentino.</p>`;
+        }
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
             to: cliente_email,
             subject: `Tu pedido #${pedidoData.id} está en camino 🚚`,
             html: getHtmlTemplate('¡Tu pedido ha sido despachado!', `
                 <p>El pedido <strong>#${pedidoData.id}</strong> ya se encuentra en camino hacia tu domicilio o sucursal seleccionada.</p>
+                ${trackingHtml}
                 <p>¡Esperamos que lo disfrutes!</p>
             `)
         };

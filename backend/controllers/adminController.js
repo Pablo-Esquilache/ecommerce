@@ -322,6 +322,75 @@ const adminController = {
       console.error('Error deleteAdmin:', e);
       res.status(500).json({ error: 'Error eliminando administrador' });
     }
+  },
+
+  generarEnvio: async (req, res) => {
+    try {
+      const { id } = req.params; // ID del pedido
+      
+      const db = require('../config/database');
+      const { rows } = await db.query('SELECT * FROM pedidos WHERE id = $1', [id]);
+      if (rows.length === 0) return res.status(404).json({error: 'Pedido no encontrado'});
+      const pedido = rows[0];
+
+      // Verificamos configuración de correo
+      const confRes = await db.query('SELECT correo_activo FROM configuracion WHERE id = 1');
+      if (!confRes.rows[0]?.correo_activo) {
+        return res.status(400).json({error: 'El servicio de Correo Argentino no está activo'});
+      }
+
+      if (pedido.tracking_number) {
+        return res.status(400).json({error: 'El pedido ya tiene un envío generado'});
+      }
+
+      const correoArgentinoService = require('../services/correoArgentino');
+      const response = await correoArgentinoService.generarEnvio(pedido);
+      
+      if (!response.success) {
+        return res.status(500).json({error: response.error || 'Error al generar el envío en Correo Argentino'});
+      }
+
+      // Actualizar DB con el tracking y pasar a estado 'preparando_envio'
+      await db.query(
+        "UPDATE pedidos SET tracking_number = $1, estado = 'preparando_envio' WHERE id = $2",
+        [response.tracking_number, id]
+      );
+
+      res.json({ success: true, tracking_number: response.tracking_number });
+
+    } catch (e) {
+      console.error('Error generarEnvio:', e);
+      res.status(500).json({ error: 'Fallo interno al intentar generar el envío' });
+    }
+  },
+
+  getEtiqueta: async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const db = require('../config/database');
+      const { rows } = await db.query('SELECT tracking_number FROM pedidos WHERE id = $1', [id]);
+      if (rows.length === 0) return res.status(404).json({error: 'Pedido no encontrado'});
+      
+      const tracking = rows[0].tracking_number;
+      if (!tracking) {
+        return res.status(400).json({error: 'Este pedido no tiene envío generado'});
+      }
+
+      const correoArgentinoService = require('../services/correoArgentino');
+      const response = await correoArgentinoService.obtenerEtiqueta(tracking);
+
+      if (!response.success) {
+        return res.status(500).json({error: response.error || 'Error obteniendo etiqueta'});
+      }
+
+      // Podríamos descargar el PDF y mandarlo como binario o simplemente mandar la URL. 
+      // Por ahora mandamos la URL que generó el mock
+      res.json({ success: true, pdf_url: response.pdf_url });
+    } catch (e) {
+      console.error('Error getEtiqueta:', e);
+      res.status(500).json({ error: 'Fallo interno al intentar obtener la etiqueta' });
+    }
   }
 };
 

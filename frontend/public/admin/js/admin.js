@@ -126,7 +126,7 @@ function switchTab(tabId, el) {
     const section = document.getElementById(`view-${tabId}`);
     if(section) section.classList.add('active'); // Added safety check
 
-    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Administradores', ajustes: 'Ajustes del Sistema' };
+    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Configuración de Usuarios', envios: 'Configuración de Envíos', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
     
     // Cerrar sidebar en móviles tras hacer clic
@@ -188,6 +188,31 @@ function renderAdminPedidos(pedidos) {
     paginatedItems.forEach(p => {
         const isPagado = p.estado === 'pagado';
         const isSend = p.estado === 'enviado';
+        let envioHtml = `<span style="color:#aaa; font-size:12px;">N/A</span>`;
+        if (p.metodo_envio !== 'Digital') {
+            if (p.tracking_number) {
+                // [COMENTADO SEGÚN API MICORREO - NO DEVUELVE PDF]
+                /*
+                envioHtml = `
+                    <button class="btn" style="background:#3498db; color:white; padding:4px 8px; font-size:12px; margin-bottom:4px;" onclick="descargarEtiqueta(${p.id})">
+                        <i class="fas fa-print"></i> Etiqueta
+                    </button>
+                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;">${p.tracking_number}</div>
+                `;
+                */
+                envioHtml = `
+                    <div style="color:#2ecc71; font-size:12px; font-weight:bold; margin-bottom: 2px;"><i class="fas fa-check-circle"></i> Exportado</div>
+                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;">ID: ${p.tracking_number}</div>
+                `;
+            } else {
+                envioHtml = `
+                    <button class="btn" style="background:#95a5a6; color:white; padding:4px 8px; font-size:12px;" onclick="generarEnvio(${p.id})">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                `;
+            }
+        }
+
         pTB.innerHTML += `<tr>
             <td>#${p.id}</td>
             <td>${p.cliente_nombre} - <small>${p.cliente_email}</small></td>
@@ -204,6 +229,7 @@ function renderAdminPedidos(pedidos) {
                     <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
                 </select>
             </td>
+            <td style="text-align:center;">${envioHtml}</td>
             <td>
                 <button class="btn" style="background:#2ecc71; color:white; padding: 4px 8px;" onclick="verEticket(${p.id})"><i class="fas fa-ticket-alt"></i> Ver ticket</button>
             </td>
@@ -1112,6 +1138,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadUsuarios() {
     try {
         const res = await fetch(`${API_URL}/admin/usuarios`, { headers: authHeaders() });
+        if (res.status === 401) {
+            alert('Tu sesión ha expirado. Por favor, iniciá sesión nuevamente.');
+            return logout();
+        }
         if (!res.ok) throw new Error('Error al obtener administradores');
         const admins = await res.json();
         
@@ -1180,3 +1210,26 @@ async function deleteUsuario(id) {
     }
 }
 
+
+// --- LOGICA DE CORREO ARGENTINO ---
+async function generarEnvio(pedidoId) {
+    if(!confirm('¿Estás seguro de que deseas exportar este pedido a Correo Argentino? Aparecerá en tu cuenta de MiCorreo para ser pagado.')) return;
+    
+    try {
+        const res = await fetch(${API_URL}/admin/pedidos//generar-envio, {
+            method: 'POST',
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Pedido exportado correctamente. Ya podés ir a gestionarlo en la web de Correo Argentino.');
+            fetchPedidos(); // Recargar la tabla
+        } else {
+            alert(data.error || 'Error al exportar el pedido.');
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Error de conexión al intentar exportar el pedido.');
+    }
+}

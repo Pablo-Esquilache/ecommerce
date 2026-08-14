@@ -85,6 +85,40 @@ const correoArgentinoService = {
         error: error.message
       };
     }
+  },
+
+  generarEnvio: async (pedido) => {
+    // TODO: Reemplazar con endpoint oficial de MiCorreo cuando Leandro (Soporte) pase la doc.
+    console.warn("generarEnvio: endpoint oficial no provisto. Se retorna mock.");
+    // Fake tracking number logic
+    const mockTracking = `AR${Date.now()}AR`;
+    return {
+      success: true,
+      tracking_number: mockTracking,
+      message: "Envío generado exitosamente (Mock)"
+    };
+  },
+
+  obtenerEtiqueta: async (tracking_number) => {
+    // TODO: Reemplazar con endpoint oficial de MiCorreo cuando Leandro (Soporte) pase la doc.
+    console.warn("obtenerEtiqueta: endpoint oficial no provisto. Se retorna PDF mock.");
+    // Simulate returning a PDF buffer or URL
+    return {
+      success: true,
+      pdf_url: `https://www.correoargentino.com.ar/etiqueta/${tracking_number}`,
+      message: "Etiqueta descargada (Mock)"
+    };
+  },
+
+  consultarTracking: async (tracking_number) => {
+    // TODO: Reemplazar con endpoint oficial de MiCorreo cuando Leandro (Soporte) pase la doc.
+    console.warn("consultarTracking: endpoint oficial no provisto. Se retorna mock.");
+    // Mock the state change. Randomly return 'enviado' or 'entregado' for testing.
+    return {
+      success: true,
+      estado: "enviado", // 'enviado' o 'entregado'
+      detalles: "El paquete fue ingresado en la sucursal origen."
+    };
   }
 };
 
