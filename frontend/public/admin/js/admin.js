@@ -1216,7 +1216,7 @@ async function generarEnvio(pedidoId) {
     if(!confirm('¿Estás seguro de que deseas exportar este pedido a Correo Argentino? Aparecerá en tu cuenta de MiCorreo para ser pagado.')) return;
     
     try {
-        const res = await fetch(${API_URL}/admin/pedidos//generar-envio, {
+        const res = await fetch(`${API_URL}/admin/pedidos/${pedidoId}/generar-envio`, {
             method: 'POST',
             headers: authHeaders()
         });
