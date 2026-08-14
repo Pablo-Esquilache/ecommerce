@@ -24,8 +24,24 @@ body { display: flex; height: 100vh; width: 100vw; background: var(--bg); color:
 .sidebar .logout button { background: none; border: none; color: #E74C3C; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; text-align: left;}
 
 /* Main Content */
-.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-header { padding: 20px 30px; background: var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.main-content { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    overflow-y: auto; 
+    width: calc(100vw - 250px); 
+    max-width: calc(100vw - 250px);
+}
+header { 
+    width: 100%; 
+    padding: 20px 30px; 
+    background: var(--white); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-shrink: 0;
+}
 header > div:first-child { display: flex; align-items: center; min-width: 0; flex: 1; }
 header h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
 .user-info { white-space: nowrap; flex-shrink: 0; margin-left: 15px; }
@@ -108,6 +124,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     .menu-toggle { display: inline-block; }
     
     /* Ajustar Cabecera */
+    .main-content { width: 100vw; max-width: 100vw; }
     header { padding: 15px; }
     header h1 { font-size: 20px; display: flex; align-items: center; margin: 0; }
     .user-info { font-size: 14px; }
