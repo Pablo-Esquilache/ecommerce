@@ -25,7 +25,10 @@ body { display: flex; height: 100vh; background: var(--bg); color: var(--text); 
 
 /* Main Content */
 .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-header { padding: 20px 30px; background: var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+header { padding: 20px 30px; background: var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; width: 100%; }
+header > div:first-child { display: flex; align-items: center; min-width: 0; flex: 1; }
+header h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.user-info { white-space: nowrap; flex-shrink: 0; margin-left: 15px; }
 
 /* Views */
 .view-section { display: none; padding: 30px; }
