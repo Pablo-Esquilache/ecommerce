@@ -932,6 +932,7 @@ async function fetchConfiguracion() {
             
             document.getElementById('conf-correo-activo').checked = conf.correo_activo || false;
             document.getElementById('conf-correo-cp').value = conf.correo_cp || '';
+            document.getElementById('conf-correo-customer-id').value = conf.correo_customer_id || '';
 
             document.getElementById('conf-envio-activo').checked = conf.envio_gratis_activo;
             document.getElementById('conf-envio-limite').value = conf.envio_gratis_limite || 0;
@@ -987,6 +988,7 @@ async function guardarConfiguracion() {
         
         correo_activo: document.getElementById('conf-correo-activo').checked,
         correo_cp: document.getElementById('conf-correo-cp').value.trim(),
+        correo_customer_id: document.getElementById('conf-correo-customer-id').value.trim(),
         
         envio_gratis_activo: document.getElementById('conf-envio-activo').checked,
         envio_gratis_limite: parseFloat(document.getElementById('conf-envio-limite').value) || 0,

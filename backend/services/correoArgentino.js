@@ -1,7 +1,8 @@
 // Usaremos fetch nativo para enviar a API
 const API_BASE_URL = 'https://api.correoargentino.com.ar/micorreo/v1';
-const USER = process.env.CORREO_ARG_USER || 'PEsquilacheAPI';
-const PASS = process.env.CORREO_ARG_PASS || 'Alfombra10+';
+const USER = process.env.CORREO_ARG_USER;
+const PASS = process.env.CORREO_ARG_PASS;
+const db = require('../config/database');
 
 const correoArgentinoService = {
   getToken: async () => {
@@ -31,7 +32,12 @@ const correoArgentinoService = {
     try {
       const token = await correoArgentinoService.getToken();
       
-      const CUSTOMER_ID = '0001215367'; // En duro porque la cuenta es de producción
+      const confRes = await db.query('SELECT correo_customer_id FROM configuracion LIMIT 1');
+      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id;
+      
+      if (!CUSTOMER_ID) {
+        throw new Error('El ID de cliente de Correo Argentino no está configurado en el panel.');
+      }
       
       const bodyParams = {
         customerId: CUSTOMER_ID,
@@ -90,7 +96,13 @@ const correoArgentinoService = {
   generarEnvio: async (pedido) => {
     try {
       const token = await correoArgentinoService.getToken();
-      const CUSTOMER_ID = '0001215367'; // En duro porque la cuenta es de producción
+      
+      const confRes = await db.query('SELECT correo_customer_id FROM configuracion LIMIT 1');
+      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id;
+      
+      if (!CUSTOMER_ID) {
+        throw new Error('El ID de cliente de Correo Argentino no está configurado en el panel.');
+      }
       
       const isSucursal = pedido.metodo_envio && pedido.metodo_envio.toLowerCase().includes('sucursal');
       const isExpreso = pedido.metodo_envio && pedido.metodo_envio.toLowerCase().includes('expreso');
