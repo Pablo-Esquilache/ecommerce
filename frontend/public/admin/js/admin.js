@@ -201,13 +201,13 @@ function renderAdminPedidos(pedidos) {
                 `;
                 */
                 envioHtml = `
-                    <div style="color:#2ecc71; font-size:12px; font-weight:bold; margin-bottom: 2px;"><i class="fas fa-check-circle"></i> Exportado</div>
-                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;">ID: ${p.tracking_number}</div>
+                    <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado"><i class="fas fa-check-circle"></i></div>
+                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;" title="ID de Envío">${p.tracking_number}</div>
                 `;
             } else {
                 envioHtml = `
-                    <button class="btn" style="background:#95a5a6; color:white; padding:4px 8px; font-size:12px;" onclick="generarEnvio(${p.id})">
-                        <i class="fas fa-file-export"></i> Exportar
+                    <button class="btn" style="background:#95a5a6; color:white; padding:6px 10px; font-size:14px;" title="Exportar a Correo Argentino" onclick="generarEnvio(${p.id})">
+                        <i class="fas fa-file-export"></i>
                     </button>
                 `;
             }
@@ -230,8 +230,10 @@ function renderAdminPedidos(pedidos) {
                 </select>
             </td>
             <td style="text-align:center;">${envioHtml}</td>
-            <td>
-                <button class="btn" style="background:#2ecc71; color:white; padding: 4px 8px;" onclick="verEticket(${p.id})"><i class="fas fa-ticket-alt"></i> Ver ticket</button>
+            <td style="text-align:center;">
+                <button class="btn" style="background:#2ecc71; color:white; padding:6px 10px; font-size:14px;" title="Ver ticket" onclick="verEticket(${p.id})">
+                    <i class="fas fa-ticket-alt"></i>
+                </button>
             </td>
         </tr>`;
     });
