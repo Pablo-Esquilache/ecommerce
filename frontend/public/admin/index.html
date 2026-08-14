@@ -391,7 +391,7 @@
                     <!-- Físicos -->
                     <div id="container-fisicos" style="display:flex; gap:10px;">
                         <div class="form-group" style="flex:1"><label>Peso (kg)</label><input type="number" step="0.01" id="prod-peso" placeholder="0.5"></div>
-                        <div class="form-group" style="flex:1"><label>Dimensiones</label><input type="text" id="prod-dimensiones" placeholder="Ej: 20x15x5 cm"></div>
+                        <div class="form-group" style="flex:1"><label>Dimensiones <span style="font-weight:normal; font-size:12px; color:#7f8c8d;">(alto x largo x ancho en cm)</span></label><input type="text" id="prod-dimensiones" placeholder="Ej: 10x30x20"></div>
                     </div>
 
                     <!-- Digitales -->
@@ -489,7 +489,8 @@
 
         <!-- VIEW: USUARIOS (Admins) -->
         <section id="view-usuarios" class="view-section">
-            <div class="header-actions">
+            <div class="header-actions" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0;">Configuración de Usuarios</h3>
                 <button class="btn btn-primary" onclick="openModal('usuario-modal')">Nuevo Administrador</button>
             </div>
             <div class="table-card">
