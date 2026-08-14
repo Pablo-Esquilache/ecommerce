@@ -201,8 +201,7 @@ function renderAdminPedidos(pedidos) {
                 `;
                 */
                 envioHtml = `
-                    <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado"><i class="fas fa-check-circle"></i></div>
-                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;" title="ID de Envío">${p.tracking_number}</div>
+                    <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado a MiCorreo (Orden #${p.id})"><i class="fas fa-check-circle"></i></div>
                 `;
             } else {
                 envioHtml = `

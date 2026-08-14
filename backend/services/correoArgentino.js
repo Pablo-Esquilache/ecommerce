@@ -88,15 +88,82 @@ const correoArgentinoService = {
   },
 
   generarEnvio: async (pedido) => {
-    // TODO: Reemplazar con endpoint oficial de MiCorreo cuando Leandro (Soporte) pase la doc.
-    console.warn("generarEnvio: endpoint oficial no provisto. Se retorna mock.");
-    // Fake tracking number logic
-    const mockTracking = `AR${Date.now()}AR`;
-    return {
-      success: true,
-      tracking_number: mockTracking,
-      message: "Envío generado exitosamente (Mock)"
-    };
+    try {
+      const token = await correoArgentinoService.getToken();
+      const CUSTOMER_ID = '0001215367'; // En duro porque la cuenta es de producción
+      
+      const isSucursal = pedido.metodo_envio && pedido.metodo_envio.toLowerCase().includes('sucursal');
+      const isExpreso = pedido.metodo_envio && pedido.metodo_envio.toLowerCase().includes('expreso');
+      const deliveryType = isSucursal ? "S" : "D";
+      const productType = isExpreso ? "EP" : "CP";
+
+      // Infer province code (super basic mapping, defaults to B)
+      const prov = (pedido.cliente_provincia || '').toLowerCase();
+      let provinceCode = "B"; // Default Buenos Aires
+      if (prov.includes('caba') || prov.includes('capital')) provinceCode = "C";
+      else if (prov.includes('cordoba') || prov.includes('córdoba')) provinceCode = "X";
+      else if (prov.includes('santa fe')) provinceCode = "S";
+      else if (prov.includes('mendoza')) provinceCode = "M";
+
+      const payload = {
+        customerId: CUSTOMER_ID,
+        extOrderId: pedido.id.toString(),
+        orderNumber: pedido.id.toString(),
+        recipient: {
+          name: `${pedido.cliente_nombre} ${pedido.cliente_apellido}`.trim(),
+          email: pedido.cliente_email,
+          phone: pedido.cliente_telefono || "00000000"
+        },
+        shipping: {
+          deliveryType: deliveryType,
+          productType: productType,
+          weight: 1000, // Hardcoded fallback if not set. Idealmente sumar weights
+          declaredValue: parseFloat(pedido.total) || 1000,
+          height: 10,
+          length: 20,
+          width: 30,
+        }
+      };
+
+      if (deliveryType === "D") {
+        payload.shipping.address = {
+          streetName: pedido.cliente_direccion || "Sin calle",
+          streetNumber: "S/N", // This could be parsed from direccion
+          city: pedido.cliente_ciudad || "Sin ciudad",
+          provinceCode: provinceCode,
+          postalCode: pedido.cliente_cp || "1000"
+        };
+      }
+
+      const response = await fetch(`${API_BASE_URL}/shipping/import`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API Correo respondió con status ${response.status}: ${errText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        tracking_number: pedido.id.toString(),
+        message: "Envío importado exitosamente a MiCorreo"
+      };
+
+    } catch (error) {
+      console.error("Fallo la generación del envío en Correo Argentino:", error.message);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   },
 
   obtenerEtiqueta: async (tracking_number) => {

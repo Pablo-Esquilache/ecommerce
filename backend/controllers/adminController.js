@@ -329,7 +329,15 @@ const adminController = {
       const { id } = req.params; // ID del pedido
       
       const db = require('../config/database');
-      const { rows } = await db.query('SELECT * FROM pedidos WHERE id = $1', [id]);
+      const query = `
+        SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido, c.email as cliente_email, 
+               c.telefono as cliente_telefono, c.direccion as cliente_direccion, c.ciudad as cliente_ciudad, 
+               c.provincia as cliente_provincia, c.codigo_postal as cliente_cp
+        FROM pedidos p
+        JOIN clientes c ON p.cliente_id = c.id
+        WHERE p.id = $1
+      `;
+      const { rows } = await db.query(query, [id]);
       if (rows.length === 0) return res.status(404).json({error: 'Pedido no encontrado'});
       const pedido = rows[0];
 
