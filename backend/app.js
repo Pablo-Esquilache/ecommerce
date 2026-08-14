@@ -24,7 +24,7 @@ const categoriasRoutes = require('./routes/categorias');
 const syncRoutes = require('./routes/sync');
 
 // Iniciar procesos en segundo plano (Cron Jobs)
-require('./cron/sincronizarTracking');
+// require('./cron/sincronizarTracking');
 
 // Middlewares
 app.use(cors());
