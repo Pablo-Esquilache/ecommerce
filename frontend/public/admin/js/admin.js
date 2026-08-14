@@ -215,7 +215,10 @@ function renderAdminPedidos(pedidos) {
 
         pTB.innerHTML += `<tr>
             <td>#${p.id}</td>
-            <td>${p.cliente_nombre} - <small>${p.cliente_email}</small></td>
+            <td>
+                <div style="font-weight:bold;">${p.cliente_nombre}</div>
+                <small style="color:#7f8c8d;">${p.cliente_email}</small>
+            </td>
             <td>$${parseFloat(p.total).toLocaleString('es-AR')}</td>
             <td><span class="badge ${p.estado}">${p.estado}</span></td>
             <td>${p.metodo_pago}</td>
