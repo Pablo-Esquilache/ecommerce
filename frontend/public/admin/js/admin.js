@@ -263,7 +263,7 @@ async function verEticket(pedidoId) {
 
         document.getElementById('eticket-content').innerHTML = `
             <div style="text-align:center; border-bottom:1px dashed #ccc; padding-bottom:10px; margin-bottom:10px;">
-                <h3 style="margin:0;">Sidhartta Hilados</h3>
+                <h3 style="margin:0;">ElectroShop</h3>
                 <small>Comprobante de Venta</small><br>
                 <strong>Ticket #${p.id}</strong><br>
                 <span>Fecha: ${fecha}</span>
