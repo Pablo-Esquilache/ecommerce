@@ -125,7 +125,5 @@ CREATE TABLE "configuracion" (
 
 INSERT INTO "configuracion" ("id", "admin_nombre") VALUES (1, 'Administrador') ON CONFLICT ("id") DO NOTHING;
 
--- Administrador por defecto (password = admin123)
--- Hash de bcrypt para "admin123" generado en Node.js ($2b$10$w4rYqL7yP0N3vV/Lh1D6YOSm9Gj2j3u4P5S8UvP6QxZ4E5wD0oM9q)
 INSERT INTO "administradores" ("email", "password", "nombre") 
 VALUES ('admin@ecommerce.com', '$2b$10$w4rYqL7yP0N3vV/Lh1D6YOSm9Gj2j3u4P5S8UvP6QxZ4E5wD0oM9q', 'Administrador Principal');
