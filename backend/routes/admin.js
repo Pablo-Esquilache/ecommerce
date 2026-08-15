@@ -38,6 +38,6 @@ router.delete('/usuarios/:id', authMiddleware, adminController.deleteAdmin);
 
 // [NUEVO] Rutas de Correo Argentino (Envios)
 router.post('/pedidos/:id/generar-envio', authMiddleware, adminController.generarEnvio);
-router.get('/pedidos/:id/etiqueta', authMiddleware, adminController.getEtiqueta);
+// router.get('/pedidos/:id/etiqueta', authMiddleware, adminController.getEtiqueta);
 
 module.exports = router;
