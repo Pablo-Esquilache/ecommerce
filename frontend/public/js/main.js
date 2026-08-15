@@ -377,7 +377,7 @@ function updateCartUI() {
 
         cartItems.innerHTML += `
             <div class="cart-item" style="${overlayStyle}">
-                <img src="${item.img}" alt="${item.nombre}" class="cart-item-img">
+                <img src="${item.img}" alt="${item.nombre}" class="cart-item-img" loading="lazy">
                 <div class="cart-item-info">
                     <h4>${item.nombre}</h4>
                     <p>${precioOriginalHtml} <span style="color:#e74c3c; font-weight:bold;">${sign}${precioItem.toFixed(2)}</span></p>
