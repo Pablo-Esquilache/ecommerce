@@ -127,3 +127,9 @@ INSERT INTO "configuracion" ("id", "admin_nombre") VALUES (1, 'Administrador') O
 
 INSERT INTO "administradores" ("email", "password", "nombre") 
 VALUES ('admin@ecommerce.com', '$2b$10$w4rYqL7yP0N3vV/Lh1D6YOSm9Gj2j3u4P5S8UvP6QxZ4E5wD0oM9q', 'Administrador Principal');
+
+-- Índices de Rendimiento
+CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_id ON pedidos(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado);
+CREATE INDEX IF NOT EXISTS idx_detalles_pedido_id ON detalles_pedido(pedido_id);
+CREATE INDEX IF NOT EXISTS idx_detalles_producto_id ON detalles_pedido(producto_id);
