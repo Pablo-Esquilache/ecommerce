@@ -940,10 +940,6 @@ async function fetchConfiguracion() {
             document.getElementById('conf-desc-activo').checked = conf.descuento_activo;
             document.getElementById('conf-desc-porcentaje').value = conf.descuento_porcentaje || 0;
             
-            const syncActivoEl = document.getElementById('conf-sync-activo');
-            if (syncActivoEl) syncActivoEl.checked = conf.sync_activo || false;
-            const syncKeyEl = document.getElementById('conf-sync-key');
-            if (syncKeyEl) syncKeyEl.value = conf.sync_api_key || '';
             
             // Actualizar Saludo
             document.getElementById('admin-name').innerText = conf.admin_nombre || 'Admin';
@@ -996,8 +992,8 @@ async function guardarConfiguracion() {
         descuento_activo: document.getElementById('conf-desc-activo').checked,
         descuento_porcentaje: Number(document.getElementById('conf-desc-porcentaje').value) || 0,
         
-        sync_activo: document.getElementById('conf-sync-activo') ? document.getElementById('conf-sync-activo').checked : undefined,
-        sync_api_key: document.getElementById('conf-sync-key') ? document.getElementById('conf-sync-key').value.trim() : undefined
+        
+        
     };
 
     try {
@@ -1032,10 +1028,7 @@ async function guardarConfiguracion() {
     }
 }
 
-function generarTokenSync() {
-    const randomStr = Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
-    document.getElementById('conf-sync-key').value = 'OMNI-' + randomStr.toUpperCase();
-}
+
 
 // --- CAMBIAR CONTRASEÑA EN PANEL ---
 document.addEventListener('DOMContentLoaded', () => {

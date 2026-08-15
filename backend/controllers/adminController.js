@@ -93,7 +93,6 @@ const adminController = {
         banner_activo, banner_texto,
         descuento_activo, descuento_porcentaje,
         envio_gratis_activo, envio_gratis_limite,
-        sync_activo, sync_api_key,
         banco_nombre, banco_titular, banco_cuit, banco_cbu, banco_alias,
         banco_usd_nombre, banco_usd_titular, banco_usd_cuit, banco_usd_cbu, banco_usd_alias,
         correo_activo, correo_cp, correo_customer_id
@@ -110,10 +109,10 @@ const adminController = {
           banner_activo = $13, banner_texto = $14,
           descuento_activo = $15, descuento_porcentaje = $16,
           envio_gratis_activo = $17, envio_gratis_limite = $18,
-          sync_activo = $19, sync_api_key = $20, email_admin = $21,
-          banco_nombre = $22, banco_titular = $23, banco_cuit = $24, banco_cbu = $25, banco_alias = $26,
-          banco_usd_nombre = $27, banco_usd_titular = $28, banco_usd_cuit = $29, banco_usd_cbu = $30, banco_usd_alias = $31,
-          correo_activo = $32, correo_cp = $33, correo_customer_id = $34
+          email_admin = $19,
+          banco_nombre = $20, banco_titular = $21, banco_cuit = $22, banco_cbu = $23, banco_alias = $24,
+          banco_usd_nombre = $25, banco_usd_titular = $26, banco_usd_cuit = $27, banco_usd_cbu = $28, banco_usd_alias = $29,
+          correo_activo = $30, correo_cp = $31, correo_customer_id = $32
         WHERE id = 1
         RETURNING *
       `;
@@ -125,7 +124,7 @@ const adminController = {
         !!banner_activo, banner_texto||'',
         !!descuento_activo, descuento_porcentaje||0,
         !!envio_gratis_activo, envio_gratis_limite||0,
-        !!sync_activo, sync_api_key||'', email_admin||'',
+        email_admin||'',
         banco_nombre||'', banco_titular||'', banco_cuit||'', banco_cbu||'', banco_alias||'',
         banco_usd_nombre||'', banco_usd_titular||'', banco_usd_cuit||'', banco_usd_cbu||'', banco_usd_alias||'',
         !!correo_activo, correo_cp||'', correo_customer_id||''

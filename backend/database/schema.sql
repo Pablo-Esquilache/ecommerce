@@ -69,6 +69,7 @@ CREATE TABLE "pedidos" (
   "estado" VARCHAR(50) NOT NULL DEFAULT 'pendiente', -- pendiente, pagado, enviado, entregado
   "metodo_pago" VARCHAR(50) NOT NULL, -- mercadopago, transferencia
   "preferencia_mp_id" VARCHAR(255),
+  "tracking_number" VARCHAR(255),
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("cliente_id") REFERENCES "clientes" ("id") ON DELETE RESTRICT
 );
@@ -107,13 +108,19 @@ CREATE TABLE "configuracion" (
   "descuento_porcentaje" NUMERIC(5,2) DEFAULT 0,
   "envio_gratis_activo" BOOLEAN DEFAULT false,
   "envio_gratis_limite" NUMERIC(10,2) DEFAULT 0,
-  "sync_activo" BOOLEAN DEFAULT false,
-  "sync_api_key" VARCHAR(255) DEFAULT '',
   "banco_nombre" VARCHAR(100) DEFAULT '',
   "banco_titular" VARCHAR(150) DEFAULT '',
   "banco_cuit" VARCHAR(50) DEFAULT '',
   "banco_cbu" VARCHAR(100) DEFAULT '',
-  "banco_alias" VARCHAR(100) DEFAULT ''
+  "banco_alias" VARCHAR(100) DEFAULT '',
+  "banco_usd_nombre" VARCHAR(100) DEFAULT '',
+  "banco_usd_titular" VARCHAR(100) DEFAULT '',
+  "banco_usd_cuit" VARCHAR(50) DEFAULT '',
+  "banco_usd_cbu" VARCHAR(100) DEFAULT '',
+  "banco_usd_alias" VARCHAR(100) DEFAULT '',
+  "correo_activo" BOOLEAN DEFAULT false,
+  "correo_cp" VARCHAR(20) DEFAULT '',
+  "correo_customer_id" VARCHAR(50) DEFAULT ''
 );
 
 INSERT INTO "configuracion" ("id", "admin_nombre") VALUES (1, 'Administrador') ON CONFLICT ("id") DO NOTHING;
