@@ -1,4 +1,4 @@
-const db = require('../config/database');
+ï»¿const db = require('../config/database');
 
 exports.getAll = async (req, res) => {
     try {
@@ -14,21 +14,21 @@ exports.create = async (req, res) => {
     try {
         const { nombre, imagen_url } = req.body;
         if (!nombre) {
-            return res.status(400).json({ error: 'El nombre de la categoría es requerido' });
+            return res.status(400).json({ error: 'El nombre de la categorÃ­a es requerido' });
         }
         
         const nombreLimpio = nombre.trim();
         const { rows } = await db.query(
-            'INSERT INTO categorias (nombre, imagen_url) VALUES (, ) RETURNING *',
+            'INSERT INTO categorias (nombre, imagen_url) VALUES ($1, $2) RETURNING *',
             [nombreLimpio, imagen_url || null]
         );
         res.status(201).json(rows[0]);
     } catch (error) {
         console.error("Error creando categoria:", error);
         if (error.code === '23505') { 
-            return res.status(400).json({ error: 'La categoría ya existe' });
+            return res.status(400).json({ error: 'La categorÃ­a ya existe' });
         }
-        res.status(500).json({ error: 'Error al crear la categoría' });
+        res.status(500).json({ error: 'Error al crear la categorÃ­a' });
     }
 };
 
@@ -38,30 +38,30 @@ exports.update = async (req, res) => {
         const { nombre, imagen_url } = req.body;
         
         const { rows } = await db.query(
-            'UPDATE categorias SET nombre = COALESCE($1, nombre), imagen_url = $2 WHERE id = $3 RETURNING *'.replace(//g, ''),
+            'UPDATE categorias SET nombre = COALESCE($1, nombre), imagen_url = $2 WHERE id = $3 RETURNING *',
             [nombre, imagen_url, id]
         );
         
-        if (rows.length === 0) return res.status(404).json({ error: 'Categoría no encontrada' });
+        if (rows.length === 0) return res.status(404).json({ error: 'CategorÃ­a no encontrada' });
         res.json(rows[0]);
     } catch (error) {
         console.error("Error actualizando categoria:", error);
-        res.status(500).json({ error: 'Error al actualizar la categoría' });
+        res.status(500).json({ error: 'Error al actualizar la categorÃ­a' });
     }
 };
 
 exports.delete = async (req, res) => {
     try {
         const { nombre } = req.params;
-        const result = await db.query('DELETE FROM categorias WHERE nombre =  RETURNING *', [nombre]);
+        const result = await db.query('DELETE FROM categorias WHERE nombre = $1 RETURNING *', [nombre]);
         
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Categoría no encontrada' });
+            return res.status(404).json({ error: 'CategorÃ­a no encontrada' });
         }
-        res.json({ message: 'Categoría eliminada exitosamente' });
+        res.json({ message: 'CategorÃ­a eliminada exitosamente' });
     } catch (error) {
         console.error("Error eliminando categoria:", error);
-        res.status(500).json({ error: 'Error al eliminar la categoría' });
+        res.status(500).json({ error: 'Error al eliminar la categorÃ­a' });
     }
 };
 
@@ -84,7 +84,7 @@ exports.getTree = async (req, res) => {
 
         res.json(tree);
     } catch (error) {
-        console.error('Error obteniendo árbol de categorías:', error);
+        console.error('Error obteniendo Ã¡rbol de categorÃ­as:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
@@ -95,7 +95,7 @@ exports.createSubcategoria = async (req, res) => {
             return res.status(400).json({ error: 'Faltan datos' });
         }
         const { rows } = await db.query(
-            'INSERT INTO subcategorias (nombre, categoria_id) VALUES (, ) RETURNING *',
+            'INSERT INTO subcategorias (nombre, categoria_id) VALUES ($1, $2) RETURNING *',
             [nombre.trim(), categoria_id]
         );
         res.status(201).json(rows[0]);
@@ -108,8 +108,8 @@ exports.createSubcategoria = async (req, res) => {
 exports.deleteSubcategoria = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.query('DELETE FROM subcategorias WHERE id = ', [id]);
-        res.json({ message: 'Subcategoría eliminada' });
+        await db.query('DELETE FROM subcategorias WHERE id = $1', [id]);
+        res.json({ message: 'SubcategorÃ­a eliminada' });
     } catch (error) {
         res.status(500).json({ error: 'Error interno' });
     }

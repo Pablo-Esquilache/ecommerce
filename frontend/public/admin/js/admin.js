@@ -39,7 +39,7 @@ function renderAdminPagination(containerId, totalPages, currentPage, onPageClick
     cont.appendChild(btnNext);
 }
 
-// Función para Login
+// FunciÃ³n para Login
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -100,10 +100,10 @@ async function initDashboard() {
     fetchProductos(); // Precargar productos
     fetchPedidos(); // Precargar pedidos
     fetchClientes(); // Precargar clientes
-    fetchConfiguracion(); // Precargar Módulo de Ajustes
-    fetchCategorias(); // Cargar categorías para el modal de productos
+    fetchConfiguracion(); // Precargar MÃ³dulo de Ajustes
+    fetchCategorias(); // Cargar categorÃ­as para el modal de productos
 
-    // Restaurar última pestaña activa
+    // Restaurar Ãºltima pestaÃ±a activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
     const tabElement = document.querySelector(`.sidebar .nav li[onclick*="switchTab('${lastTab}'"]`);
     switchTab(lastTab, tabElement);
@@ -126,10 +126,10 @@ function switchTab(tabId, el) {
     const section = document.getElementById(`view-${tabId}`);
     if(section) section.classList.add('active'); // Added safety check
 
-    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Configuración de Usuarios', envios: 'Configuración de Envíos', ajustes: 'Ajustes del Sistema' };
+    const titles = { dashboard: 'Dashboard', productos: 'GestiÃ³n de Productos', pedidos: 'GestiÃ³n de Pedidos', clientes: 'Listado de Clientes', usuarios: 'ConfiguraciÃ³n de Usuarios', envios: 'ConfiguraciÃ³n de EnvÃ­os', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
     
-    // Cerrar sidebar en móviles tras hacer clic
+    // Cerrar sidebar en mÃ³viles tras hacer clic
     if (window.innerWidth <= 768) {
         toggleSidebar(false);
     }
@@ -137,7 +137,7 @@ function switchTab(tabId, el) {
     if (tabId === 'usuarios') loadUsuarios();
 }
 
-// Lógica de Menú Responsive (Hamburguesa)
+// LÃ³gica de MenÃº Responsive (Hamburguesa)
 function toggleSidebar(forceState) {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
@@ -191,7 +191,7 @@ function renderAdminPedidos(pedidos) {
         let envioHtml = `<span style="color:#aaa; font-size:12px;">N/A</span>`;
         if (p.metodo_envio !== 'Digital') {
             if (p.tracking_number) {
-                // [COMENTADO SEGÚN API MICORREO - NO DEVUELVE PDF]
+                // [COMENTADO SEGÃšN API MICORREO - NO DEVUELVE PDF]
                 /*
                 envioHtml = `
                     <button class="btn" style="background:#3498db; color:white; padding:4px 8px; font-size:12px; margin-bottom:4px;" onclick="descargarEtiqueta(${p.id})">
@@ -225,7 +225,7 @@ function renderAdminPedidos(pedidos) {
                 <select onchange="updatePedidoStatus(${p.id}, this.value)" style="padding:4px; border-radius:4px;">
                     <option value="pendiente" ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
                     <option value="pagado" ${isPagado?'selected':''}>Pagado</option>
-                    <option value="preparando_envio" ${p.estado==='preparando_envio'?'selected':''}>Preparando Envío</option>
+                    <option value="preparando_envio" ${p.estado==='preparando_envio'?'selected':''}>Preparando EnvÃ­o</option>
                     <option value="enviado" ${isSend?'selected':''}>Enviado</option>
                     <option value="entregado" ${p.estado==='entregado'?'selected':''}>Entregado</option>
                     <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
@@ -271,15 +271,15 @@ async function verEticket(pedidoId) {
             <div style="margin-bottom:10px;">
                 <strong>Cliente:</strong> ${p.nombre} ${p.apellido}<br>
                 <strong>Email:</strong> ${p.email}<br>
-                <strong>Método Pago:</strong> ${p.metodo_pago}<br>
+                <strong>MÃ©todo Pago:</strong> ${p.metodo_pago}<br>
                 <strong>Estado:</strong> ${p.estado.toUpperCase()}
             </div>
             <div style="border-top:1px dashed #ccc; padding-top:10px;">
-                <strong>Artículos:</strong>
+                <strong>ArtÃ­culos:</strong>
                 ${detalleHtml}
             </div>
             <div style="text-align:right; margin-top:10px; font-size:18px; font-weight:bold; border-top:1px dashed #ccc; padding-top:10px;">
-                <small>Envío (Contra Reembolso): $0.00</small><br>
+                <small>EnvÃ­o (Contra Reembolso): $0.00</small><br>
                 TOTAL: $${parseFloat(p.total).toLocaleString('es-AR')}
             </div>
         `;
@@ -381,14 +381,14 @@ async function verHistorialCliente(clienteId) {
         openModal('historial-modal');
     } catch(e) {
         console.error('Error abriendo historial', e);
-        alert('Ocurrió un error al cargar el historial del cliente');
+        alert('OcurriÃ³ un error al cargar el historial del cliente');
     }
 }
 
 async function fetchDashboardStats() {
     try {
         const res = await fetch(`${API_URL}/admin/dashboard`, { headers: authHeaders() });
-        if (res.status === 401) return logout(); // Token inválido o expirado
+        if (res.status === 401) return logout(); // Token invÃ¡lido o expirado
         const stats = await res.json();
         
         const ingresos = stats.ventas.total_ingresos || 0;
@@ -457,12 +457,12 @@ function renderAdminProductos(lista) {
 
     paginatedItems.forEach(p => {
         const stockDisplay = p.stock <= 3
-            ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">⚠️ ${p.stock} (Bajo)</span>`
+            ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">âš ï¸ ${p.stock} (Bajo)</span>`
             : `<span style="font-weight: 500;">${p.stock}</span>`;
 
         const tipoDisplay = p.tipo_producto === 'digital' 
-            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💻 Digital</span>' 
-            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 Físico</span>';
+            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">ðŸ’» Digital</span>' 
+            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">ðŸ“¦ FÃ­sico</span>';
 
         pTB.innerHTML += `<tr>
             <td>${p.id}</td>
@@ -522,9 +522,9 @@ async function editarProducto(id) {
         document.getElementById('prod-tipo').value = p.tipo_producto || 'fisico';
         document.getElementById('prod-video').value = p.video_url || '';
         
-        // Asignar categoría dinámica
+        // Asignar categorÃ­a dinÃ¡mica
         const catSelect = document.getElementById('prod-cat');
-        // si la categoría de p.categoria no existe en el select, podemos intentar agregarla temporalmente o dejarla seleccionada si el fetchCategorias ya la trajo
+        // si la categorÃ­a de p.categoria no existe en el select, podemos intentar agregarla temporalmente o dejarla seleccionada si el fetchCategorias ya la trajo
         if (Array.from(catSelect.options).some(opt => opt.value === p.categoria)) {
             catSelect.value = p.categoria;
         } else if (p.categoria) {
@@ -593,7 +593,7 @@ function toggleProductType() {
     }
 }
 
-// Helper para comprimir imágenes en el cliente antes de subirlas
+// Helper para comprimir imÃ¡genes en el cliente antes de subirlas
 async function compressImage(file, maxWidth = 800, quality = 0.8) {
     if (!file || !file.type.startsWith('image/')) return file; // Si no es imagen, no tocar
     return new Promise((resolve) => {
@@ -707,7 +707,7 @@ function logout() {
     window.location.href = '/admin/login.html';
 }
 
-// --- CATEGORÍAS DINÁMICAS ---
+// --- CATEGORÃAS DINÃMICAS ---
 async function fetchCategorias() {
     try {
         const res = await fetch(`${API_URL}/categorias`);
@@ -736,7 +736,7 @@ async function fetchCategorias() {
 async function crearNuevaCategoria() {
     const input = document.getElementById('nueva-categoria-input');
     const nombre = input.value.trim();
-    if (!nombre) return alert('Escribe un nombre para la categoría');
+    if (!nombre) return alert('Escribe un nombre para la categorÃ­a');
     
     try {
         const token = localStorage.getItem('admin_token');
@@ -757,9 +757,9 @@ async function crearNuevaCategoria() {
 async function eliminarCategoriaSeleccionada() {
     const select = document.getElementById('prod-cat');
     const nombre = select.value;
-    if (!nombre) return alert('Selecciona una categoría primero');
+    if (!nombre) return alert('Selecciona una categorÃ­a primero');
     
-    if (!confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?`)) return;
+    if (!confirm(`Â¿EstÃ¡s seguro de eliminar la categorÃ­a "${nombre}"?`)) return;
     
     try {
         const token = localStorage.getItem('admin_token');
@@ -802,7 +802,7 @@ if (formExcel) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Error al procesar el archivo Excel');
 
-            alert(`Éxito: Se importaron ${data.importedCount} productos correctamente.`);
+            alert(`Ã‰xito: Se importaron ${data.importedCount} productos correctamente.`);
             closeModal('excel-modal');
             formExcel.reset();
             fetchProductos(); // Recargar la tabla
@@ -816,7 +816,7 @@ if (formExcel) {
     });
 }
 
-// Lógica del buscador de productos en tiempo real
+// LÃ³gica del buscador de productos en tiempo real
 const searchAdminInput = document.getElementById('admin-search-producto');
 if (searchAdminInput) {
     searchAdminInput.addEventListener('input', (e) => {
@@ -827,7 +827,7 @@ if (searchAdminInput) {
     });
 }
 
-// Lógica de filtro para pedidos
+// LÃ³gica de filtro para pedidos
 const filterPedidosSelect = document.getElementById('admin-filter-pedidos-estado');
 if (filterPedidosSelect) {
     filterPedidosSelect.addEventListener('change', (e) => {
@@ -842,7 +842,7 @@ if (filterPedidosSelect) {
     });
 }
 
-// Lógica de búsqueda de clientes
+// LÃ³gica de bÃºsqueda de clientes
 const searchClienteInput = document.getElementById('admin-search-cliente');
 if (searchClienteInput) {
     searchClienteInput.addEventListener('input', (e) => {
@@ -857,7 +857,7 @@ if (searchClienteInput) {
     });
 }
 
-// Lógica para descargar Excel de clientes
+// LÃ³gica para descargar Excel de clientes
 async function descargarExcelClientes() {
     try {
         const btn = event.currentTarget;
@@ -894,7 +894,7 @@ async function descargarExcelClientes() {
     }
 }
 
-// --- CONFIGURACIÓN GLOBAL ---
+// --- CONFIGURACIÃ“N GLOBAL ---
 async function fetchConfiguracion() {
     try {
         const res = await fetch(`${API_URL}/configuracion`);
@@ -1014,11 +1014,11 @@ async function guardarConfiguracion() {
         });
 
         if (res.ok) {
-            alert('Configuración guardada exitosamente');
-            fetchConfiguracion(); // Recargar validación visual
+            alert('ConfiguraciÃ³n guardada exitosamente');
+            fetchConfiguracion(); // Recargar validaciÃ³n visual
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al guardar la configuración');
+            alert(data.error || 'Error al guardar la configuraciÃ³n');
         }
 
         btn.innerHTML = originalText;
@@ -1031,7 +1031,7 @@ async function guardarConfiguracion() {
 
 
 
-// --- CAMBIAR CONTRASEÑA EN PANEL ---
+// --- CAMBIAR CONTRASEÃ‘A EN PANEL ---
 document.addEventListener('DOMContentLoaded', () => {
     const formPwd = document.getElementById('form-cambiar-password');
     if (formPwd) {
@@ -1055,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
 
             try {
-                // Paso 1: Solicitar autorización MFA
+                // Paso 1: Solicitar autorizaciÃ³n MFA
                 const resOtp = await fetch(`${API_URL}/admin/request-change-otp`, {
                     method: 'POST',
                     headers: authHeaders(),
@@ -1078,10 +1078,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 openModal('otp-modal');
                 pinInput.focus();
 
-                // Detenemos el flujo aquí y pasamos la responsabilidad al botón del Modal
+                // Detenemos el flujo aquÃ­ y pasamos la responsabilidad al botÃ³n del Modal
                 const btnConfirmOtp = document.getElementById('btn-confirm-otp');
                 
-                // Clonar botón para remover listeners antiguos y evitar ejecuciones múltiples
+                // Clonar botÃ³n para remover listeners antiguos y evitar ejecuciones mÃºltiples
                 const newBtnConfirm = btnConfirmOtp.cloneNode(true);
                 btnConfirmOtp.parentNode.replaceChild(newBtnConfirm, btnConfirmOtp);
 
@@ -1139,7 +1139,7 @@ async function loadUsuarios() {
     try {
         const res = await fetch(`${API_URL}/admin/usuarios`, { headers: authHeaders() });
         if (res.status === 401) {
-            alert('Tu sesión ha expirado. Por favor, iniciá sesión nuevamente.');
+            alert('Tu sesiÃ³n ha expirado. Por favor, iniciÃ¡ sesiÃ³n nuevamente.');
             return logout();
         }
         if (!res.ok) throw new Error('Error al obtener administradores');
@@ -1187,12 +1187,12 @@ async function saveUsuario(e) {
         }
     } catch (err) {
         console.error(err);
-        alert('Ocurrió un error al guardar el administrador.');
+        alert('OcurriÃ³ un error al guardar el administrador.');
     }
 }
 
 async function deleteUsuario(id) {
-    if (!confirm('¿Estás seguro de que deseas eliminar a este administrador? Perderá acceso inmediato.')) return;
+    if (!confirm('Â¿EstÃ¡s seguro de que deseas eliminar a este administrador? PerderÃ¡ acceso inmediato.')) return;
     
     try {
         const res = await fetch(`${API_URL}/admin/usuarios/${id}`, {
@@ -1206,14 +1206,14 @@ async function deleteUsuario(id) {
             alert(data.error || 'Error al eliminar.');
         }
     } catch(err) {
-        alert('Ocurrió un error de conexión.');
+        alert('OcurriÃ³ un error de conexiÃ³n.');
     }
 }
 
 
 // --- LOGICA DE CORREO ARGENTINO ---
 async function generarEnvio(pedidoId) {
-    if(!confirm('¿Estás seguro de que deseas exportar este pedido a Correo Argentino? Aparecerá en tu cuenta de MiCorreo para ser pagado.')) return;
+    if(!confirm('Â¿EstÃ¡s seguro de que deseas exportar este pedido a Correo Argentino? AparecerÃ¡ en tu cuenta de MiCorreo para ser pagado.')) return;
     
     try {
         const res = await fetch(`${API_URL}/admin/pedidos/${pedidoId}/generar-envio`, {
@@ -1223,14 +1223,14 @@ async function generarEnvio(pedidoId) {
         const data = await res.json();
         
         if (res.ok) {
-            alert('Pedido exportado correctamente. Ya podés ir a gestionarlo en la web de Correo Argentino.');
+            alert('Pedido exportado correctamente. Ya podÃ©s ir a gestionarlo en la web de Correo Argentino.');
             fetchPedidos(); // Recargar la tabla
         } else {
             alert(data.error || 'Error al exportar el pedido.');
         }
     } catch(err) {
         console.error(err);
-        alert('Error de conexión al intentar exportar el pedido.');
+        alert('Error de conexiÃ³n al intentar exportar el pedido.');
     }
 }
 
@@ -1251,24 +1251,24 @@ async function loadCategorias() {
             
             // Highlight if missing image
             const imgHtml = cat.imagen_url 
-                ? \<img src="\" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">\
-                : \<div style="width: 50px; height: 50px; background: #ffebee; border: 1px dashed #f44336; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f44336;" title="Falta imagen"><i class="fas fa-exclamation-triangle"></i></div>\;
+                ? `<img src="${cat.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`
+                : `<div style="width: 50px; height: 50px; background: #ffebee; border: 1px dashed #f44336; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f44336;" title="Falta imagen"><i class="fas fa-exclamation-triangle"></i></div>`;
             
             // Subcategorias badges
             const subsHtml = cat.subcategorias.map(sub => 
-                \<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">\</span>\
-            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategor�as</span>';
+                `<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">${sub} <i class="fas fa-times" style="cursor:pointer; color:#999; margin-left:4px;" onclick="deleteSubcategoria('${cat.nombre}', '${sub}')"></i></span>`
+            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
             
-            tr.innerHTML = \
-                <td>\</td>
-                <td><strong>\</strong></td>
-                <td>\</td>
+            tr.innerHTML = `
+                <td>${imgHtml}</td>
+                <td><strong>${cat.nombre}</strong></td>
+                <td>${subsHtml}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(\, '\', '\')" title="Editar Categor�a"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(\)" title="A�adir Subcategor�a"><i class="fas fa-plus"></i> Sub</button>
-                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('\')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(${cat.id}, '${cat.nombre}', '${cat.imagen_url || ''}')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(${cat.id})" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
+                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('${cat.nombre}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
-            \;
+            `;
             tbody.appendChild(tr);
         });
 
@@ -1305,7 +1305,7 @@ function openCategoriaModal(id = null, nombre = '', imagen = '') {
         preview.style.display = 'none';
     }
     
-    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categor�a' : 'Nueva Categor�a';
+    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categorï¿½a' : 'Nueva Categorï¿½a';
     document.getElementById('categoriaModal').style.display = 'flex';
 }
 
@@ -1324,7 +1324,7 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
     try {
         const res = await fetch('/api/admin/upload', {
             method: 'POST',
-            headers: { 'Authorization': \Bearer \\ },
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData
         });
         const data = await res.json();
@@ -1346,7 +1346,7 @@ async function saveCategoria() {
     
     if (!nombre) return alert('El nombre es requerido');
     
-    const url = id ? \/api/categorias/\\ : '/api/categorias';
+    const url = id ? '/api/categorias/' + id : '/api/categorias';
     const method = id ? 'PUT' : 'POST';
     
     try {
@@ -1354,7 +1354,7 @@ async function saveCategoria() {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': \Bearer \\
+                'Authorization': Bearer 
             },
             body: JSON.stringify({ nombre, imagen_url })
         });
@@ -1364,25 +1364,25 @@ async function saveCategoria() {
             loadCategorias();
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al guardar categor�a');
+            alert(data.error || 'Error al guardar categorï¿½a');
         }
     } catch (error) {
-        alert('Error de conexi�n');
+        alert('Error de conexiï¿½n');
     }
 }
 
 async function deleteCategoria(nombre) {
-    if (!confirm(\�Seguro que deseas eliminar la categor�a "\"? Se perder� la relaci�n con los productos.\)) return;
+    if (!confirm(`¿Seguro que deseas eliminar la categoría "${nombre}"? Se perderá la relación con los productos.`)) return;
     
     try {
-        const res = await fetch(\/api/categorias/\\, {
+        const res = await fetch(`/api/categorias/${encodeURIComponent(nombre)}`, {
             method: 'DELETE',
-            headers: { 'Authorization': \Bearer \\ }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) loadCategorias();
         else alert('Error al eliminar');
     } catch (error) {
-        alert('Error de conexi�n');
+        alert('Error de conexiï¿½n');
     }
 }
 
@@ -1408,7 +1408,7 @@ async function saveSubcategoria() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': \Bearer \\
+                'Authorization': Bearer 
             },
             body: JSON.stringify({ nombre, categoria_id })
         });
@@ -1417,9 +1417,10 @@ async function saveSubcategoria() {
             closeSubcategoriaModal();
             loadCategorias();
         } else {
-            alert('Error al a�adir subcategor�a');
+            alert('Error al aï¿½adir subcategorï¿½a');
         }
     } catch (error) {
-        alert('Error de conexi�n');
+        alert('Error de conexiï¿½n');
     }
 }
+
