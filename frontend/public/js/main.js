@@ -34,7 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const buscador = document.getElementById('buscador');
     if(buscador) buscador.addEventListener('input', filtrarProductos);
     const navBuscador = document.getElementById('nav-buscador');
-    if(navBuscador) navBuscador.addEventListener('input', filtrarProductos);
+    if(navBuscador) {
+        navBuscador.addEventListener('input', filtrarProductos);
+        navBuscador.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') scrollToProductos();
+        });
+    }
     const categoriaFiltro = document.getElementById('categoria-filtro');
     if(categoriaFiltro) categoriaFiltro.addEventListener('change', filtrarProductos);
 
@@ -634,3 +639,12 @@ async function loadCategoriasMenu() {
 }
 function filCat(c) { expForFilt.cat = c; expForFilt.sub = null; filtrarProductos(); }
 function filSub(c, s) { expForFilt.cat = c; expForFilt.sub = s; filtrarProductos(); }
+
+function scrollToProductos() {
+    const sect = document.getElementById('productos');
+    if (sect) {
+        const offset = 80;
+        const top = sect.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+    }
+}
