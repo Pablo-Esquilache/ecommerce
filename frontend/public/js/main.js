@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkMercadoPagoReturn();
     fetchProductos();
     fetchCategoriasPublic();
+    loadCategoriasMenu();
     updateCartUI();
     initCarousel();
 
