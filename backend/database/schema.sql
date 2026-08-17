@@ -12,7 +12,16 @@ DROP TABLE IF EXISTS "categorias";
 -- Tabla de Categorias
 CREATE TABLE "categorias" (
   "id" SERIAL PRIMARY KEY,
-  "nombre" VARCHAR(100) UNIQUE NOT NULL
+  "nombre" VARCHAR(100) UNIQUE NOT NULL,
+  "imagen_url" VARCHAR(255)
+);
+
+-- Tabla de Subcategorias
+CREATE TABLE "subcategorias" (
+  "id" SERIAL PRIMARY KEY,
+  "nombre" VARCHAR(100) NOT NULL,
+  "categoria_id" INTEGER REFERENCES categorias(id) ON DELETE CASCADE,
+  UNIQUE("nombre", "categoria_id")
 );
 
 -- Tabla de Administradores
@@ -47,6 +56,7 @@ CREATE TABLE "productos" (
   "precio" DECIMAL(10, 2) NOT NULL,
   "stock" INTEGER NOT NULL DEFAULT 0,
   "categoria" VARCHAR(100),
+  "subcategoria" VARCHAR(100),
   "sku" VARCHAR(50) UNIQUE,
   "peso" DECIMAL(10, 2), -- en kg
   "dimensiones" VARCHAR(100), -- ej: "10x20x30 cm"
@@ -128,7 +138,7 @@ INSERT INTO "configuracion" ("id", "admin_nombre") VALUES (1, 'Administrador') O
 INSERT INTO "administradores" ("email", "password", "nombre") 
 VALUES ('admin@ecommerce.com', '$2b$10$w4rYqL7yP0N3vV/Lh1D6YOSm9Gj2j3u4P5S8UvP6QxZ4E5wD0oM9q', 'Administrador Principal');
 
--- Índices de Rendimiento
+-- ï¿½ndices de Rendimiento
 CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_id ON pedidos(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado);
 CREATE INDEX IF NOT EXISTS idx_detalles_pedido_id ON detalles_pedido(pedido_id);
