@@ -101,6 +101,32 @@ const productoController = {
 
   createProducto: async (req, res) => {
     try {
+    // Opción C: Auto-crear categoría/subcategoría si no existen
+    const { categoria, subcategoria } = req.body;
+    if (categoria) {
+      const catLimpia = categoria.trim();
+      let catId = null;
+      try {
+        const db = require('../config/database');
+        const catCheck = await db.query('SELECT id FROM categorias WHERE nombre = $1', [catLimpia]);
+        if (catCheck.rows.length === 0) {
+          const catRes = await db.query('INSERT INTO categorias (nombre) VALUES ($1) RETURNING id', [catLimpia]);
+          catId = catRes.rows[0].id;
+        } else {
+          catId = catCheck.rows[0].id;
+        }
+
+        if (subcategoria) {
+          const subLimpia = subcategoria.trim();
+          const subCheck = await db.query('SELECT id FROM subcategorias WHERE nombre = $1 AND categoria_id = $2', [subLimpia, catId]);
+          if (subCheck.rows.length === 0) {
+            await db.query('INSERT INTO subcategorias (nombre, categoria_id) VALUES ($1, $2)', [subLimpia, catId]);
+          }
+        }
+      } catch(err) {
+        console.error('Error auto-creando categoria:', err);
+      }
+    }
       // Si se usan imágenes subidas localmente vía multer (estarán en req.files)
       const data = { ...req.body };
       
@@ -133,6 +159,32 @@ const productoController = {
 
   updateProducto: async (req, res) => {
     try {
+    // Opción C: Auto-crear categoría/subcategoría si no existen
+    const { categoria, subcategoria } = req.body;
+    if (categoria) {
+      const catLimpia = categoria.trim();
+      let catId = null;
+      try {
+        const db = require('../config/database');
+        const catCheck = await db.query('SELECT id FROM categorias WHERE nombre = $1', [catLimpia]);
+        if (catCheck.rows.length === 0) {
+          const catRes = await db.query('INSERT INTO categorias (nombre) VALUES ($1) RETURNING id', [catLimpia]);
+          catId = catRes.rows[0].id;
+        } else {
+          catId = catCheck.rows[0].id;
+        }
+
+        if (subcategoria) {
+          const subLimpia = subcategoria.trim();
+          const subCheck = await db.query('SELECT id FROM subcategorias WHERE nombre = $1 AND categoria_id = $2', [subLimpia, catId]);
+          if (subCheck.rows.length === 0) {
+            await db.query('INSERT INTO subcategorias (nombre, categoria_id) VALUES ($1, $2)', [subLimpia, catId]);
+          }
+        }
+      } catch(err) {
+        console.error('Error auto-creando categoria:', err);
+      }
+    }
       const { id } = req.params;
       const data = { ...req.body };
 

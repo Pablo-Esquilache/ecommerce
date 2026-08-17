@@ -40,7 +40,8 @@ const Producto = {
 
   create: async (data) => {
     await ensureDigitalColumns();
-    const { nombre, descripcion, precio, precio_usd, stock, categoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
     
     const cleanPeso = (peso === "" || peso === undefined || peso === null || isNaN(peso)) ? null : Number(peso);
     const cleanStock = (stock === "" || stock === undefined || stock === null || isNaN(stock)) ? 0 : Number(stock);
@@ -54,18 +55,19 @@ const Producto = {
     const cleanVideo = video_url || null;
 
     const query = `
-      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url)
+      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url)
       VALUES ($1, $2, $3, $15, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `;
-    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd];
+    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria];
     const { rows } = await db.query(query, values);
     return rows[0];
   },
 
   update: async (id, data) => {
     await ensureDigitalColumns();
-    const { nombre, descripcion, precio, precio_usd, stock, categoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
     
     const cleanPeso = (peso === "" || peso === undefined || peso === null || isNaN(peso)) ? null : Number(peso);
     const cleanStock = (stock === "" || stock === undefined || stock === null || isNaN(stock)) ? 0 : Number(stock);
@@ -89,7 +91,7 @@ const Producto = {
       WHERE id = $12
       RETURNING *
     `;
-    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, id, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd];
+    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, id, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria];
     const { rows } = await db.query(query, values);
     return rows[0];
   },

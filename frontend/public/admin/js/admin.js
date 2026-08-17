@@ -645,6 +645,7 @@ if (formProducto) {
         formData.append('dimensiones', document.getElementById('prod-dimensiones').value);
         formData.append('descripcion', document.getElementById('prod-desc').value);
         formData.append('categoria', document.getElementById('prod-cat').value);
+        formData.append('subcategoria', document.getElementById('prod-subcat').value);
         
         formData.append('tipo_producto', document.getElementById('prod-tipo').value);
         formData.append('video_url', document.getElementById('prod-video').value);
@@ -1256,20 +1257,34 @@ async function loadCategorias() {
             // Subcategorias badges
             const subsHtml = cat.subcategorias.map(sub => 
                 \<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">\</span>\
-            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
+            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorï¿½as</span>';
             
             tr.innerHTML = \
                 <td>\</td>
                 <td><strong>\</strong></td>
                 <td>\</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(\, '\', '\')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(\)" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
+                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(\, '\', '\')" title="Editar Categorï¿½a"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(\)" title="Aï¿½adir Subcategorï¿½a"><i class="fas fa-plus"></i> Sub</button>
                     <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('\')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
             \;
             tbody.appendChild(tr);
         });
+
+        // Update datalists
+        const catList = document.getElementById('categorias-list');
+        const subcatList = document.getElementById('subcategorias-list');
+        if (catList && subcatList) {
+            catList.innerHTML = '';
+            subcatList.innerHTML = '';
+            currentCategorias.forEach(cat => {
+                catList.innerHTML += '<option value="' + cat.nombre + '">';
+                cat.subcategorias.forEach(sub => {
+                    subcatList.innerHTML += '<option value="' + sub + '">';
+                });
+            });
+        }
     } catch (error) {
         console.error(error);
     }
@@ -1290,7 +1305,7 @@ function openCategoriaModal(id = null, nombre = '', imagen = '') {
         preview.style.display = 'none';
     }
     
-    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categoría' : 'Nueva Categoría';
+    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categorï¿½a' : 'Nueva Categorï¿½a';
     document.getElementById('categoriaModal').style.display = 'flex';
 }
 
@@ -1349,15 +1364,15 @@ async function saveCategoria() {
             loadCategorias();
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al guardar categoría');
+            alert(data.error || 'Error al guardar categorï¿½a');
         }
     } catch (error) {
-        alert('Error de conexión');
+        alert('Error de conexiï¿½n');
     }
 }
 
 async function deleteCategoria(nombre) {
-    if (!confirm(\¿Seguro que deseas eliminar la categoría "\"? Se perderá la relación con los productos.\)) return;
+    if (!confirm(\ï¿½Seguro que deseas eliminar la categorï¿½a "\"? Se perderï¿½ la relaciï¿½n con los productos.\)) return;
     
     try {
         const res = await fetch(\/api/categorias/\\, {
@@ -1367,7 +1382,7 @@ async function deleteCategoria(nombre) {
         if (res.ok) loadCategorias();
         else alert('Error al eliminar');
     } catch (error) {
-        alert('Error de conexión');
+        alert('Error de conexiï¿½n');
     }
 }
 
@@ -1402,9 +1417,9 @@ async function saveSubcategoria() {
             closeSubcategoriaModal();
             loadCategorias();
         } else {
-            alert('Error al añadir subcategoría');
+            alert('Error al aï¿½adir subcategorï¿½a');
         }
     } catch (error) {
-        alert('Error de conexión');
+        alert('Error de conexiï¿½n');
     }
 }
