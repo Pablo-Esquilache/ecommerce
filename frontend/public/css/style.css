@@ -271,7 +271,10 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 /* About Section */
 .about-section {
     padding: 80px 0;
-    background: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .about-row {
     display: flex;
@@ -308,10 +311,7 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 
 /* Nuevo layout envolvente para textos largos */
 .about-article {
-    margin-bottom: 50px;
-    font-size: 15.5px;
-    line-height: 1.55;
-    color: var(--text);
+    margin-bottom: 60px;
 }
 .about-article::after {
     content: "";
@@ -320,17 +320,17 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 }
 .about-article h3 {
     margin-top: 0;
-    margin-bottom: 20px;
-    color: var(--primary-color);
+    margin-bottom: 15px;
     font-size: 24px;
+    color: #333;
 }
 .about-article p {
     margin-bottom: 15px;
     text-align: justify;
 }
 .about-img-wrap {
-    width: 45%;
-    min-width: 300px;
+    width: 35%;
+    max-width: 400px;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -633,7 +633,7 @@ footer {
 /* === Modificaciones Paso 4 (Glassmorphism y Tarjetas) === */
 
 .glass-navbar {
-    background: rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 255, 255, 0.4) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
