@@ -447,19 +447,40 @@ function goToCheckout() {
 // Funciones de Contacto consolidadas. (Función duplicada antigua borrada para evitar race-conditions)
 
 // --- Carousel Logic ---
+let carouselInterval;
+let currentSlideIdx = 0;
+
 function initCarousel() {
     const slides = document.querySelectorAll('.carousel-slide');
     if (slides.length === 0) return;
     
-    let currentSlide = 0;
-    
-    // Cambiar de imagen cada 5 segundos
-    setInterval(() => {
-        slides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].classList.add('active');
+    currentSlideIdx = 0;
+    startCarousel();
+}
+
+function startCarousel() {
+    clearInterval(carouselInterval);
+    carouselInterval = setInterval(() => {
+        changeSlide(currentSlideIdx + 1);
     }, 5000);
 }
+
+window.changeSlide = function(newIdx) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (slides.length === 0) return;
+    
+    slides[currentSlideIdx].classList.remove('active');
+    
+    currentSlideIdx = newIdx;
+    if (currentSlideIdx >= slides.length) currentSlideIdx = 0;
+    if (currentSlideIdx < 0) currentSlideIdx = slides.length - 1;
+    
+    slides[currentSlideIdx].classList.add('active');
+    startCarousel();
+};
+
+window.prevSlide = function() { window.changeSlide(currentSlideIdx - 1); };
+window.nextSlide = function() { window.changeSlide(currentSlideIdx + 1); };
 
 // --- ABOUT SECTION LOGIC ---
 function toggleAbout(btn) {
@@ -611,5 +632,3 @@ async function loadCategoriasMenu() {
 }
 function filCat(c) { expForFilt.cat = c; expForFilt.sub = null; filtrarProductos(); }
 function filSub(c, s) { expForFilt.cat = c; expForFilt.sub = s; filtrarProductos(); }
-function prevSlide() { changeSlide(currentSlide - 1); }
-function nextSlide() { changeSlide(currentSlide + 1); }
