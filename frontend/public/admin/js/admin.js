@@ -1232,3 +1232,179 @@ async function generarEnvio(pedidoId) {
         alert('Error de conexiÃ³n al intentar exportar el pedido.');
     }
 }
+
+let currentCategorias = [];
+
+async function loadCategorias() {
+    try {
+        const res = await fetch('/api/categorias/tree');
+        if (!res.ok) throw new Error('Error al cargar categorias');
+        currentCategorias = await res.json();
+        
+        const tbody = document.getElementById('categorias-tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        currentCategorias.forEach(cat => {
+            const tr = document.createElement('tr');
+            
+            // Highlight if missing image
+            const imgHtml = cat.imagen_url 
+                ? \<img src="\" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">\
+                : \<div style="width: 50px; height: 50px; background: #ffebee; border: 1px dashed #f44336; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f44336;" title="Falta imagen"><i class="fas fa-exclamation-triangle"></i></div>\;
+            
+            // Subcategorias badges
+            const subsHtml = cat.subcategorias.map(sub => 
+                \<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">\</span>\
+            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
+            
+            tr.innerHTML = \
+                <td>\</td>
+                <td><strong>\</strong></td>
+                <td>\</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(\, '\', '\')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(\)" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
+                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('\')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            \;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Modal Categoria
+function openCategoriaModal(id = null, nombre = '', imagen = '') {
+    document.getElementById('categoria_id').value = id || '';
+    document.getElementById('categoria_nombre').value = nombre;
+    document.getElementById('categoria_imagen_url').value = imagen;
+    document.getElementById('categoria_imagen_file').value = '';
+    
+    const preview = document.getElementById('categoria_imagen_preview');
+    if (imagen) {
+        preview.style.display = 'block';
+        preview.querySelector('img').src = imagen;
+    } else {
+        preview.style.display = 'none';
+    }
+    
+    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categoría' : 'Nueva Categoría';
+    document.getElementById('categoriaModal').style.display = 'flex';
+}
+
+function closeCategoriaModal() {
+    document.getElementById('categoriaModal').style.display = 'none';
+}
+
+// Upload preview for Categoria
+document.getElementById('categoria_imagen_file')?.addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('imagen', file);
+    
+    try {
+        const res = await fetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Authorization': \Bearer \\ },
+            body: formData
+        });
+        const data = await res.json();
+        if (data.url) {
+            document.getElementById('categoria_imagen_url').value = data.url;
+            const preview = document.getElementById('categoria_imagen_preview');
+            preview.style.display = 'block';
+            preview.querySelector('img').src = data.url;
+        }
+    } catch (error) {
+        alert('Error subiendo imagen');
+    }
+});
+
+async function saveCategoria() {
+    const id = document.getElementById('categoria_id').value;
+    const nombre = document.getElementById('categoria_nombre').value;
+    const imagen_url = document.getElementById('categoria_imagen_url').value;
+    
+    if (!nombre) return alert('El nombre es requerido');
+    
+    const url = id ? \/api/categorias/\\ : '/api/categorias';
+    const method = id ? 'PUT' : 'POST';
+    
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': \Bearer \\
+            },
+            body: JSON.stringify({ nombre, imagen_url })
+        });
+        
+        if (res.ok) {
+            closeCategoriaModal();
+            loadCategorias();
+        } else {
+            const data = await res.json();
+            alert(data.error || 'Error al guardar categoría');
+        }
+    } catch (error) {
+        alert('Error de conexión');
+    }
+}
+
+async function deleteCategoria(nombre) {
+    if (!confirm(\¿Seguro que deseas eliminar la categoría "\"? Se perderá la relación con los productos.\)) return;
+    
+    try {
+        const res = await fetch(\/api/categorias/\\, {
+            method: 'DELETE',
+            headers: { 'Authorization': \Bearer \\ }
+        });
+        if (res.ok) loadCategorias();
+        else alert('Error al eliminar');
+    } catch (error) {
+        alert('Error de conexión');
+    }
+}
+
+// Modal Subcategoria
+function openSubcategoriaModal(categoriaId) {
+    document.getElementById('parent_categoria_id').value = categoriaId;
+    document.getElementById('subcategoria_nombre').value = '';
+    document.getElementById('subcategoriaModal').style.display = 'flex';
+}
+
+function closeSubcategoriaModal() {
+    document.getElementById('subcategoriaModal').style.display = 'none';
+}
+
+async function saveSubcategoria() {
+    const categoria_id = document.getElementById('parent_categoria_id').value;
+    const nombre = document.getElementById('subcategoria_nombre').value;
+    
+    if (!nombre) return alert('El nombre es requerido');
+    
+    try {
+        const res = await fetch('/api/categorias/sub', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': \Bearer \\
+            },
+            body: JSON.stringify({ nombre, categoria_id })
+        });
+        
+        if (res.ok) {
+            closeSubcategoriaModal();
+            loadCategorias();
+        } else {
+            alert('Error al añadir subcategoría');
+        }
+    } catch (error) {
+        alert('Error de conexión');
+    }
+}
