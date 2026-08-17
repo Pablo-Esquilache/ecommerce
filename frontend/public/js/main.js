@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const buscador = document.getElementById('buscador');
     if(buscador) buscador.addEventListener('input', filtrarProductos);
+    const navBuscador = document.getElementById('nav-buscador');
+    if(navBuscador) navBuscador.addEventListener('input', filtrarProductos);
     const categoriaFiltro = document.getElementById('categoria-filtro');
     if(categoriaFiltro) categoriaFiltro.addEventListener('change', filtrarProductos);
 
