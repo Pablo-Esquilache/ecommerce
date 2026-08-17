@@ -101,7 +101,7 @@ async function initDashboard() {
     fetchPedidos(); // Precargar pedidos
     fetchClientes(); // Precargar clientes
     fetchConfiguracion(); // Precargar MÃ³dulo de Ajustes
-    fetchCategorias(); // Cargar categorÃ­as para el modal de productos
+    loadCategorias(); // Cargar categorÃ­as para el modal de productos
 
     // Restaurar Ãºltima pestaÃ±a activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
@@ -749,7 +749,7 @@ async function crearNuevaCategoria() {
         if (!res.ok) throw new Error(data.error);
         
         input.value = '';
-        await fetchCategorias();
+        await loadCategorias();
         document.getElementById('prod-cat').value = data.nombre;
     } catch(e) { alert('Error: ' + e.message); }
 }
@@ -770,7 +770,7 @@ async function eliminarCategoriaSeleccionada() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         
-        await fetchCategorias();
+        await loadCategorias();
     } catch(e) { alert('Error: ' + e.message); }
 }
 
@@ -1305,7 +1305,7 @@ function openCategoriaModal(id = null, nombre = '', imagen = '') {
         preview.style.display = 'none';
     }
     
-    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categorï¿½a' : 'Nueva Categorï¿½a';
+    document.getElementById('categoriaModalTitle').innerText = id ? 'Editar Categoría' : 'Nueva Categoría';
     document.getElementById('categoriaModal').style.display = 'flex';
 }
 
@@ -1354,7 +1354,7 @@ async function saveCategoria() {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': Bearer 
+                'Authorization': 'Bearer ' + token
             },
             body: JSON.stringify({ nombre, imagen_url })
         });
@@ -1364,10 +1364,10 @@ async function saveCategoria() {
             loadCategorias();
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al guardar categorï¿½a');
+            alert(data.error || 'Error al guardar categoría');
         }
     } catch (error) {
-        alert('Error de conexiï¿½n');
+        alert('Error de conexión');
     }
 }
 
@@ -1382,7 +1382,7 @@ async function deleteCategoria(nombre) {
         if (res.ok) loadCategorias();
         else alert('Error al eliminar');
     } catch (error) {
-        alert('Error de conexiï¿½n');
+        alert('Error de conexión');
     }
 }
 
@@ -1408,7 +1408,7 @@ async function saveSubcategoria() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': Bearer 
+                'Authorization': 'Bearer ' + token
             },
             body: JSON.stringify({ nombre, categoria_id })
         });
@@ -1417,10 +1417,10 @@ async function saveSubcategoria() {
             closeSubcategoriaModal();
             loadCategorias();
         } else {
-            alert('Error al aï¿½adir subcategorï¿½a');
+            alert('Error al añadir subcategoría');
         }
     } catch (error) {
-        alert('Error de conexiï¿½n');
+        alert('Error de conexión');
     }
 }
 
