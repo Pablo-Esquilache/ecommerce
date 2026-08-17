@@ -524,14 +524,12 @@ async function editarProducto(id) {
         
         // Asignar categorÃ­a dinÃ¡mica
         const catSelect = document.getElementById('prod-cat');
-        // si la categorÃ­a de p.categoria no existe en el select, podemos intentar agregarla temporalmente o dejarla seleccionada si el fetchCategorias ya la trajo
-        if (Array.from(catSelect.options).some(opt => opt.value === p.categoria)) {
+        if (p.categoria) {
             catSelect.value = p.categoria;
-        } else if (p.categoria) {
-            catSelect.value = ''; // o dejar en blanco si no existe
         } else {
             catSelect.value = '';
         }
+        document.getElementById('prod-subcat').value = p.subcategoria || '';
         
         toggleProductType();
         
@@ -707,28 +705,20 @@ function logout() {
     window.location.href = '/admin/login.html';
 }
 
-// --- CATEGORÃAS DINÃMICAS ---
+// --- CATEGORÃ AS DINÃ MICAS ---
 async function fetchCategorias() {
     try {
         const res = await fetch(`${API_URL}/categorias`);
         const categorias = await res.json();
-        const select = document.getElementById('prod-cat');
-        if (!select) return;
         
-        // Guardar el valor seleccionado actual
-        const valActual = select.value;
-        
-        select.innerHTML = '<option value="">Selecciona...</option>';
-        categorias.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat.nombre;
-            opt.innerText = cat.nombre;
-            select.appendChild(opt);
-        });
-        
-        // Restaurar si existe
-        if (Array.from(select.options).some(o => o.value === valActual)) {
-            select.value = valActual;
+        const datalist = document.getElementById('categorias-list');
+        if (datalist) {
+            datalist.innerHTML = '';
+            categorias.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.nombre;
+                datalist.appendChild(opt);
+            });
         }
     } catch(e) { console.error('Error cargando categorias', e); }
 }
