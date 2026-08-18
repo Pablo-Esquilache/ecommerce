@@ -143,3 +143,8 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_id ON pedidos(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado);
 CREATE INDEX IF NOT EXISTS idx_detalles_pedido_id ON detalles_pedido(pedido_id);
 CREATE INDEX IF NOT EXISTS idx_detalles_producto_id ON detalles_pedido(producto_id);
+
+CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria);
+CREATE INDEX IF NOT EXISTS idx_productos_subcategoria ON productos(subcategoria);
+CREATE INDEX IF NOT EXISTS idx_pedidos_tracking ON pedidos(tracking_number);
+
