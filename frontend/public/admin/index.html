@@ -376,12 +376,22 @@
                         <div class="form-group"><label>Precio (USD)</label><input type="number" step="0.01" id="prod-precio-usd" placeholder="Opcional" title="Precio en dólares para clientes extranjeros"></div>
                         <div class="form-group" id="container-stock"><label>Stock</label><input type="number" id="prod-stock" required></div>
                         <div class="form-group" style="flex:1"><label>Categoría</label>
-                            <input type="text" id="prod-cat" list="categorias-list" placeholder="Elige o escribe nueva..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;" required autocomplete="off">
-                            <datalist id="categorias-list"></datalist>
+                            <select id="prod-cat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:5px;" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="quick-cat" placeholder="Nueva categoría..." style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px;">
+                                <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="quickAddCategoria()"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                         <div class="form-group" style="flex:1"><label>Subcategoría</label>
-                            <input type="text" id="prod-subcat" list="subcategorias-list" placeholder="Opcional..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;" autocomplete="off">
-                            <datalist id="subcategorias-list"></datalist>
+                            <select id="prod-subcat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:5px;">
+                                <option value="">Seleccione...</option>
+                            </select>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="quick-subcat" placeholder="Nueva subcategoría..." style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px;">
+                                <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="quickAddSubcategoria()"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                     </div>
                     
