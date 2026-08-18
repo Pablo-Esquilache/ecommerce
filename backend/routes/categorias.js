@@ -1,9 +1,14 @@
 ﻿const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const categoriaController = require('../controllers/categoriaController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 router.get('/', categoriaController.getAll);
+router.post('/upload', authMiddleware, upload.single('imagen'), categoriaController.uploadImage);
 router.post('/', authMiddleware, categoriaController.create);
 router.put('/:id', authMiddleware, categoriaController.update);
 router.delete('/:nombre', authMiddleware, categoriaController.delete);

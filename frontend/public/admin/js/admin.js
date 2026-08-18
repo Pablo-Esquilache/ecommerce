@@ -1314,7 +1314,7 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
     formData.append('imagen', file);
     
     try {
-        const res = await fetch('/api/admin/upload', {
+        const res = await fetch(API_URL + '/categorias/upload', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` },
             body: formData
