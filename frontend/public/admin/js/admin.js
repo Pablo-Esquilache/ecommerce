@@ -1307,8 +1307,11 @@ function closeCategoriaModal() {
 
 // Upload preview for Categoria
 document.getElementById('categoria_imagen_file')?.addEventListener('change', async function(e) {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
+    
+    // Comprimir en el cliente igual que los productos
+    file = await compressImage(file);
     
     const formData = new FormData();
     formData.append('imagen', file);
