@@ -1,4 +1,4 @@
-﻿const db = require('../config/database');
+const db = require('../config/database');
 
 exports.getAll = async (req, res) => {
     try {
@@ -126,17 +126,36 @@ exports.deleteSubcategoriaByName = async (req, res) => {
 };
 
 const supabase = require("../config/supabase");
-async function uploadToSupabase(file, bucket = "categorias") {
+const sharp = require('sharp');
+
+async function uploadToSupabase(file, bucket = "productos") {
     if (!file) return null;
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    const ext = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
+    let ext = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
+    
+    let buffer = file.buffer;
+    let mimetype = file.mimetype;
+
+    if (mimetype && mimetype.startsWith('image/')) {
+        try {
+            buffer = await sharp(file.buffer)
+                .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
+                .webp({ quality: 80 })
+                .toBuffer();
+            mimetype = 'image/webp';
+            ext = 'webp';
+        } catch (e) {
+            console.error('Sharp compression error:', e);
+        }
+    }
+
     const filename = uniqueSuffix + "." + (ext || "bin");
     
     const { data, error } = await supabase
       .storage
       .from(bucket)
-      .upload(filename, file.buffer, {
-        contentType: file.mimetype
+      .upload(filename, buffer, {
+        contentType: mimetype
       });
       
     if (error) {
@@ -151,7 +170,7 @@ async function uploadToSupabase(file, bucket = "categorias") {
 exports.uploadImage = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No se subió ninguna imagen" });
-        const url = await uploadToSupabase(req.file, "categorias");
+        const url = await uploadToSupabase(req.file, "productos");
         res.json({ url });
     } catch (error) {
         console.error("Error uploading category image:", error);
