@@ -1320,6 +1320,7 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
             body: formData
         });
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error del servidor al subir la imagen');
         if (data.url) {
             document.getElementById('categoria_imagen_url').value = data.url;
             const preview = document.getElementById('categoria_imagen_preview');
@@ -1327,7 +1328,8 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
             preview.querySelector('img').src = data.url;
         }
     } catch (error) {
-        alert('Error subiendo imagen');
+        console.error(error);
+        alert('Error subiendo imagen: ' + error.message);
     }
 });
 
