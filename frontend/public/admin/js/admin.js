@@ -1310,50 +1310,38 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
     let file = e.target.files[0];
     if (!file) return;
     
-    // Comprimir en el cliente igual que los productos
-    file = await compressImage(file);
-    
-    const formData = new FormData();
-    formData.append('imagen', file);
-    
-    try {
-        const res = await fetch(API_URL + '/categorias/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` },
-            body: formData
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error del servidor al subir la imagen');
-        if (data.url) {
-            document.getElementById('categoria_imagen_url').value = data.url;
-            const preview = document.getElementById('categoria_imagen_preview');
-            preview.style.display = 'block';
-            preview.querySelector('img').src = data.url;
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Error subiendo imagen: ' + error.message);
-    }
+    // Preview local sin subir todavia
+    const preview = document.getElementById('categoria_imagen_preview');
+    preview.style.display = 'block';
+    preview.querySelector('img').src = URL.createObjectURL(file);
 });
 
 async function saveCategoria() {
     const id = document.getElementById('categoria_id').value;
     const nombre = document.getElementById('categoria_nombre').value;
     const imagen_url = document.getElementById('categoria_imagen_url').value;
+    let file = document.getElementById('categoria_imagen_file').files[0];
     
     if (!nombre) return alert('El nombre es requerido');
     
-    const url = id ? '/api/categorias/' + id : '/api/categorias';
+    const url = id ? API_URL + '/categorias/' + id : API_URL + '/categorias';
     const method = id ? 'PUT' : 'POST';
+    
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    if (imagen_url) formData.append('imagen_url', imagen_url);
+    if (file) {
+        file = await compressImage(file);
+        formData.append('imagen', file);
+    }
     
     try {
         const res = await fetch(url, {
             method,
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
             },
-            body: JSON.stringify({ nombre, imagen_url })
+            body: formData
         });
         
         if (res.ok) {

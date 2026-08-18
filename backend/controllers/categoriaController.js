@@ -12,9 +12,15 @@ exports.getAll = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        const { nombre, imagen_url } = req.body;
+        const { nombre } = req.body;
+        let { imagen_url } = req.body;
+        
         if (!nombre) {
             return res.status(400).json({ error: 'El nombre de la categoría es requerido' });
+        }
+        
+        if (req.files && req.files.imagen) {
+            imagen_url = await uploadToSupabase(req.files.imagen[0], 'productos');
         }
         
         const nombreLimpio = nombre.trim();
@@ -35,7 +41,12 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, imagen_url } = req.body;
+        const { nombre } = req.body;
+        let { imagen_url } = req.body;
+        
+        if (req.files && req.files.imagen) {
+            imagen_url = await uploadToSupabase(req.files.imagen[0], 'productos');
+        }
         
         const { rows } = await db.query(
             'UPDATE categorias SET nombre = COALESCE($1, nombre), imagen_url = $2 WHERE id = $3 RETURNING *',

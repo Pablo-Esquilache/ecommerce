@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const categoriaController = require('../controllers/categoriaController');
@@ -6,11 +6,11 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const uploadCatImages = upload.fields([{ name: 'imagen', maxCount: 1 }]);
 
 router.get('/', categoriaController.getAll);
-router.post('/upload', authMiddleware, upload.single('imagen'), categoriaController.uploadImage);
-router.post('/', authMiddleware, categoriaController.create);
-router.put('/:id', authMiddleware, categoriaController.update);
+router.post('/', authMiddleware, uploadCatImages, categoriaController.create);
+router.put('/:id', authMiddleware, uploadCatImages, categoriaController.update);
 router.delete('/:nombre', authMiddleware, categoriaController.delete);
 
 // Nuevo endpoint para el menú de árbol
