@@ -126,36 +126,17 @@ exports.deleteSubcategoriaByName = async (req, res) => {
 };
 
 const supabase = require("../config/supabase");
-const sharp = require('sharp');
-
 async function uploadToSupabase(file, bucket = "productos") {
     if (!file) return null;
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    let ext = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
-    
-    let buffer = file.buffer;
-    let mimetype = file.mimetype;
-
-    if (mimetype && mimetype.startsWith('image/')) {
-        try {
-            buffer = await sharp(file.buffer)
-                .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
-                .webp({ quality: 80 })
-                .toBuffer();
-            mimetype = 'image/webp';
-            ext = 'webp';
-        } catch (e) {
-            console.error('Sharp compression error:', e);
-        }
-    }
-
+    const ext = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
     const filename = uniqueSuffix + "." + (ext || "bin");
     
     const { data, error } = await supabase
       .storage
       .from(bucket)
-      .upload(filename, buffer, {
-        contentType: mimetype
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype
       });
       
     if (error) {

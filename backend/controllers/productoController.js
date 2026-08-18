@@ -1,41 +1,23 @@
-const sharp = require('sharp');
 const Producto = require('../models/Producto');
 const supabase = require('../config/supabase');
 
 async function uploadToSupabase(file, bucket = 'productos') {
   if (!file) return null;
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  let ext = (file.originalname || '').split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
-  
-  let buffer = file.buffer;
-  let mimetype = file.mimetype;
-
-  if (mimetype && mimetype.startsWith('image/')) {
-      try {
-          buffer = await sharp(file.buffer)
-              .resize(1000, 1000, { fit: 'inside', withoutEnlargement: true })
-              .webp({ quality: 80 })
-              .toBuffer();
-          mimetype = 'image/webp';
-          ext = 'webp';
-      } catch (e) {
-          console.error('Sharp compression error:', e);
-      }
-  }
-
+  const ext = (file.originalname || '').split('.').pop().replace(/[^a-zA-Z0-9]/g, '');
   const filename = `${uniqueSuffix}.${ext || 'bin'}`;
   
   console.log("=== DEBUG UPLOAD ===");
   console.log("Supabase URL:", process.env.SUPABASE_URL);
   console.log("Bucket:", bucket);
   console.log("Filename:", filename);
-  console.log("Mimetype:", mimetype);
+  console.log("Mimetype:", file.mimetype);
   
   const { data, error } = await supabase
     .storage
     .from(bucket)
-    .upload(filename, buffer, {
-      contentType: mimetype
+    .upload(filename, file.buffer, {
+      contentType: file.mimetype
     });
     
   if (error) {
