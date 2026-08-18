@@ -39,7 +39,7 @@ function renderAdminPagination(containerId, totalPages, currentPage, onPageClick
     cont.appendChild(btnNext);
 }
 
-// FunciÃ³n para Login
+// Función para Login
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -100,10 +100,10 @@ async function initDashboard() {
     fetchProductos(); // Precargar productos
     fetchPedidos(); // Precargar pedidos
     fetchClientes(); // Precargar clientes
-    fetchConfiguracion(); // Precargar MÃ³dulo de Ajustes
-    loadCategorias(); // Cargar categorÃ­as para el modal de productos
+    fetchConfiguracion(); // Precargar Módulo de Ajustes
+    loadCategorias(); // Cargar categorías para el modal de productos
 
-    // Restaurar Ãºltima pestaÃ±a activa
+    // Restaurar última pestaña activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
     const tabElement = document.querySelector(`.sidebar .nav li[onclick*="switchTab('${lastTab}'"]`);
     switchTab(lastTab, tabElement);
@@ -126,10 +126,10 @@ function switchTab(tabId, el) {
     const section = document.getElementById(`view-${tabId}`);
     if(section) section.classList.add('active'); // Added safety check
 
-    const titles = { dashboard: 'Dashboard', productos: 'GestiÃ³n de Productos', pedidos: 'GestiÃ³n de Pedidos', clientes: 'Listado de Clientes', usuarios: 'ConfiguraciÃ³n de Usuarios', envios: 'ConfiguraciÃ³n de EnvÃ­os', ajustes: 'Ajustes del Sistema' };
+    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Configuración de Usuarios', envios: 'Configuración de Envíos', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
     
-    // Cerrar sidebar en mÃ³viles tras hacer clic
+    // Cerrar sidebar en móviles tras hacer clic
     if (window.innerWidth <= 768) {
         toggleSidebar(false);
     }
@@ -137,7 +137,7 @@ function switchTab(tabId, el) {
     if (tabId === 'usuarios') loadUsuarios();
 }
 
-// LÃ³gica de MenÃº Responsive (Hamburguesa)
+// Lógica de Menú Responsive (Hamburguesa)
 function toggleSidebar(forceState) {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
@@ -225,7 +225,7 @@ function renderAdminPedidos(pedidos) {
                 <select onchange="updatePedidoStatus(${p.id}, this.value)" style="padding:4px; border-radius:4px;">
                     <option value="pendiente" ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
                     <option value="pagado" ${isPagado?'selected':''}>Pagado</option>
-                    <option value="preparando_envio" ${p.estado==='preparando_envio'?'selected':''}>Preparando EnvÃ­o</option>
+                    <option value="preparando_envio" ${p.estado==='preparando_envio'?'selected':''}>Preparando Envío</option>
                     <option value="enviado" ${isSend?'selected':''}>Enviado</option>
                     <option value="entregado" ${p.estado==='entregado'?'selected':''}>Entregado</option>
                     <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
@@ -271,15 +271,15 @@ async function verEticket(pedidoId) {
             <div style="margin-bottom:10px;">
                 <strong>Cliente:</strong> ${p.nombre} ${p.apellido}<br>
                 <strong>Email:</strong> ${p.email}<br>
-                <strong>MÃ©todo Pago:</strong> ${p.metodo_pago}<br>
+                <strong>Método Pago:</strong> ${p.metodo_pago}<br>
                 <strong>Estado:</strong> ${p.estado.toUpperCase()}
             </div>
             <div style="border-top:1px dashed #ccc; padding-top:10px;">
-                <strong>ArtÃ­culos:</strong>
+                <strong>Artículos:</strong>
                 ${detalleHtml}
             </div>
             <div style="text-align:right; margin-top:10px; font-size:18px; font-weight:bold; border-top:1px dashed #ccc; padding-top:10px;">
-                <small>EnvÃ­o (Contra Reembolso): $0.00</small><br>
+                <small>Envío (Contra Reembolso): $0.00</small><br>
                 TOTAL: $${parseFloat(p.total).toLocaleString('es-AR')}
             </div>
         `;
@@ -381,14 +381,14 @@ async function verHistorialCliente(clienteId) {
         openModal('historial-modal');
     } catch(e) {
         console.error('Error abriendo historial', e);
-        alert('OcurriÃ³ un error al cargar el historial del cliente');
+        alert('Ocurrió un error al cargar el historial del cliente');
     }
 }
 
 async function fetchDashboardStats() {
     try {
         const res = await fetch(`${API_URL}/admin/dashboard`, { headers: authHeaders() });
-        if (res.status === 401) return logout(); // Token invÃ¡lido o expirado
+        if (res.status === 401) return logout(); // Token inválido o expirado
         const stats = await res.json();
         
         const ingresos = stats.ventas.total_ingresos || 0;
@@ -461,8 +461,8 @@ function renderAdminProductos(lista) {
             : `<span style="font-weight: 500;">${p.stock}</span>`;
 
         const tipoDisplay = p.tipo_producto === 'digital' 
-            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">ðŸ’» Digital</span>' 
-            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">ðŸ“¦ FÃ­sico</span>';
+            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💻 Digital</span>' 
+            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 Físico</span>';
 
         pTB.innerHTML += `<tr>
             <td>${p.id}</td>
@@ -522,7 +522,7 @@ async function editarProducto(id) {
         document.getElementById('prod-tipo').value = p.tipo_producto || 'fisico';
         document.getElementById('prod-video').value = p.video_url || '';
         
-        // Asignar categorÃ­a dinÃ¡mica
+        // Asignar categoría dinámica
         const catSelect = document.getElementById('prod-cat');
         if (p.categoria) {
             catSelect.value = p.categoria;
@@ -591,7 +591,7 @@ function toggleProductType() {
     }
 }
 
-// Helper para comprimir imÃ¡genes en el cliente antes de subirlas
+// Helper para comprimir imágenes en el cliente antes de subirlas
 async function compressImage(file, maxWidth = 800, quality = 0.8) {
     if (!file || !file.type.startsWith('image/')) return file; // Si no es imagen, no tocar
     return new Promise((resolve) => {
@@ -726,7 +726,7 @@ async function fetchCategorias() {
 async function crearNuevaCategoria() {
     const input = document.getElementById('nueva-categoria-input');
     const nombre = input.value.trim();
-    if (!nombre) return alert('Escribe un nombre para la categorÃ­a');
+    if (!nombre) return alert('Escribe un nombre para la categoría');
     
     try {
         const token = localStorage.getItem('admin_token');
@@ -747,9 +747,9 @@ async function crearNuevaCategoria() {
 async function eliminarCategoriaSeleccionada() {
     const select = document.getElementById('prod-cat');
     const nombre = select.value;
-    if (!nombre) return alert('Selecciona una categorÃ­a primero');
+    if (!nombre) return alert('Selecciona una categoría primero');
     
-    if (!confirm(`Â¿EstÃ¡s seguro de eliminar la categorÃ­a "${nombre}"?`)) return;
+    if (!confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?`)) return;
     
     try {
         const token = localStorage.getItem('admin_token');
@@ -806,7 +806,7 @@ if (formExcel) {
     });
 }
 
-// LÃ³gica del buscador de productos en tiempo real
+// Lógica del buscador de productos en tiempo real
 const searchAdminInput = document.getElementById('admin-search-producto');
 if (searchAdminInput) {
     searchAdminInput.addEventListener('input', (e) => {
@@ -817,7 +817,7 @@ if (searchAdminInput) {
     });
 }
 
-// LÃ³gica de filtro para pedidos
+// Lógica de filtro para pedidos
 const filterPedidosSelect = document.getElementById('admin-filter-pedidos-estado');
 if (filterPedidosSelect) {
     filterPedidosSelect.addEventListener('change', (e) => {
@@ -832,7 +832,7 @@ if (filterPedidosSelect) {
     });
 }
 
-// LÃ³gica de bÃºsqueda de clientes
+// Lógica de búsqueda de clientes
 const searchClienteInput = document.getElementById('admin-search-cliente');
 if (searchClienteInput) {
     searchClienteInput.addEventListener('input', (e) => {
@@ -847,7 +847,7 @@ if (searchClienteInput) {
     });
 }
 
-// LÃ³gica para descargar Excel de clientes
+// Lógica para descargar Excel de clientes
 async function descargarExcelClientes() {
     try {
         const btn = event.currentTarget;
@@ -1004,11 +1004,11 @@ async function guardarConfiguracion() {
         });
 
         if (res.ok) {
-            alert('ConfiguraciÃ³n guardada exitosamente');
-            fetchConfiguracion(); // Recargar validaciÃ³n visual
+            alert('Configuración guardada exitosamente');
+            fetchConfiguracion(); // Recargar validación visual
         } else {
             const data = await res.json();
-            alert(data.error || 'Error al guardar la configuraciÃ³n');
+            alert(data.error || 'Error al guardar la configuración');
         }
 
         btn.innerHTML = originalText;
@@ -1021,7 +1021,7 @@ async function guardarConfiguracion() {
 
 
 
-// --- CAMBIAR CONTRASEÃ‘A EN PANEL ---
+// --- CAMBIAR CONTRASEÑA EN PANEL ---
 document.addEventListener('DOMContentLoaded', () => {
     const formPwd = document.getElementById('form-cambiar-password');
     if (formPwd) {
@@ -1045,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
 
             try {
-                // Paso 1: Solicitar autorizaciÃ³n MFA
+                // Paso 1: Solicitar autorización MFA
                 const resOtp = await fetch(`${API_URL}/admin/request-change-otp`, {
                     method: 'POST',
                     headers: authHeaders(),
@@ -1068,10 +1068,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 openModal('otp-modal');
                 pinInput.focus();
 
-                // Detenemos el flujo aquÃ­ y pasamos la responsabilidad al botÃ³n del Modal
+                // Detenemos el flujo aquí y pasamos la responsabilidad al botón del Modal
                 const btnConfirmOtp = document.getElementById('btn-confirm-otp');
                 
-                // Clonar botÃ³n para remover listeners antiguos y evitar ejecuciones mÃºltiples
+                // Clonar botón para remover listeners antiguos y evitar ejecuciones múltiples
                 const newBtnConfirm = btnConfirmOtp.cloneNode(true);
                 btnConfirmOtp.parentNode.replaceChild(newBtnConfirm, btnConfirmOtp);
 
@@ -1129,7 +1129,7 @@ async function loadUsuarios() {
     try {
         const res = await fetch(`${API_URL}/admin/usuarios`, { headers: authHeaders() });
         if (res.status === 401) {
-            alert('Tu sesiÃ³n ha expirado. Por favor, iniciÃ¡ sesiÃ³n nuevamente.');
+            alert('Tu sesión ha expirado. Por favor, iniciá sesión nuevamente.');
             return logout();
         }
         if (!res.ok) throw new Error('Error al obtener administradores');
@@ -1177,12 +1177,12 @@ async function saveUsuario(e) {
         }
     } catch (err) {
         console.error(err);
-        alert('OcurriÃ³ un error al guardar el administrador.');
+        alert('Ocurrió un error al guardar el administrador.');
     }
 }
 
 async function deleteUsuario(id) {
-    if (!confirm('Â¿EstÃ¡s seguro de que deseas eliminar a este administrador? PerderÃ¡ acceso inmediato.')) return;
+    if (!confirm('¿Estás seguro de que deseas eliminar a este administrador? Perderá acceso inmediato.')) return;
     
     try {
         const res = await fetch(`${API_URL}/admin/usuarios/${id}`, {
@@ -1196,14 +1196,14 @@ async function deleteUsuario(id) {
             alert(data.error || 'Error al eliminar.');
         }
     } catch(err) {
-        alert('OcurriÃ³ un error de conexiÃ³n.');
+        alert('Ocurrió un error de conexión.');
     }
 }
 
 
 // --- LOGICA DE CORREO ARGENTINO ---
 async function generarEnvio(pedidoId) {
-    if(!confirm('Â¿EstÃ¡s seguro de que deseas exportar este pedido a Correo Argentino? AparecerÃ¡ en tu cuenta de MiCorreo para ser pagado.')) return;
+    if(!confirm('¿Estás seguro de que deseas exportar este pedido a Correo Argentino? Aparecerá en tu cuenta de MiCorreo para ser pagado.')) return;
     
     try {
         const res = await fetch(`${API_URL}/admin/pedidos/${pedidoId}/generar-envio`, {
@@ -1213,14 +1213,14 @@ async function generarEnvio(pedidoId) {
         const data = await res.json();
         
         if (res.ok) {
-            alert('Pedido exportado correctamente. Ya podÃ©s ir a gestionarlo en la web de Correo Argentino.');
+            alert('Pedido exportado correctamente. Ya podés ir a gestionarlo en la web de Correo Argentino.');
             fetchPedidos(); // Recargar la tabla
         } else {
             alert(data.error || 'Error al exportar el pedido.');
         }
     } catch(err) {
         console.error(err);
-        alert('Error de conexiÃ³n al intentar exportar el pedido.');
+        alert('Error de conexión al intentar exportar el pedido.');
     }
 }
 

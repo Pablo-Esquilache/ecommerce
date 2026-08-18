@@ -19,7 +19,7 @@
         <ul class="nav">
             <li class="active" onclick="switchTab('dashboard', this)"><i class="fas fa-home"></i> Resumen</li>
             <li onclick="switchTab('productos', this)"><i class="fas fa-box"></i> Productos</li>
-            <li onclick="switchTab('categorias', this)"><i class="fas fa-tags"></i> Categor�as</li>
+            <li onclick="switchTab('categorias', this)"><i class="fas fa-tags"></i> Categorías</li>
             <li onclick="switchTab('pedidos', this)"><i class="fas fa-shopping-cart"></i> Pedidos</li>
             <li onclick="switchTab('clientes', this)"><i class="fas fa-users"></i> Clientes</li>
             <li onclick="switchTab('usuarios', this)"><i class="fas fa-user-shield"></i> Usuarios</li>
@@ -115,17 +115,17 @@
 
         
 <!-- VIEW: CATEGORIAS -->
-<section id="view-categorias" class="view-section">
-    <div class="actions-bar">
-        <button class="btn btn-primary" onclick="openCategoriaModal()"><i class="fas fa-plus"></i> Nueva Categor�a</button>
-    </div>
+        <section id="view-categorias" class="view-section">
+            <div class="header-actions" style="text-align: right; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="openCategoriaModal()"><i class="fas fa-plus"></i> Nueva Categoría</button>
+            </div>
     <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Imagen</th>
-                    <th>Categor�a</th>
-                    <th>Subcategor�as</th>
+                    <th>Categoría</th>
+                    <th>Subcategorías</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
