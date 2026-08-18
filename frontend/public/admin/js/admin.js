@@ -80,7 +80,7 @@ function authHeaders() {
     const token = localStorage.getItem('admin_token');
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${localStorage.getItem("admin_token")}`
     };
 }
 
@@ -681,7 +681,7 @@ if (formProducto) {
 
             const res = await fetch(url, {
                 method: method,
-                headers: { 'Authorization': `Bearer ${token}` }, // NO setear Content-Type en fetch con FormData, el browser lo calcula auto
+                headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }, // NO setear Content-Type en fetch con FormData, el browser lo calcula auto
                 body: formData
             });
 
@@ -732,7 +732,7 @@ async function crearNuevaCategoria() {
         const token = localStorage.getItem('admin_token');
         const res = await fetch(`${API_URL}/categorias`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` },
             body: JSON.stringify({ nombre })
         });
         const data = await res.json();
@@ -755,7 +755,7 @@ async function eliminarCategoriaSeleccionada() {
         const token = localStorage.getItem('admin_token');
         const res = await fetch(`${API_URL}/categorias/${nombre}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -785,7 +785,7 @@ if (formExcel) {
             const token = localStorage.getItem('admin_token');
             const res = await fetch(`${API_URL}/productos/upload`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }, // Multer / navegador configura el boundary solo
+                headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }, // Multer / navegador configura el boundary solo
                 body: formData
             });
 
@@ -857,7 +857,7 @@ async function descargarExcelClientes() {
 
         const token = localStorage.getItem('admin_token');
         const res = await fetch(`${API_URL}/admin/clientes/excel`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }
         });
         
         if (!res.ok) throw new Error('No se pudo generar el reporte Excel');
@@ -998,7 +998,7 @@ async function guardarConfiguracion() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${localStorage.getItem("admin_token")}`
             },
             body: JSON.stringify(payload)
         });
@@ -1314,7 +1314,7 @@ document.getElementById('categoria_imagen_file')?.addEventListener('change', asy
     try {
         const res = await fetch('/api/admin/upload', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` },
             body: formData
         });
         const data = await res.json();
@@ -1344,7 +1344,7 @@ async function saveCategoria() {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
             },
             body: JSON.stringify({ nombre, imagen_url })
         });
@@ -1365,9 +1365,9 @@ async function deleteCategoria(nombre) {
     if (!confirm(`¿Seguro que deseas eliminar la categoría "${nombre}"? Se perderá la relación con los productos.`)) return;
     
     try {
-        const res = await fetch(`/api/categorias/${encodeURIComponent(nombre)}`, {
+        const res = await fetch(`${API_URL}/categorias/${encodeURIComponent(nombre)}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }
         });
         if (res.ok) loadCategorias();
         else alert('Error al eliminar');
@@ -1394,11 +1394,11 @@ async function saveSubcategoria() {
     if (!nombre) return alert('El nombre es requerido');
     
     try {
-        const res = await fetch('/api/categorias/sub', {
+        const res = await fetch(API_URL + '/categorias/sub', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + localStorage.getItem('admin_token')
             },
             body: JSON.stringify({ nombre, categoria_id })
         });
@@ -1414,3 +1414,16 @@ async function saveSubcategoria() {
     }
 }
 
+async function deleteSubcategoria(catNombre, subNombre) {
+    if (!confirm('¿Seguro que deseas eliminar la subcategoría "' + subNombre + '"?')) return;
+    try {
+        const res = await fetch(API_URL + '/categorias/sub/name/' + encodeURIComponent(subNombre), {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('admin_token') }
+        });
+        if (res.ok) loadCategorias();
+        else alert('Error al eliminar subcategoría');
+    } catch (e) {
+        alert('Error de conexión');
+    }
+}

@@ -114,3 +114,13 @@ exports.deleteSubcategoria = async (req, res) => {
         res.status(500).json({ error: 'Error interno' });
     }
 };
+
+exports.deleteSubcategoriaByName = async (req, res) => {
+    try {
+        const { nombre } = req.params;
+        await db.query("DELETE FROM subcategorias WHERE nombre = $1", [nombre]);
+        res.json({ message: "Subcategoría eliminada" });
+    } catch (error) {
+        res.status(500).json({ error: "Error interno" });
+    }
+};

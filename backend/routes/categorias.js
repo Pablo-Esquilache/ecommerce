@@ -1,4 +1,4 @@
-const express = require('express');
+ï»¿const express = require('express');
 const router = express.Router();
 const categoriaController = require('../controllers/categoriaController');
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -8,11 +8,12 @@ router.post('/', authMiddleware, categoriaController.create);
 router.put('/:id', authMiddleware, categoriaController.update);
 router.delete('/:nombre', authMiddleware, categoriaController.delete);
 
-// Nuevo endpoint para el menú de árbol
+// Nuevo endpoint para el menÃº de Ã¡rbol
 router.get('/tree', categoriaController.getTree);
 
-module.exports = router;
-
-// Endpoints para subcategorías
+// Endpoints para subcategorÃ­as
 router.post('/sub', authMiddleware, categoriaController.createSubcategoria);
 router.delete('/sub/:id', authMiddleware, categoriaController.deleteSubcategoria);
+router.delete('/sub/name/:nombre', authMiddleware, categoriaController.deleteSubcategoriaByName);
+
+module.exports = router;
