@@ -5,7 +5,8 @@ if (supabaseUrl.startsWith('"') && supabaseUrl.endsWith('"')) supabaseUrl = supa
 if (supabaseUrl.startsWith("'") && supabaseUrl.endsWith("'")) supabaseUrl = supabaseUrl.slice(1, -1);
 if (supabaseUrl.endsWith("/")) supabaseUrl = supabaseUrl.slice(0, -1);
 
-let supabaseKey = (process.env.SUPABASE_KEY || '').trim(); 
+// Intentar usar la Service Role Key (llave maestra) primero. Si no está, usar la pública (fallback)
+let supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '').trim(); 
 if (supabaseKey.startsWith('"') && supabaseKey.endsWith('"')) supabaseKey = supabaseKey.slice(1, -1);
 if (supabaseKey.startsWith("'") && supabaseKey.endsWith("'")) supabaseKey = supabaseKey.slice(1, -1); 
 
