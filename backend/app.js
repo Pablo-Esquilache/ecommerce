@@ -32,7 +32,10 @@ const categoriasRoutes = require('./routes/categorias');
 // require('./cron/sincronizarTracking');
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: process.env.PUBLIC_URL || "http://localhost:3000",
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -1,1 +1,0 @@
-﻿const fs = require('fs'); const html = fs.readFileSync('frontend/public/admin/index.html', 'utf8'); const start = html.indexOf('id=\"view-ajustes\"'); const end = html.indexOf('id=\"view-envios\"'); const sub = html.substring(start, end); console.log('Opens:', (sub.match(/<div/g) || []).length, 'Closes:', (sub.match(/<\/div/g) || []).length);

@@ -1,1 +1,0 @@
-﻿const fs = require('fs'); const html = fs.readFileSync('frontend/public/admin/index.html', 'utf8'); const lines = html.split('\n'); let opens = 0; let closes = 0; for(let i=166; i<322; i++) { opens += (lines[i].match(/<div/g) || []).length; closes += (lines[i].match(/<\/div/g) || []).length; if (closes > opens) { console.log('EXTRA DIV CLOSE AT LINE:', i+1); break; } }
