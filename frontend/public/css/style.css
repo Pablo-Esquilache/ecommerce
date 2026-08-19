@@ -101,15 +101,14 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 
 /* Hero & Carousel */
 .hero {
-    height: 75vh;
+    height: 50vh;
     position: relative;
     overflow: hidden;
     display: flex;
-    align-items: center;
     justify-content: center;
     text-align: center;
     color: var(--white);
-    margin-top: 60px; /* Offset nav */
+    margin-top: 55px; /* Offset nav */
 }
 .carousel-bg {
     position: absolute;
@@ -501,7 +500,7 @@ footer {
     }
     .menu-toggle { display: block; }
     .hero {
-    height: 75vh; min-height: 400px; } /* Adaptado para que las etiquetas queden a la vista */
+    height: 50vh; min-height: 400px; } /* Volvemos a 100vh porque ahora tenemos fotos verticales */
     .hero-content h1 { font-size: 32px; }
     .filters { flex-direction: column; align-items: center; }
     
