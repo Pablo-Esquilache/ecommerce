@@ -54,6 +54,7 @@ CREATE TABLE "productos" (
   "nombre" VARCHAR(200) NOT NULL,
   "descripcion" TEXT NOT NULL,
   "precio" DECIMAL(10, 2) NOT NULL,
+  "precio_usd" DECIMAL(10, 2),
   "stock" INTEGER NOT NULL DEFAULT 0,
   "categoria" VARCHAR(100),
   "subcategoria" VARCHAR(100),
