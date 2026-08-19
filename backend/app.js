@@ -11,7 +11,7 @@ if (dns.setDefaultResultOrder) {
 const Sentry = require("@sentry/node");
 Sentry.init({
   dsn: "https://68477c523d410979c6ba66a13bfe6476@o4511934659624960.ingest.us.sentry.io/4511934679744512",
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.2,
 });
 
 const app = express();
