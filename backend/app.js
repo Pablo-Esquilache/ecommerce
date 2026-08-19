@@ -8,6 +8,12 @@ if (dns.setDefaultResultOrder) {
 }
 
 // Inicializar Express
+const Sentry = require("@sentry/node");
+Sentry.init({
+  dsn: "https://68477c523d410979c6ba66a13bfe6476@o4511934659624960.ingest.us.sentry.io/4511934679744512",
+  tracesSampleRate: 1.0,
+});
+
 const app = express();
 app.set('trust proxy', 1); // Configuración vital para rate-limit en Render
 const PORT = process.env.PORT || 3000;
@@ -47,6 +53,10 @@ app.use('/api/categorias', categoriasRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
+
+
+// Sentry Error Handler (debe ir despus de todas las rutas)
+Sentry.setupExpressErrorHandler(app);
 
 // Exportar la app envuelta para Netlify Functions
 const serverless = require('serverless-http');
