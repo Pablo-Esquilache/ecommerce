@@ -10,7 +10,7 @@ if (dns.setDefaultResultOrder) {
 // Inicializar Express
 const Sentry = require("@sentry/node");
 Sentry.init({
-  dsn: "https://53309321d247dfecc9a26cf66a220e8d@o4511934659624960.ingest.us.sentry.io/4511934714413056",
+  dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 0.2,
 });
 
