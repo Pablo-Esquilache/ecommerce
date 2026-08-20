@@ -1,19 +1,5 @@
 const db = require('../config/database');
 
-let checkedColumns = false;
-async function ensureDigitalColumns() {
-    if (checkedColumns) return;
-    try {
-        await db.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS tipo_producto VARCHAR(50) DEFAULT 'fisico';`);
-        await db.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS archivo_digital VARCHAR(255);`);
-        await db.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS video_url VARCHAR(255);`);
-        await db.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS precio_usd DECIMAL(10,2) DEFAULT 0;`);
-        checkedColumns = true;
-    } catch(err) {
-        console.warn('No se pudo verificar columnas en productos:', err.message);
-    }
-}
-
 const Producto = {
   getAll: async (all = false) => {
     await ensureDigitalColumns();
