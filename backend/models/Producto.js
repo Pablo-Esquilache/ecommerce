@@ -2,7 +2,7 @@ const db = require('../config/database');
 
 const Producto = {
   getAll: async (all = false) => {
-    await ensureDigitalColumns();
+    
     let query = 'SELECT * FROM productos WHERE activo = true AND stock > 0 ORDER BY id DESC';
     if(all) {
         query = 'SELECT * FROM productos ORDER BY id DESC';
@@ -18,14 +18,14 @@ const Producto = {
   },
 
   getById: async (id) => {
-    await ensureDigitalColumns();
+    
     const query = 'SELECT * FROM productos WHERE id = $1';
     const { rows } = await db.query(query, [id]);
     return rows[0];
   },
 
   create: async (data) => {
-    await ensureDigitalColumns();
+    
     const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
     const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
     
@@ -51,7 +51,7 @@ const Producto = {
   },
 
   update: async (id, data) => {
-    await ensureDigitalColumns();
+    
     const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
     const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
     
