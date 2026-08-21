@@ -881,3 +881,12 @@ nav.glass-navbar ul.nav-links li a:hover {
     display: block !important;
 }
 
+
+
+/* Ajuste móvil para Categorías (2 por fila) */
+@media (max-width: 768px) {
+    .categorias-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+    }
+}
