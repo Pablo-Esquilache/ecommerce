@@ -782,7 +782,7 @@ nav.glass-navbar ul.nav-links li a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-top: -30px; /* Para que suba un poco sobre el hero */
+    margin-top: -15px; /* Bajado para que no se vea la segunda fila */
     position: relative;
     z-index: 11;
 }
