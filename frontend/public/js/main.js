@@ -108,9 +108,45 @@ async function fetchProductos() {
         const response = await fetch(`${API_URL}/productos`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Server Error');
+
         productos = data;
         renderProductos(productos);
         validarCarrito(productos); // Silenciosamente corrige precios viejos
+        
+        // --- INYECCION SCHEMA MARKUP PARA SEO/SEM ---
+        try {
+            const oldScript = document.getElementById('seo-schema');
+            if (oldScript) oldScript.remove();
+            const schemaData = {
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                "itemListElement": productos.map((p, index) => ({
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "item": {
+                        "@type": "Product",
+                        "name": p.nombre,
+                        "description": p.descripcion ? p.descripcion.substring(0, 150) : "Producto artesanal de Sidhartta Hilados",
+                        "image": p.img_url ? (p.img_url.startsWith('http') ? p.img_url : window.location.origin + '/' + p.img_url) : "",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": p.precio,
+                            "priceCurrency": "ARS",
+                            "availability": (p.tipo_producto === 'digital' || p.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                        }
+                    }
+                }))
+            };
+            const script = document.createElement('script');
+            script.id = 'seo-schema';
+            script.type = 'application/ld+json';
+            script.text = JSON.stringify(schemaData);
+            document.head.appendChild(script);
+        } catch(e) {
+            console.error('Error injecting Schema', e);
+        }
+        // --------------------------------------------
+
     } catch (error) {
         console.error('Error cargando productos:', error);
         document.getElementById('grid-productos').innerHTML = `<p style="color:red">Error al cargar productos: ${error.message}</p>`;
