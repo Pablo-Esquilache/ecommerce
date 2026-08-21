@@ -1,7 +1,7 @@
 :root {
     --primary: #2563EB;
     --secondary: #06B6D4;
-    --bg: #F8FAFC;
+    --bg: #EEEEEE;
     --text: #0F172A;
     --light-text: #64748B;
     --white: #FFFFFF;
@@ -775,7 +775,7 @@ nav.glass-navbar ul.nav-links li a:hover {
 /* Tarjetas Dinámicas */
 .categorias-cards-section {
     padding: 60px 0 20px 0;
-    background-color: #f9f9f9;
+    background-color: transparent;
 }
 
 .categorias-grid {
