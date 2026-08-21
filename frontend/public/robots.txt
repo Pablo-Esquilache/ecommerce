@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sidharttahilados.netlify.app/sitemap.xml
