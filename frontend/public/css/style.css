@@ -101,6 +101,7 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 
 /* Hero & Carousel */
 .hero {
+    margin-top: 5px;
     height: 50vh;
     position: relative;
     overflow: hidden;
