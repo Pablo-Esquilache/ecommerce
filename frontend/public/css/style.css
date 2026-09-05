@@ -906,3 +906,73 @@ nav.glass-navbar ul.nav-links li a:hover {
 footer {
     background: #1A1D20 !important;
 }
+
+/* --- REBRANDING: GRAPHITE + ORANGE --- */
+:root {
+    --primary: #F97316;
+    --secondary: #1F2937;
+    --bg: #F3F4F6;
+    --text: #111827;
+}
+
+/* General */
+body {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+/* Navbar */
+.navbar {
+    background: var(--secondary) !important;
+}
+.nav-links a {
+    color: #F3F4F6 !important;
+}
+.nav-links a:hover {
+    color: var(--primary) !important;
+}
+.cart-icon, .menu-toggle {
+    color: #F3F4F6 !important;
+}
+.cart-icon:hover {
+    color: var(--primary) !important;
+}
+#cart-count {
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+
+/* Buttons */
+.btn {
+    background-color: var(--primary) !important;
+    color: #fff !important;
+    border: 1px solid var(--primary) !important;
+}
+.btn:hover {
+    background-color: #ea580c !important; /* Darker orange */
+    border-color: #ea580c !important;
+}
+
+/* Cards (Clean & Flat) */
+.product-card, .cat-card {
+    background-color: #FFFFFF !important;
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.product-card:hover, .cat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08) !important;
+}
+
+/* Color Blocking Overrides */
+.productos-section {
+    background-color: var(--bg) !important;
+}
+.about-section {
+    background-color: #E5E7EB !important; /* Slightly darker than bg for contrast */
+}
+footer, .footer {
+    background: var(--secondary) !important;
+}
