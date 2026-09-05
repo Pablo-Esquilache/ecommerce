@@ -145,3 +145,17 @@ input:checked + .slider:before { transform: translateX(20px); }
     .header-actions { flex-direction: column; gap: 10px; margin-bottom: 15px; }
     .header-actions .btn { width: 100%; text-align: center; }
 }
+
+/* --- REBRANDING: GRAPHITE + ORANGE --- */
+:root {
+    --primary: #1F2937;
+    --secondary: #111827;
+    --accent: #F97316;
+    --bg: #F3F4F6;
+    --text: #111827;
+}
+.sidebar .nav li.active, .sidebar .nav li:hover {
+    background: var(--secondary) !important;
+}
+header h1 { color: var(--text); }
+.modal-content { background-color: #FFFFFF; border-radius: 12px; }
