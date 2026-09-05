@@ -970,10 +970,9 @@ body {
 .productos-section {
     background-color: var(--bg) !important;
 }
-.about-section {
-    background-color: #E5E7EB !important; /* Slightly darker than bg for contrast */
-}
+.about-section { background-color: var(--bg) !important; }
 footer, .footer {
     background: var(--secondary) !important;
 }
+
 
