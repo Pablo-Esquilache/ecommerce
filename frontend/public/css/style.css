@@ -976,3 +976,35 @@ footer, .footer {
 }
 
 
+
+
+/* --- MOBILE FIXES --- */
+@media (max-width: 768px) {
+    /* Fondo del menu hamburguesa en Grafito */
+    .nav-links {
+        background-color: var(--secondary) !important;
+    }
+    
+    /* Grilla de productos de a 2 por fila */
+    .grid-productos {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    /* Ajustes finos para que entren bien en tarjetas chiquitas */
+    .producto-info {
+        padding: 10px !important;
+    }
+    .producto-info h3 {
+        font-size: 14px !important;
+        margin-bottom: 5px !important;
+    }
+    .producto-info .precio {
+        font-size: 16px !important;
+    }
+    .producto-card .btn-add {
+        font-size: 12px !important;
+        padding: 8px !important;
+        margin-top: 5px !important;
+    }
+}
