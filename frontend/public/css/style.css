@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --primary: #2563EB;
     --secondary: #06B6D4;
     --bg: #F8F9FA;
@@ -919,6 +919,8 @@ body {
 /* Navbar */
 .navbar {
     background: var(--secondary) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-bottom: none !important;
 }
 .nav-links a {
     color: #F3F4F6 !important;
