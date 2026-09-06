@@ -586,17 +586,17 @@ function renderPriceHTML(prod) {
 // Mostrar/Ocultar botón flotante de WhatsApp según el scroll
 window.addEventListener('scroll', () => {
     const waBtn = document.getElementById('wa-btn');
+    const scrollTopBtn = document.getElementById('scroll-top-btn');
     const heroSection = document.getElementById('inicio');
-    if (waBtn) {
-        // Si no hay hero section, mostramos a partir de los 300px
-        const threshold = heroSection ? (heroSection.offsetHeight || 500) - 100 : 300;
-        if (window.scrollY > threshold) {
-            waBtn.style.opacity = '1';
-            waBtn.style.pointerEvents = 'auto';
-        } else {
-            waBtn.style.opacity = '0';
-            waBtn.style.pointerEvents = 'none';
-        }
+    
+    const threshold = heroSection ? (heroSection.offsetHeight || 500) - 100 : 300;
+    
+    if (window.scrollY > threshold) {
+        if (waBtn) { waBtn.style.opacity = '1'; waBtn.style.pointerEvents = 'auto'; }
+        if (scrollTopBtn) { scrollTopBtn.style.opacity = '1'; scrollTopBtn.style.pointerEvents = 'auto'; }
+    } else {
+        if (waBtn) { waBtn.style.opacity = '0'; waBtn.style.pointerEvents = 'none'; }
+        if (scrollTopBtn) { scrollTopBtn.style.opacity = '0'; scrollTopBtn.style.pointerEvents = 'none'; }
     }
 });
 

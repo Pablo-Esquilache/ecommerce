@@ -31,6 +31,12 @@
     </style>
 
     <!-- Sentry Error Tracking -->
+    
+    <!-- Botón Flotante Scroll Top -->
+    <button class="scroll-top-btn" id="scroll-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
     <script src="https://js.sentry-cdn.com/68477c523d410979c6ba66a13bfe6476.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -70,6 +76,12 @@
     </div>
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
+    
+    <!-- Botón Flotante Scroll Top -->
+    <button class="scroll-top-btn" id="scroll-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
     <script src="/js/main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {

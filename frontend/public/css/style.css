@@ -1006,3 +1006,58 @@ footer, .footer {
     }
 }
 
+
+/* --- MOBILE FIXES 2 (Submenu + ScrollTop) --- */
+@media (max-width: 768px) {
+    /* Submenú más claro para separar de la barra */
+    .dropdown-menu, .submenu {
+        background: #374151 !important; /* Grafito más claro */
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.2) !important;
+        border-radius: 6px !important;
+        margin-top: 5px !important;
+    }
+    .dropdown-menu li a, .submenu li a {
+        background: transparent !important;
+        color: #F3F4F6 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        padding-left: 20px !important; /* Indentación visual */
+    }
+    
+    /* Mostrar botón ScrollTop solo en mobile */
+    .scroll-top-btn {
+        display: flex !important;
+    }
+}
+
+/* Ocultar botón ScrollTop en PC */
+@media (min-width: 769px) {
+    .scroll-top-btn {
+        display: none !important;
+    }
+}
+
+/* Estilos base del botón ScrollTop */
+.scroll-top-btn {
+    display: none; /* Flex on mobile */
+    position: fixed;
+    bottom: 25px;
+    right: 95px; /* Al lado del de WhatsApp (25+60+10) */
+    background-color: var(--primary);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    z-index: 1000;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+.scroll-top-btn:active {
+    transform: scale(0.9);
+}
