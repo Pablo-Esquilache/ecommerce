@@ -1070,3 +1070,11 @@ footer, .footer {
         color: #FFFFFF !important;
     }
 }
+
+/* FIX DEFINITIVO: Primer nivel de cascada en blanco */
+@media (max-width: 768px) {
+    .nav-links .dropdown-menu li a:not(.submenu a),
+    .nav-links .dropdown-menu > li > a {
+        color: #FFFFFF !important;
+    }
+}
