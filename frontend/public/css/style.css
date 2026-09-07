@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --primary: #2563EB;
     --secondary: #06B6D4;
     --bg: #F8F9FA;
@@ -80,7 +80,7 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
 .cart-icon {
     position: relative;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 16px;
     color: var(--primary);
 }
 #cart-count {
@@ -148,7 +148,7 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
     margin-bottom: 20px;
 }
 .hero-content p {
-    font-size: 20px;
+    font-size: 16px;
     margin-bottom: 30px;
 }
 .btn {
@@ -255,7 +255,7 @@ h1, h2, h3, h4, h5, h6, .logo a, .nav-links a, .footer-col ul li a, .contacto-fo
     margin-bottom: 10px;
 }
 .producto-precio {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
     color: var(--primary);
     margin-bottom: 15px;
@@ -545,7 +545,7 @@ footer {
     margin-top: 5px;
 }
 
-/* PaginaciÃƒÂ³n UI */
+/* PaginaciÃƒÆ’Ã‚Â³n UI */
 .pagination { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 20px; gap: 5px; }
 .btn-pag {
     display: inline-block; padding: 8px 14px; background-color: white; color: #333;
@@ -561,7 +561,7 @@ footer {
 }
 
 /* ======================================================
-   Ã°Å¸â€œÂ± RESPONSIVE DESIGN (MOBILE FIRST)
+   ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â± RESPONSIVE DESIGN (MOBILE FIRST)
 ====================================================== */
 @media (max-width: 768px) {
     .nav-container { padding: 0px 15px; }
@@ -600,7 +600,7 @@ footer {
 }
 
 /* ======================================================
-   Ã°Å¸â€“Â¼Ã¯Â¸Â GALERÃƒÂA QUIÃƒâ€°NES SOMOS
+   ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¼ÃƒÂ¯Ã‚Â¸Ã‚Â GALERÃƒÆ’Ã‚ÂA QUIÃƒÆ’Ã¢â‚¬Â°NES SOMOS
 ====================================================== */
 .quienes-somos-gallery {
     display: grid;
@@ -772,7 +772,7 @@ nav.glass-navbar ul.nav-links li a:hover {
 .carousel-control.prev { left: 20px; }
 .carousel-control.next { right: 20px; }
 
-/* Tarjetas DinÃƒÂ¡micas */
+/* Tarjetas DinÃƒÆ’Ã‚Â¡micas */
 .categorias-cards-section {
     padding: 60px 0 20px 0;
     background-color: transparent;
@@ -879,7 +879,7 @@ nav.glass-navbar ul.nav-links li a:hover {
 
 
 
-/* Ajuste mÃƒÂ³vil para CategorÃƒÂ­as (2 por fila) */
+/* Ajuste mÃƒÆ’Ã‚Â³vil para CategorÃƒÆ’Ã‚Â­as (2 por fila) */
 @media (max-width: 768px) {
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -1009,9 +1009,9 @@ footer, .footer {
 
 /* --- MOBILE FIXES 2 (Submenu + ScrollTop) --- */
 @media (max-width: 768px) {
-    /* Submenú más claro para separar de la barra */
+    /* SubmenÃº mÃ¡s claro para separar de la barra */
     .dropdown-menu, .submenu {
-        background: #374151 !important; /* Grafito más claro */
+        background: #374151 !important; /* Grafito mÃ¡s claro */
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.2) !important;
         border-radius: 6px !important;
         margin-top: 5px !important;
@@ -1020,23 +1020,23 @@ footer, .footer {
         background: transparent !important;
         color: #F3F4F6 !important;
         border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-        padding-left: 20px !important; /* Indentación visual */
+        padding-left: 20px !important; /* IndentaciÃ³n visual */
     }
     
-    /* Mostrar botón ScrollTop solo en mobile */
+    /* Mostrar botÃ³n ScrollTop solo en mobile */
     .scroll-top-btn {
         display: flex !important;
     }
 }
 
-/* Ocultar botón ScrollTop en PC */
+/* Ocultar botÃ³n ScrollTop en PC */
 @media (min-width: 769px) {
     .scroll-top-btn {
         display: none !important;
     }
 }
 
-/* Estilos base del botón ScrollTop */
+/* Estilos base del botÃ³n ScrollTop */
 .scroll-top-btn {
     display: none; /* Flex on mobile */
     position: fixed;
@@ -1044,11 +1044,11 @@ footer, .footer {
     right: 95px; /* Al lado del de WhatsApp (25+60+10) */
     background-color: var(--primary);
     color: white;
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
     border: none;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 16px;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     z-index: 1000;
     cursor: pointer;
@@ -1060,4 +1060,13 @@ footer, .footer {
 }
 .scroll-top-btn:active {
     transform: scale(0.9);
+}
+
+/* FIX: Forzar color blanco en textos de submenu en movil */
+@media (max-width: 768px) {
+    .nav-links .dropdown-menu li a, 
+    .nav-links .submenu li a,
+    .nav-links .submenu li a:not(.submenu a) {
+        color: #FFFFFF !important;
+    }
 }
