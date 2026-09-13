@@ -102,6 +102,7 @@ async function initDashboard() {
     fetchClientes(); // Precargar clientes
     fetchConfiguracion(); // Precargar Módulo de Ajustes
     loadCategorias(); // Cargar categorías para el modal de productos
+    setupSupabaseRealtime(); // Arrancar WebSocket
 
     // Restaurar última pestaña activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
@@ -1518,10 +1519,12 @@ async function setupSupabaseRealtime() {
                     // Recargar datos silenciosamente
                     if (document.getElementById('resumen-view').classList.contains('active')) {
                         cargarResumen();
-        setupSupabaseRealtime();
                     }
                     if (document.getElementById('pedidos-view').classList.contains('active')) {
                         cargarPedidos();
+                    }
+                    if (document.getElementById('clientes-view').classList.contains('active')) {
+                        fetchClientes();
                     }
                 }
             )

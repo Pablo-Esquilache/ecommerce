@@ -363,6 +363,17 @@ const adminController = {
         [response.tracking_number, id]
       );
 
+      // Disparar correo de aviso de preparacion de envio
+      try {
+        const emailService = require('../services/emailService');
+        const pedidoDataForEmail = { ...pedido, tracking_number: response.tracking_number, estado: 'preparando_envio' };
+        if (pedidoDataForEmail.cliente_email) {
+            await emailService.enviarCorreoPreparandoEnvio(pedidoDataForEmail.cliente_email, pedidoDataForEmail);
+        }
+      } catch (emailErr) {
+        console.error('Error enviando email automatizado al generar envio:', emailErr);
+      }
+
       res.json({ success: true, tracking_number: response.tracking_number });
 
     } catch (e) {
