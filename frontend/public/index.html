@@ -36,7 +36,7 @@
     <!-- Sentry Error Tracking -->
     
     <!-- Botón Flotante Scroll Top -->
-    <button class="scroll-top-btn" id="scroll-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <button class="scroll-top-btn" id="scroll-top-btn" aria-label="Volver arriba" onclick="window.scrollTo({top:0, behavior:'smooth'})">
         <i class="fas fa-arrow-up"></i>
     </button>
     
@@ -47,7 +47,7 @@
     <nav class="navbar glass-navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="index.html"><img src="img/logo.png" alt="Logotipo de la Tienda" style="height: 50px; display: block; margin: 5px 0;"></a>
+                <a href="index.html"><img src="img/logo.png" alt="Logotipo de la Tienda" style="height: 50px; display: block; margin: 5px 0;" width="150" height="50"></a>
             </div>
             
             <!-- Buscador Integrado en la Navbar -->
@@ -72,7 +72,7 @@
                     <span id="cart-count">0</span>
                 </div>
                 <!-- Menu hamburguesa -->
-                <div class="menu-toggle" onclick="toggleMenu()">
+                <div class="menu-toggle" aria-label="Abrir menú" onclick="toggleMenu()">
                     <i class="fas fa-bars"></i>
                 </div>
             </div>
@@ -141,7 +141,7 @@
             <!-- Artículo 1: Imagen a la izquierda, el texto la envuelve -->
             <div class="about-article">
                 <div class="about-img-wrap left">
-                    <img src="img/quienes_somos_2.webp" alt="Nuestro local y equipo de trabajo">
+                    <img src="img/quienes_somos_2.webp" alt="Nuestro local y equipo de trabajo" width="400" height="400" loading="lazy">
                 </div>
                 <h3>Pasión por el rendimiento y la tecnología</h3>
                 <div class="about-preview">
@@ -235,7 +235,7 @@
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
     <!-- Botón Flotante de WhatsApp -->
-    <a href="#" target="_blank" id="wa-btn" style="display:flex; position:fixed; bottom:25px; right:25px; background-color:#25d366; color:white; width:60px; height:60px; border-radius:50px; text-align:center; font-size:35px; box-shadow: 2px 2px 3px #999; z-index:1000; align-items:center; justify-content:center; text-decoration:none; transition: all 0.3s ease; opacity: 0; pointer-events: none;">
+    <a href="#" target="_blank" id="wa-btn" aria-label="Contactar por WhatsApp" style="display:flex; position:fixed; bottom:25px; right:25px; background-color:#25d366; color:white; width:60px; height:60px; border-radius:50px; text-align:center; font-size:35px; box-shadow: 2px 2px 3px #999; z-index:1000; align-items:center; justify-content:center; text-decoration:none; transition: all 0.3s ease; opacity: 0; pointer-events: none;">
         <i class="fab fa-whatsapp"></i>
     </a>
 

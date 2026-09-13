@@ -629,7 +629,7 @@ async function loadCategoriasMenu() {
       categorias.forEach(cat => {
         const img = cat.imagen_url || 'img/logo.png';
         cGrid.innerHTML += '<a href="#productos" class="cat-card" onclick="filCat(\'' + cat.nombre + '\')">' +
-          '<div class="cat-card-img"><img src="' + img + '" alt="' + cat.nombre + '"></div>' +
+          '<div class="cat-card-img"><img src="'+img+'" alt="'+cat.nombre+'" width="300" height="300" loading="lazy"></div>' +
           '<div class="cat-card-info"><h3>' + cat.nombre + '</h3></div></a>';
       });
     } else if (cGrid) {
