@@ -1499,3 +1499,38 @@ async function quickAddSubcategoria() {
         } else alert('Error al crear subcategoría');
     } catch(e) { alert('Error de conexión'); }
 }
+
+async function setupSupabaseRealtime() {
+    try {
+        const res = await fetch(`${API_URL}/admin/supabase-keys`, { headers: authHeaders() });
+        if (!res.ok) return;
+        const keys = await res.json();
+        
+        const { createClient } = supabase;
+        const supa = createClient(keys.url, keys.key);
+        
+        supa.channel('admin-pedidos-channel')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'pedidos' },
+                (payload) => {
+                    console.log('Realtime Update - Nuevo pedido o cambio detectado:', payload);
+                    // Recargar datos silenciosamente
+                    if (document.getElementById('resumen-view').classList.contains('active')) {
+                        cargarResumen();
+        setupSupabaseRealtime();
+                    }
+                    if (document.getElementById('pedidos-view').classList.contains('active')) {
+                        cargarPedidos();
+                    }
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Conectado a Supabase Realtime');
+                }
+            });
+    } catch (e) {
+        console.error('Error configurando Realtime:', e);
+    }
+}

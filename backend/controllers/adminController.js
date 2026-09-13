@@ -402,3 +402,11 @@ const adminController = {
 };
 
 module.exports = adminController;
+
+
+exports.getSupabaseKeys = (req, res) => {
+    res.json({
+        url: process.env.SUPABASE_URL,
+        key: process.env.SUPABASE_KEY
+    });
+};
