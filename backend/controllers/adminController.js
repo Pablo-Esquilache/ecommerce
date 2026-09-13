@@ -1,4 +1,4 @@
-﻿const Admin = require('../models/Admin');
+const Admin = require('../models/Admin');
 const Cliente = require('../models/Cliente');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -13,12 +13,12 @@ const adminController = {
       const admin = await Admin.getByEmail(email);
       
       if (!admin) {
-        return res.status(401).json({ error: 'Credenciales invÃ¡lidas' });
+        return res.status(401).json({ error: 'Credenciales inválidas' });
       }
 
       const match = await bcrypt.compare(password, admin.password);
       if (!match) {
-        return res.status(401).json({ error: 'Credenciales invÃ¡lidas' });
+        return res.status(401).json({ error: 'Credenciales inválidas' });
       }
 
       // Crear token
@@ -40,7 +40,7 @@ const adminController = {
       const stats = await Admin.getDashboardStats();
       res.json(stats);
     } catch (error) {
-      res.status(500).json({ error: 'Error al obtener mÃ©tricas del dashboard' });
+      res.status(500).json({ error: 'Error al obtener métricas del dashboard' });
     }
   },
 
@@ -63,8 +63,8 @@ const adminController = {
           Nombre: c.nombre,
           Apellido: c.apellido,
           Email: c.email,
-          TelÃ©fono: c.telefono || '',
-          GÃ©nero: c.genero || '',
+          Teléfono: c.telefono || '',
+          Género: c.genero || '',
           "DNI/CUIL": c.dni_cuil || '',
           Creado: new Date(c.creado_en || Date.now()).toLocaleDateString('es-AR')
       }));
@@ -155,17 +155,17 @@ const adminController = {
       
       const htmlMsg = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h3 style="color: #2c3e50;">RecuperaciÃ³n de ContraseÃ±a</h3>
+            <h3 style="color: #2c3e50;">Recuperación de Contraseña</h3>
             <p>Hola <strong>${admin.nombre || 'Administrador'}</strong>,</p>
-            <p>Hiciste una solicitud para restablecer la contraseÃ±a de acceso a tu Panel Administrativo. Haz clic en el siguiente enlace para continuar:</p>
+            <p>Hiciste una solicitud para restablecer la contraseña de acceso a tu Panel Administrativo. Haz clic en el siguiente enlace para continuar:</p>
             <p style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
-                <a href="${resetLink}" style="padding: 12px 25px; background: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer mi ContraseÃ±a</a>
+                <a href="${resetLink}" style="padding: 12px 25px; background: #e74c3c; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer mi Contraseña</a>
             </p>
-            <p style="color: #7f8c8d; font-size: 14px;">Si no fuiste tÃº o no reconoces esto, ignora por completo este mensaje. El enlace de arriba dejarÃ¡ de funcionar automÃ¡ticamente en 60 minutos por razones de seguridad.</p>
+            <p style="color: #7f8c8d; font-size: 14px;">Si no fuiste tú o no reconoces esto, ignora por completo este mensaje. El enlace de arriba dejará de funcionar automáticamente en 60 minutos por razones de seguridad.</p>
         </div>
       `;
 
-      await emailService.enviarCorreoHtml(email, 'RecuperaciÃ³n de ContraseÃ±a - E-Shopper', htmlMsg);
+      await emailService.enviarCorreoHtml(email, 'Recuperación de Contraseña - E-Shopper', htmlMsg);
 
       res.json({ success: true, message: 'Enlace enviado al correo' });
     } catch (e) {
@@ -180,17 +180,17 @@ const adminController = {
       const admin = await Admin.getByResetToken(token);
 
       if (!admin) {
-        return res.status(400).json({ error: 'Token invÃ¡lido o expirado' });
+        return res.status(400).json({ error: 'Token inválido o expirado' });
       }
 
       if (new Date() > new Date(admin.reset_token_expires)) {
-        return res.status(400).json({ error: 'El tiempo expirÃ³. Empieza el trÃ¡mite de nuevo.' });
+        return res.status(400).json({ error: 'El tiempo expiró. Empieza el trámite de nuevo.' });
       }
 
       const hashedLine = await bcrypt.hash(newPassword, 10);
       await Admin.updatePassword(admin.id, hashedLine);
 
-      res.json({ success: true, message: 'Â¡Tu nueva llave fue configurada exitosamente!' });
+      res.json({ success: true, message: '¡Tu nueva llave fue configurada exitosamente!' });
     } catch (e) {
       console.error('Error reseteando password:', e);
       res.status(500).json({ error: 'Falla silenciosa interna' });
@@ -203,7 +203,7 @@ const adminController = {
       const adminId = req.user.id; 
 
       const admin = await Admin.getById(adminId);
-      if (!admin) return res.status(404).json({ error: 'La sesiÃ³n caducÃ³ o el Admin no fue encontrado.' });
+      if (!admin) return res.status(404).json({ error: 'La sesión caducó o el Admin no fue encontrado.' });
 
       const match = await bcrypt.compare(currentPassword, admin.password);
       if (!match) {
@@ -213,7 +213,7 @@ const adminController = {
       const hashedLine = await bcrypt.hash(newPassword, 10);
       await Admin.updatePassword(adminId, hashedLine);
 
-      res.json({ success: true, message: 'Renovaste la cerradura a la perfecciÃ³n. ContraseÃ±a cambiada.' });
+      res.json({ success: true, message: 'Renovaste la cerradura a la perfección. Contraseña cambiada.' });
     } catch (e) {
       console.error('Error cambiando password:', e);
       res.status(500).json({ error: 'Error de servidor cambiando clave.' });
@@ -226,35 +226,35 @@ const adminController = {
       const adminId = req.user.id;
       
       const admin = await Admin.getById(adminId);
-      if (!admin) return res.status(404).json({ error: 'La sesiÃ³n caducÃ³.' });
+      if (!admin) return res.status(404).json({ error: 'La sesión caducó.' });
 
       const match = await bcrypt.compare(currentPassword, admin.password);
       if (!match) {
         return res.status(400).json({ error: 'La Clave actual ingresada no es correcta.' });
       }
 
-      // Generar 6 dÃ­gitos OTP aleatorios
+      // Generar 6 dígitos OTP aleatorios
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       await Admin.setOtp(adminId, otp);
 
       // Despachar el OTP por Mail
       const htmlMsg = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #2C3E50;">Seguridad: VerificaciÃ³n Doble Factor (2FA)</h2>
-          <p>Has solicitado cambiar la contraseÃ±a de tu tienda online. Para confirmar que efectivamente eres tÃº, ingresa este PIN de seguridad en tu Panel:</p>
+          <h2 style="color: #2C3E50;">Seguridad: Verificación Doble Factor (2FA)</h2>
+          <p>Has solicitado cambiar la contraseña de tu tienda online. Para confirmar que efectivamente eres tú, ingresa este PIN de seguridad en tu Panel:</p>
           <div style="background: #f4f6f8; padding: 15px; margin: 25px 0; text-align: center; border-radius: 6px;">
              <h1 style="color: #3498db; letter-spacing: 10px; margin: 0; font-size: 32px;">${otp}</h1>
           </div>
-          <p style="color: #7f8c8d; font-size: 13px;">Si tÃº no iniciaste este flujÃ³ de cambio de clave, alguien mÃ¡s conoce tu contraseÃ±a actual. Entra al panel e inicia el trÃ¡mite para cambiarla tÃº mismo cuanto antes.</p>
+          <p style="color: #7f8c8d; font-size: 13px;">Si tú no iniciaste este flujó de cambio de clave, alguien más conoce tu contraseña actual. Entra al panel e inicia el trámite para cambiarla tú mismo cuanto antes.</p>
         </div>
       `;
       const emailService = require('../services/emailService');
-      await emailService.enviarCorreoHtml(admin.email, 'PIN de Seguridad: Cambio de ContraseÃ±a', htmlMsg);
+      await emailService.enviarCorreoHtml(admin.email, 'PIN de Seguridad: Cambio de Contraseña', htmlMsg);
 
-      res.json({ success: true, message: 'CÃ³digo OTP enviado al correo del comercio.' });
+      res.json({ success: true, message: 'Código OTP enviado al correo del comercio.' });
     } catch (e) {
       console.error('Error solicitando OTP:', e);
-      res.status(500).json({ error: `Error del servidor al intentar mandar el cÃ³digo de verificaciÃ³n: ${e.message}` });
+      res.status(500).json({ error: `Error del servidor al intentar mandar el código de verificación: ${e.message}` });
     }
   },
 
@@ -267,14 +267,14 @@ const adminController = {
       if (!admin) return res.status(404).json({ error: 'Administrador extraviado.' });
 
       if (!admin.otp_code || admin.otp_code !== otp) {
-        return res.status(400).json({ error: 'El cÃ³digo ingresado es incorrecto.' });
+        return res.status(400).json({ error: 'El código ingresado es incorrecto.' });
       }
 
       const hashedLine = await bcrypt.hash(newPassword, 10);
       await Admin.updatePassword(adminId, hashedLine);
       await Admin.clearOtp(adminId);
 
-      res.json({ success: true, message: 'Â¡2FA Exitoso! ContraseÃ±a blindada y cambiada.' });
+      res.json({ success: true, message: '¡2FA Exitoso! Contraseña blindada y cambiada.' });
     } catch (e) {
       console.error('Error confirmando OTP:', e);
       res.status(500).json({ error: `Fallo interno alterando la cuenta: ${e.message}` });
@@ -297,7 +297,7 @@ const adminController = {
       if (!email || !password || !nombre) return res.status(400).json({ error: 'Faltan datos obligatorios' });
       
       const exists = await Admin.getByEmail(email);
-      if (exists) return res.status(400).json({ error: 'El email ya estÃ¡ registrado' });
+      if (exists) return res.status(400).json({ error: 'El email ya está registrado' });
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newAdmin = await Admin.create(email, hashedPassword, nombre);
@@ -311,7 +311,7 @@ const adminController = {
   deleteAdmin: async (req, res) => {
     try {
       const { id } = req.params;
-      // Prevenir que un admin se borre a sÃ­ mismo accidentalmente o borrar el Ãºnico admin
+      // Prevenir que un admin se borre a sí mismo accidentalmente o borrar el único admin
       if (req.user.id == id) {
           return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta.' });
       }
@@ -340,21 +340,21 @@ const adminController = {
       if (rows.length === 0) return res.status(404).json({error: 'Pedido no encontrado'});
       const pedido = rows[0];
 
-      // Verificamos configuraciÃ³n de correo
+      // Verificamos configuración de correo
       const confRes = await db.query('SELECT correo_activo FROM configuracion WHERE id = 1');
       if (!confRes.rows[0]?.correo_activo) {
-        return res.status(400).json({error: 'El servicio de Correo Argentino no estÃ¡ activo'});
+        return res.status(400).json({error: 'El servicio de Correo Argentino no está activo'});
       }
 
       if (pedido.tracking_number) {
-        return res.status(400).json({error: 'El pedido ya tiene un envÃ­o generado'});
+        return res.status(400).json({error: 'El pedido ya tiene un envío generado'});
       }
 
       const correoArgentinoService = require('../services/correoArgentino');
       const response = await correoArgentinoService.generarEnvio(pedido);
       
       if (!response.success) {
-        return res.status(500).json({error: response.error || 'Error al generar el envÃ­o en Correo Argentino'});
+        return res.status(500).json({error: response.error || 'Error al generar el envío en Correo Argentino'});
       }
 
       // Actualizar DB con el tracking y pasar a estado 'preparando_envio'
@@ -367,7 +367,7 @@ const adminController = {
 
     } catch (e) {
       console.error('Error generarEnvio:', e);
-      res.status(500).json({ error: 'Fallo interno al intentar generar el envÃ­o' });
+      res.status(500).json({ error: 'Fallo interno al intentar generar el envío' });
     }
   },
 
@@ -381,7 +381,7 @@ const adminController = {
       
       const tracking = rows[0].tracking_number;
       if (!tracking) {
-        return res.status(400).json({error: 'Este pedido no tiene envÃ­o generado'});
+        return res.status(400).json({error: 'Este pedido no tiene envío generado'});
       }
 
       const correoArgentinoService = require('../services/correoArgentino');
@@ -391,8 +391,8 @@ const adminController = {
         return res.status(500).json({error: response.error || 'Error obteniendo etiqueta'});
       }
 
-      // PodrÃ­amos descargar el PDF y mandarlo como binario o simplemente mandar la URL. 
-      // Por ahora mandamos la URL que generÃ³ el mock
+      // Podríamos descargar el PDF y mandarlo como binario o simplemente mandar la URL. 
+      // Por ahora mandamos la URL que generó el mock
       res.json({ success: true, pdf_url: response.pdf_url });
     } catch (e) {
       console.error('Error getEtiqueta:', e);
@@ -409,7 +409,3 @@ adminController.getSupabaseKeys = (req, res) => {
 };
 
 module.exports = adminController;
-
-
-
-
