@@ -1,11 +1,11 @@
 :root {
-    --primary: #2563EB;
-    --secondary: #1D4ED8;
-    --accent: #F59E0B;
-    --bg: #F4F6F9;
+    --primary: #0E2A47;
+    --secondary: #081B30;
+    --accent: #C78515;
+    --bg: #FAF8F5;
     --white: #FFFFFF;
-    --text: #333333;
-    --border: #ECF0F1;
+    --text: #1E293B;
+    --border: #E8E2D8;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
