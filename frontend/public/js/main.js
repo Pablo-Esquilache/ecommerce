@@ -121,7 +121,7 @@ async function fetchProductos() {
         validarCarrito(productos); // Silenciosamente corrige precios viejos
     } catch (error) {
         console.error('Error cargando productos:', error);
-        document.getElementById('grid-productos').innerHTML = `<p style="color:red">Error al cargar productos: ${error.message}</p>`;
+        const gridErr = document.getElementById('grid-productos') || document.getElementById('productos-dinamicos-container'); if (gridErr) gridErr.innerHTML = `<p style="color:red; text-align:center;">Error al cargar productos: ${error.message}</p>`;
     }
 }
 
@@ -137,12 +137,12 @@ async function fetchCategoriasPublic() {
         // Mantener "Todas las categorías"
         select.innerHTML = '<option value="">Todas las categorías</option>';
         
-        categorias.forEach(cat => {
+        if (Array.isArray(categorias)) { categorias.forEach(cat => {
             const opt = document.createElement('option');
             opt.value = cat.nombre;
             opt.innerText = cat.nombre;
             select.appendChild(opt);
-        });
+        }); }
     } catch (error) {
         console.error('Error cargando categorias:', error);
     }
@@ -605,6 +605,7 @@ async function loadCategoriasMenu() {
   try {
     const res = await fetch('/api/categorias/tree');
     const categorias = await res.json();
+    if (!Array.isArray(categorias)) return;
     const dMenu = document.getElementById('nav-dropdown-menu');
     if (dMenu && categorias.length > 0) {
       dMenu.innerHTML = '';
