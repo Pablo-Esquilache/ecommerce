@@ -25,10 +25,8 @@ const Producto = {
   },
 
   create: async (data) => {
-    
-    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url, fecha_inicio, fecha_cierre_inscripcion, modalidad, lugar } = data;
     const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
-    
     const cleanPeso = (peso === "" || peso === undefined || peso === null || isNaN(peso)) ? null : Number(peso);
     const cleanStock = (stock === "" || stock === undefined || stock === null || isNaN(stock)) ? 0 : Number(stock);
     const cleanPrecio = (precio === "" || precio === undefined || precio === null || isNaN(precio)) ? 0 : Number(precio);
@@ -39,22 +37,24 @@ const Producto = {
     const cleanTipo = tipo_producto || 'fisico';
     const cleanArchivo = archivo_digital || null;
     const cleanVideo = video_url || null;
+    const cleanFechaInicio = (fecha_inicio === "" || !fecha_inicio) ? null : fecha_inicio;
+    const cleanFechaCierre = (fecha_cierre_inscripcion === "" || !fecha_cierre_inscripcion) ? null : fecha_cierre_inscripcion;
+    const cleanModalidad = modalidad || null;
+    const cleanLugar = lugar || null;
 
     const query = `
-      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url)
-      VALUES ($1, $2, $3, $15, $4, $5, $16, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      INSERT INTO productos (nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url, fecha_inicio, fecha_cierre_inscripcion, modalidad, lugar)
+      VALUES ($1, $2, $3, $15, $4, $5, $16, $6, $7, $8, $9, $10, $11, $12, $13, $14, $17, $18, $19, $20)
       RETURNING *
     `;
-    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria];
+    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria, cleanFechaInicio, cleanFechaCierre, cleanModalidad, cleanLugar];
     const { rows } = await db.query(query, values);
     return rows[0];
   },
 
   update: async (id, data) => {
-    
-    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url } = data;
+    const { nombre, descripcion, precio, precio_usd, stock, categoria, subcategoria, sku, peso, dimensiones, imagen_1, imagen_2, imagen_3, tipo_producto, archivo_digital, video_url, fecha_inicio, fecha_cierre_inscripcion, modalidad, lugar } = data;
     const cleanSubcategoria = (subcategoria === '' || subcategoria === undefined || subcategoria === null) ? null : subcategoria;
-    
     const cleanPeso = (peso === "" || peso === undefined || peso === null || isNaN(peso)) ? null : Number(peso);
     const cleanStock = (stock === "" || stock === undefined || stock === null || isNaN(stock)) ? 0 : Number(stock);
     const cleanPrecio = (precio === "" || precio === undefined || precio === null || isNaN(precio)) ? 0 : Number(precio);
@@ -65,6 +65,10 @@ const Producto = {
     const cleanTipo = tipo_producto || 'fisico';
     const cleanArchivo = archivo_digital || null;
     const cleanVideo = video_url || null;
+    const cleanFechaInicio = (fecha_inicio === "" || !fecha_inicio) ? null : fecha_inicio;
+    const cleanFechaCierre = (fecha_cierre_inscripcion === "" || !fecha_cierre_inscripcion) ? null : fecha_cierre_inscripcion;
+    const cleanModalidad = modalidad || null;
+    const cleanLugar = lugar || null;
 
     const query = `
       UPDATE productos 
@@ -73,11 +77,15 @@ const Producto = {
           imagen_2 = coalesce($10, imagen_2), imagen_3 = coalesce($11, imagen_3),
           tipo_producto = coalesce($13, tipo_producto),
           archivo_digital = coalesce($14, archivo_digital),
-          video_url = coalesce($15, video_url)
+          video_url = coalesce($15, video_url),
+          fecha_inicio = $18,
+          fecha_cierre_inscripcion = $19,
+          modalidad = $20,
+          lugar = $21
       WHERE id = $12
       RETURNING *
     `;
-    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, id, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria];
+    const values = [nombre, descripcion, cleanPrecio, cleanStock, cleanCategoria, cleanSku, cleanPeso, cleanDimensiones, imagen_1 || null, imagen_2 || null, imagen_3 || null, id, cleanTipo, cleanArchivo, cleanVideo, cleanPrecioUsd, cleanSubcategoria, cleanFechaInicio, cleanFechaCierre, cleanModalidad, cleanLugar];
     const { rows } = await db.query(query, values);
     return rows[0];
   },

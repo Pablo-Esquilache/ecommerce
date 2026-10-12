@@ -354,85 +354,102 @@
 
         <!-- Modales ocultos para crear/editar productos irían aquí (Resumido en JS por simplicidad de archivo o modal genérico) -->
         <div class="modal" id="producto-modal">
-            <div class="modal-content" style="max-width: 850px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-content" style="max-width: 850px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header">
-                    <h2 id="modal-producto-title">Gestionar Producto</h2>
+                    <h2 id="modal-producto-title" style="color: #0E2A47;">Gestionar Producto</h2>
                     <span class="close" onclick="closeModal('producto-modal')">&times;</span>
                 </div>
-                <!-- El formulario subiría como multipart/form-data -->
                 <form id="form-producto">
                     <input type="hidden" id="prod-id">
-                    <div style="display:flex; gap:10px; margin-bottom: 10px;">
-                        <div class="form-group" style="flex:1"><label>Tipo de Producto</label>
-                            <select id="prod-tipo" onchange="toggleProductType()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-weight:bold; color:#2c3e50;">
-                                <option value="fisico">📦 Producto Físico</option>
-                                <option value="digital">💻 Producto Digital (PDF/Video)</option>
-                            </select>
-                        </div>
+                    
+                    <!-- 1. Tipo de Producto -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; color: #0E2A47; font-size: 14px;">Tipo de Producto / Actividad</label>
+                        <select id="prod-tipo" onchange="toggleProductType()" style="width:100%; padding:10px 12px; border:1px solid #C78515; border-radius:6px; font-weight:600; font-size:15px; color:#0E2A47; background:#FAF8F5;">
+                            <option value="fisico">📦 Iconografía (Producto Físico)</option>
+                            <option value="digital">💻 Curso Digital (PDF / Video)</option>
+                            <option value="taller">🎨 Taller o Seminario</option>
+                            <option value="viaje">✈️ Viaje o Retiro</option>
+                        </select>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:2"><label>Nombre</label><input type="text" id="prod-nombre" required></div>
-                        <div class="form-group" style="flex:1"><label>ID</label><input type="text" id="prod-display-id" readonly placeholder="Auto-generado"></div>
+
+                    <!-- 2. Nombre e ID -->
+                    <div style="display:flex; gap:15px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex:2; margin-bottom:0;"><label>Nombre del Producto / Título</label><input type="text" id="prod-nombre" required placeholder="Ej: Icono San Miguel Arcángel"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>ID</label><input type="text" id="prod-display-id" readonly placeholder="Auto-generado"></div>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group"><label>Precio (ARS)</label><input type="number" step="0.01" id="prod-precio" required></div>
-                        <div class="form-group"><label>Precio (USD)</label><input type="number" step="0.01" id="prod-precio-usd" placeholder="Opcional" title="Precio en dólares para clientes extranjeros"></div>
-                        <div class="form-group" id="container-stock"><label>Stock</label><input type="number" id="prod-stock" required></div>
-                        <div class="form-group" style="flex:1"><label>Categoría</label>
-                            <select id="prod-cat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:5px;" required>
-                                <option value="">Seleccione...</option>
+
+                    <!-- 3. Precios y Stock/Cupos -->
+                    <div style="display:flex; gap:15px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Precio (ARS $)</label><input type="number" step="0.01" id="prod-precio" required placeholder="0.00"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Precio (USD $ - Opcional)</label><input type="number" step="0.01" id="prod-precio-usd" placeholder="0.00" title="Precio para compras desde el exterior"></div>
+                        <div class="form-group" id="container-stock" style="flex:1; margin-bottom:0;"><label id="label-stock">Stock Disponible</label><input type="number" id="prod-stock" required placeholder="1"></div>
+                    </div>
+
+                    <!-- 4. Categoría (Sin subcategorías) -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label>Categoría</label>
+                        <div style="display:flex; gap:10px;">
+                            <select id="prod-cat" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px;" required>
+                                <option value="">Seleccione una categoría...</option>
                             </select>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="quick-cat" placeholder="Nueva categoría..." style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px;">
-                                <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="quickAddCategoria()"><i class="fas fa-plus"></i></button>
-                            </div>
-                        </div>
-                        <div class="form-group" style="flex:1"><label>Subcategoría</label>
-                            <select id="prod-subcat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:5px;">
-                                <option value="">Seleccione...</option>
-                            </select>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="quick-subcat" placeholder="Nueva subcategoría..." style="flex:1; padding:5px; border:1px solid #ddd; border-radius:4px;">
-                                <button type="button" class="btn btn-primary" style="padding:5px 10px;" onclick="quickAddSubcategoria()"><i class="fas fa-plus"></i></button>
-                            </div>
+                            <input type="text" id="quick-cat" placeholder="Nueva categoría..." style="width: 220px; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                            <button type="button" class="btn btn-primary" style="padding:10px 16px; background-color: #C78515; border-color: #C78515; color:#fff;" onclick="quickAddCategoria()"><i class="fas fa-plus"></i> Crear</button>
                         </div>
                     </div>
                     
-                    <!-- Físicos -->
-                    <div id="container-fisicos" style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1"><label>Peso (kg)</label><input type="number" step="0.01" id="prod-peso" placeholder="0.5"></div>
-                        <div class="form-group" style="flex:1"><label>Dimensiones <span style="font-weight:normal; font-size:12px; color:#7f8c8d;">(alto x largo x ancho en cm)</span></label><input type="text" id="prod-dimensiones" placeholder="Ej: 10x30x20"></div>
+                    <!-- 5. Físicos (Peso y Dimensiones) -->
+                    <div id="container-fisicos" style="display:flex; gap:15px; padding:15px; background:#f9f9f9; border-radius:8px; border:1px solid #eee; margin-bottom:15px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Peso (kg)</label><input type="number" step="0.01" id="prod-peso" placeholder="0.5"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Dimensiones <span style="font-weight:normal; font-size:12px; color:#7f8c8d;">(alto x ancho x prof. en cm)</span></label><input type="text" id="prod-dimensiones" placeholder="Ej: 30x20x3 cm"></div>
                     </div>
 
-                    <!-- Digitales -->
-                    <div id="container-digitales" style="display:none; gap:10px; padding: 15px; background: #f0f8ff; border: 1px solid #cce5ff; border-radius: 6px; margin-bottom: 10px;">
-                        <div class="form-group" style="flex:1">
-                            <label style="color:#004085;"><i class="fas fa-file-pdf"></i> Archivo Descargable (Opcional)</label>
+                    <!-- 6. Digitales (PDF y Video) -->
+                    <div id="container-digitales" style="display:none; gap:15px; padding:15px; background:#f0f8ff; border:1px solid #cce5ff; border-radius:8px; margin-bottom:15px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;">
+                            <label style="color:#004085;"><i class="fas fa-file-pdf"></i> Archivo Descargable (PDF / Guía)</label>
                             <input type="file" id="prod-archivo" accept=".pdf,.zip,.rar,.mp3">
                         </div>
-                        <div class="form-group" style="flex:1">
-                            <label style="color:#004085;"><i class="fab fa-youtube"></i> Enlace Video (Opcional)</label>
-                            <input type="url" id="prod-video" placeholder="https://youtube.com/...">
+                        <div class="form-group" style="flex:1; margin-bottom:0;">
+                            <label style="color:#004085;"><i class="fab fa-youtube"></i> Enlace Video (YouTube)</label>
+                            <input type="url" id="prod-video" placeholder="https://youtube.com/watch?v=...">
                         </div>
                     </div>
 
-                    <div class="form-group"><label>Descripción</label><textarea id="prod-desc" required rows="3"></textarea></div>
-                    
-                    <h4 style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">Imágenes</h4>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1"><label>Imagen Principal (Archivo)</label><input type="file" id="prod-img1" accept="image/*"></div>
-                        <div class="form-group" style="flex:1"><label>O Enlace Externo (Drive/URL)</label><input type="url" id="prod-img-url" placeholder="https://..."></div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1"><label>Extra 1 (Archivo)</label><input type="file" id="prod-img2" accept="image/*"></div>
-                        <div class="form-group" style="flex:1"><label>O Enlace (URL)</label><input type="url" id="prod-img2-url" placeholder="https://..."></div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1"><label>Extra 2 (Archivo)</label><input type="file" id="prod-img3" accept="image/*"></div>
-                        <div class="form-group" style="flex:1"><label>O Enlace (URL)</label><input type="url" id="prod-img3-url" placeholder="https://..."></div>
+                    <!-- 7. Eventos (Talleres / Viajes): Fechas de Inicio y Cierre -->
+                    <div id="container-eventos" style="display:none; gap:15px; padding:15px; background:#FAF8F5; border:1px solid rgba(199, 133, 21, 0.35); border-radius:8px; margin-bottom:15px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;">
+                            <label id="label-fecha-inicio" style="color:#0E2A47; font-weight:600;"><i class="fas fa-calendar-alt"></i> Fecha de Inicio / Salida</label>
+                            <input type="date" id="prod-fecha-inicio" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        </div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;">
+                            <label id="label-fecha-cierre" style="color:#0E2A47; font-weight:600;"><i class="fas fa-hourglass-end"></i> Cierre de Inscripción (Fecha Límite)</label>
+                            <input type="date" id="prod-fecha-cierre" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; font-size:16px;">Guardar Producto</button>
+                    <!-- 8. Descripción -->
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>Descripción</label>
+                        <textarea id="prod-desc" required rows="4" placeholder="Detalles de la obra, temario del curso o itinerario..."></textarea>
+                    </div>
+                    
+                    <!-- 9. Imágenes -->
+                    <h4 style="margin-top:20px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:6px; color:#0E2A47;"><i class="fas fa-images"></i> Imágenes del Producto (Portada y Galería)</h4>
+                    <div style="display:flex; gap:15px; margin-bottom:10px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Imagen Principal (Archivo)</label><input type="file" id="prod-img1" accept="image/*"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>O Enlace Principal (URL)</label><input type="url" id="prod-img-url" placeholder="https://..."></div>
+                    </div>
+                    <div style="display:flex; gap:15px; margin-bottom:10px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Extra 1 (Archivo)</label><input type="file" id="prod-img2" accept="image/*"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>O Enlace Extra 1 (URL)</label><input type="url" id="prod-img2-url" placeholder="https://..."></div>
+                    </div>
+                    <div style="display:flex; gap:15px; margin-bottom:20px;">
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Extra 2 (Archivo)</label><input type="file" id="prod-img3" accept="image/*"></div>
+                        <div class="form-group" style="flex:1; margin-bottom:0;"><label>O Enlace Extra 2 (URL)</label><input type="url" id="prod-img3-url" placeholder="https://..."></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; font-size:16px; font-weight:600; background-color:#C78515; border-color:#C78515; color:#fff;">Guardar Producto</button>
                 </form>
             </div>
         </div>

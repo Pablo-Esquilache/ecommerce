@@ -530,7 +530,12 @@ async function editarProducto(id) {
         } else {
             catSelect.value = '';
         }
-        document.getElementById('prod-subcat').value = p.subcategoria || '';
+        if (document.getElementById('prod-fecha-inicio')) {
+            document.getElementById('prod-fecha-inicio').value = p.fecha_inicio ? p.fecha_inicio.split('T')[0] : '';
+        }
+        if (document.getElementById('prod-fecha-cierre')) {
+            document.getElementById('prod-fecha-cierre').value = p.fecha_cierre_inscripcion ? p.fecha_cierre_inscripcion.split('T')[0] : '';
+        }
         
         toggleProductType();
         
@@ -571,24 +576,38 @@ function toggleProductType() {
     const tipo = document.getElementById('prod-tipo').value;
     const contFisicos = document.getElementById('container-fisicos');
     const contDigitales = document.getElementById('container-digitales');
+    const contEventos = document.getElementById('container-eventos');
     const inputStock = document.getElementById('prod-stock');
     const contStock = document.getElementById('container-stock');
+    const labelStock = document.getElementById('label-stock');
     const inputPeso = document.getElementById('prod-peso');
     const inputDimensiones = document.getElementById('prod-dimensiones');
+    const labelFechaInicio = document.getElementById('label-fecha-inicio');
+
+    // Resetear visibilidad
+    if (contFisicos) contFisicos.style.display = 'none';
+    if (contDigitales) contDigitales.style.display = 'none';
+    if (contEventos) contEventos.style.display = 'none';
+    if (contStock) contStock.style.display = 'block';
+
+    if (inputPeso) inputPeso.removeAttribute('required');
+    if (inputDimensiones) inputDimensiones.removeAttribute('required');
 
     if (tipo === 'digital') {
-        contFisicos.style.display = 'none';
-        contDigitales.style.display = 'flex';
-        contStock.style.display = 'none';
-        inputStock.value = 9999;
-        inputPeso.removeAttribute('required');
-        inputDimensiones.removeAttribute('required');
-    } else {
-        contFisicos.style.display = 'flex';
-        contDigitales.style.display = 'none';
-        contStock.style.display = 'block';
-        inputPeso.setAttribute('required', 'true');
-        inputDimensiones.setAttribute('required', 'true');
+        if (contDigitales) contDigitales.style.display = 'flex';
+        if (contStock) contStock.style.display = 'none';
+        if (inputStock) inputStock.value = 9999;
+    } else if (tipo === 'taller' || tipo === 'viaje') {
+        if (contEventos) contEventos.style.display = 'flex';
+        if (labelStock) labelStock.innerText = tipo === 'taller' ? 'Cupos Disponibles' : 'Plazas / Cupos';
+        if (labelFechaInicio) {
+            labelFechaInicio.innerHTML = tipo === 'taller' ? '<i class="fas fa-calendar-alt"></i> Fecha de Inicio del Taller' : '<i class="fas fa-plane-departure"></i> Fecha de Salida del Viaje';
+        }
+        if (inputStock && inputStock.value === '9999') inputStock.value = 10;
+    } else { // 'fisico'
+        if (contFisicos) contFisicos.style.display = 'flex';
+        if (labelStock) labelStock.innerText = 'Stock Disponible';
+        if (inputStock && inputStock.value === '9999') inputStock.value = 1;
     }
 }
 
@@ -644,7 +663,9 @@ if (formProducto) {
         formData.append('dimensiones', document.getElementById('prod-dimensiones').value);
         formData.append('descripcion', document.getElementById('prod-desc').value);
         formData.append('categoria', document.getElementById('prod-cat').value);
-        formData.append('subcategoria', document.getElementById('prod-subcat').value);
+        formData.append('subcategoria', '');
+        formData.append('fecha_inicio', document.getElementById('prod-fecha-inicio') ? document.getElementById('prod-fecha-inicio').value : '');
+        formData.append('fecha_cierre_inscripcion', document.getElementById('prod-fecha-cierre') ? document.getElementById('prod-fecha-cierre').value : '');
         
         formData.append('tipo_producto', document.getElementById('prod-tipo').value);
         formData.append('video_url', document.getElementById('prod-video').value);
@@ -1265,18 +1286,13 @@ async function loadCategorias() {
 
         // Update selects
         const catSelect = document.getElementById('prod-cat');
-        const subcatSelect = document.getElementById('prod-subcat');
-        if (catSelect && subcatSelect) {
+        if (catSelect) {
             const currentCatVal = catSelect.value;
-            const currentSubVal = subcatSelect.value;
-            catSelect.innerHTML = '<option value="">Seleccione...</option>';
+            catSelect.innerHTML = '<option value="">Seleccione una categoría...</option>';
             currentCategorias.forEach(cat => {
                 catSelect.innerHTML += '<option value="' + cat.nombre + '">' + cat.nombre + '</option>';
             });
-            catSelect.value = currentCatVal;
-            if (typeof updateSubcategoriesSelect === 'function') {
-                updateSubcategoriesSelect();
-            }
+            if (currentCatVal) catSelect.value = currentCatVal;
         }
     } catch (error) {
         console.error(error);
