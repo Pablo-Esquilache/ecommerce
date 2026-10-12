@@ -45,10 +45,10 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="/"><img src="/img/logo.png" alt="ElectroShop" style="height: 65px; display: block; margin: 5px 0;"></a>
+                <a href="/"><img src="/img/logo.png" alt="Iconografía Bizantina" style="height: 52px; width: 52px; object-fit: cover; border-radius: 6px; display: block; margin: 4px 0;"></a>
             </div>
             <ul class="nav-links">
-                <li><a href="/">Volver a Inicio</a></li>
+                <li><a href="/#productos"><i class="fas fa-arrow-left"></i> Volver a Productos</a></li>
             </ul>
             <div class="nav-icons">
                 <div class="cart-icon" onclick="toggleCart()">
@@ -130,8 +130,10 @@
 
                             if (isFisico) {
                                 return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Stock disponible: <strong style="color:#C78515;">${p.stock} unidades</strong></p>`;
-                            } else if (isTaller || isViaje) {
+                            } else if (isTaller) {
                                 return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos presenciales disponibles: <strong style="color:#C78515;">${p.stock} lugares</strong></p>`;
+                            } else if (isViaje) {
+                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos disponibles: <strong style="color:#C78515;">${p.stock} lugares</strong></p>`;
                             } else if (isDigital) {
                                 return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Formato: <strong style="color:#C78515;">Acceso Digital Inmediato</strong></p>`;
                             }
@@ -140,8 +142,8 @@
                         </div>
 
                         ${(() => {
-                            const isEvento = p.tipo_producto === 'taller' || p.tipo_producto === 'viaje';
-                            if (!isEvento) return '';
+                            const isTaller = p.tipo_producto === 'taller';
+                            if (!isTaller) return '';
                             return `
                                 <div style="margin: 15px 0; background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; border: 1px solid #E2D9CC;">
                                     <label for="select-modalidad" style="display:block; font-weight:600; font-size:14px; color:#0E2A47; margin-bottom:8px;">
@@ -221,7 +223,11 @@
                         <div class="add-to-cart-section">
                             <input type="number" id="detail-qty" class="qty-input" value="1" min="1" max="${p.stock}">
                             <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, ${parseFloat(p.precio_usd) || 0}, '${img1}', '${p.tipo_producto || 'fisico'}')">
-                                <i class="${(p.tipo_producto === 'taller' || p.tipo_producto === 'viaje') ? 'fas fa-calendar-check' : 'fas fa-cart-plus'}"></i> ${(p.tipo_producto === 'taller' || p.tipo_producto === 'viaje') ? 'Inscribirme / Reservar' : 'Agregar al Carrito'}
+                                ${p.tipo_producto === 'taller' 
+                                    ? '<i class="fas fa-user-plus"></i> Inscribirme' 
+                                    : (p.tipo_producto === 'viaje' 
+                                        ? '<i class="fas fa-ticket-alt"></i> Reservar' 
+                                        : '<i class="fas fa-cart-plus"></i> Agregar al Carrito')}
                             </button>
                         </div>
                     </div>
@@ -251,8 +257,8 @@
             const cant = parseInt(qtyInput.value) || 1;
             
             const selectMod = document.getElementById('select-modalidad');
-            const modalidad = selectMod ? selectMod.value : (tipo_producto === 'digital' ? 'online' : 'presencial');
-            const modLabel = (tipo_producto === 'taller' || tipo_producto === 'viaje') ? (modalidad === 'online' ? ' (Online)' : ' (Presencial)') : '';
+            const modalidad = (tipo_producto === 'taller' && selectMod) ? selectMod.value : (tipo_producto === 'digital' ? 'online' : 'presencial');
+            const modLabel = (tipo_producto === 'taller') ? (modalidad === 'online' ? ' (Online)' : ' (Presencial)') : '';
             const nombreCompleto = nombre + modLabel;
 
             let itemExistente = carrito.find(item => item.id === id && item.modalidad === modalidad);

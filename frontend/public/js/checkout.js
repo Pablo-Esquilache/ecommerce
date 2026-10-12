@@ -77,7 +77,8 @@ function renderSummary() {
 
     let hayDigital = false;
     let hayFisico = false;
-    let hayEvento = false;
+    let hayTaller = false;
+    let hayViaje = false;
 
     const isUSD = localStorage.getItem('currency') === 'USD';
     const sign = isUSD ? 'USD $' : '$';
@@ -85,8 +86,10 @@ function renderSummary() {
     carrito.forEach(item => {
         if (item.tipo_producto === 'digital') {
             hayDigital = true;
-        } else if (item.tipo_producto === 'taller' || item.tipo_producto === 'viaje') {
-            hayEvento = true;
+        } else if (item.tipo_producto === 'taller') {
+            hayTaller = true;
+        } else if (item.tipo_producto === 'viaje') {
+            hayViaje = true;
         } else {
             hayFisico = true;
         }
@@ -134,9 +137,9 @@ function renderSummary() {
                 if (opcionesContainer) opcionesContainer.style.display = 'none';
                 seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'a_convenir');
             }
-        } else if (hayEvento) {
+        } else if (hayTaller || hayViaje) {
             seccionEnvio.style.display = 'block';
-            if (formTitle) formTitle.innerText = 'Datos de Inscripción y Facturación';
+            if (formTitle) formTitle.innerText = hayViaje ? 'Datos de Reserva y Facturación' : 'Datos de Inscripción y Facturación';
             if (tituloDireccion) tituloDireccion.innerText = 'Ubicación del Participante';
             if (grupoDireccion) grupoDireccion.style.display = 'none';
             if (dirInput) dirInput.removeAttribute('required');
@@ -149,7 +152,7 @@ function renderSummary() {
             document.getElementById('partido').setAttribute('required', 'true');
             document.getElementById('ciudad').setAttribute('required', 'true');
 
-            seleccionarOpcionEnvio(0, 'Inscripción Digital / Acceso', 'Digital');
+            seleccionarOpcionEnvio(0, hayViaje ? 'Reserva de Viaje' : 'Inscripción Digital / Acceso', 'Digital');
         } else {
             // 100% digital
             seccionEnvio.style.display = 'none';
@@ -178,10 +181,13 @@ function renderSummary() {
         }
         
         let mensajes = [];
-        if (hayEvento) {
-            mensajes.push('📧 <b>Información por Email:</b> Una vez confirmada tu inscripción / reserva, recibirás en tu correo electrónico la información completa, cronograma, instrucciones y enlaces de encuentro.');
+        if (hayViaje) {
+            mensajes.push('📧 <b>Información por Email:</b> Una vez confirmada tu reserva, recibirás en tu correo electrónico la información completa, cronograma, instrucciones y detalles del viaje.');
         }
-        if (hayDigital && !hayEvento) {
+        if (hayTaller) {
+            mensajes.push('📧 <b>Información por Email:</b> Una vez confirmada tu inscripción, recibirás en tu correo electrónico la información completa, cronograma, instrucciones y enlaces de encuentro.');
+        }
+        if (hayDigital && !hayViaje && !hayTaller) {
             mensajes.push('📧 <b>Producto Digital:</b> Al confirmarse el pago, recibirás de forma automática en tu correo electrónico el enlace de acceso y los archivos descargables.');
         }
         if (hayFisico) {
@@ -193,6 +199,17 @@ function renderSummary() {
         }
         
         avisoEnvio.innerHTML = mensajes.join('<br><br>');
+
+        const btnSubmit = document.querySelector('button[type="submit"]');
+        if (btnSubmit) {
+            if (hayViaje) {
+                btnSubmit.innerText = 'Confirmar Reserva';
+            } else if (hayTaller) {
+                btnSubmit.innerText = 'Confirmar Inscripción';
+            } else {
+                btnSubmit.innerText = 'Confirmar Pedido';
+            }
+        }
     }
 }
 
@@ -286,7 +303,9 @@ async function procesarCheckout(e) {
     
     const hayFisico = carrito.some(item => !item.tipo_producto || item.tipo_producto === 'fisico');
     const hayDigital = carrito.some(item => item.tipo_producto === 'digital');
-    const hayEvento = carrito.some(item => item.tipo_producto === 'taller' || item.tipo_producto === 'viaje');
+    const hayTaller = carrito.some(item => item.tipo_producto === 'taller');
+    const hayViaje = carrito.some(item => item.tipo_producto === 'viaje');
+    const hayEvento = hayTaller || hayViaje;
     
     const dirInput = document.getElementById('direccion');
     const cpInput = document.getElementById('codigo_postal');
@@ -350,7 +369,8 @@ async function procesarCheckout(e) {
             }
         } else {
             alert('Error al procesar el pedido: ' + data.error);
-            btn.innerText = "Confirmar Pedido";
+            const defaultText = hayViaje ? 'Confirmar Reserva' : (hayTaller ? 'Confirmar Inscripción' : 'Confirmar Pedido');
+            btn.innerText = defaultText;
             btn.disabled = false;
         }
 

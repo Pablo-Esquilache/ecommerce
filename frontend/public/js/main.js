@@ -257,15 +257,19 @@ function renderSeccionProductos(parentContainer, titulo, productos, currentPage,
                 </div>
             </a>
             <div style="padding: 0 20px 20px;">
-                ${(prod.tipo_producto === 'taller' || prod.tipo_producto === 'viaje') ? `
+                ${prod.tipo_producto === 'taller' ? `
                     <button class="btn btn-block btn-add" onclick="window.location.href='/producto.html?id=${prod.id}'">
-                        <i class="fas fa-calendar-check"></i> Inscribirme / Reservar
+                        <i class="fas fa-user-plus"></i> Inscribirme
+                    </button>
+                ` : (prod.tipo_producto === 'viaje' ? `
+                    <button class="btn btn-block btn-add" onclick="window.location.href='/producto.html?id=${prod.id}'">
+                        <i class="fas fa-ticket-alt"></i> Reservar
                     </button>
                 ` : `
                     <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, ${parseFloat(prod.precio_usd) || 0}, '${img}', '${prod.tipo_producto || 'fisico'}')">
                         <i class="fas fa-cart-plus"></i> Agregar al Carrito
                     </button>
-                `}
+                `)}
             </div>
         `;
         grid.appendChild(card);
