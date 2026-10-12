@@ -116,29 +116,81 @@
                     <div class="product-info-detail">
                         <h1>${p.nombre}</h1>
                         ${renderPriceHTML(p)}
-                        <p class="stock-info">Stock disponible: <strong>${p.stock} unidades</strong></p>
+                        
+                        ${(() => {
+                            const isFisico = !p.tipo_producto || p.tipo_producto === 'fisico';
+                            const isDigital = p.tipo_producto === 'digital';
+                            const isTaller = p.tipo_producto === 'taller';
+                            const isViaje = p.tipo_producto === 'viaje';
+
+                            if (isFisico) {
+                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Stock disponible: <strong style="color:#C78515;">${p.stock} unidades</strong></p>`;
+                            } else if (isTaller || isViaje) {
+                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos disponibles: <strong style="color:#C78515;">${p.stock} lugares</strong></p>`;
+                            } else if (isDigital) {
+                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Formato: <strong style="color:#C78515;">Acceso Digital Inmediato</strong></p>`;
+                            }
+                            return '';
+                        })()}
                         
                         <div class="description">
-                            ${p.descripcion.replace(/\n/g, '<br>')}
+                            ${p.descripcion ? p.descripcion.replace(/\n/g, '<br>') : ''}
                         </div>
 
                         <div class="meta-data">
                             <p><strong>ID:</strong> ${p.id}</p>
                             <p><strong>Categoría:</strong> <span style="text-transform:capitalize;">${p.categoria || '-'}</span></p>
-                            <p><strong>Peso:</strong> ${p.peso ? p.peso + ' kg' : '-'}</p>
-                            <p><strong>Dimensiones:</strong> ${p.dimensiones || '-'}</p>
+                            ${(() => {
+                                const isFisico = !p.tipo_producto || p.tipo_producto === 'fisico';
+                                let meta = '';
+                                if (isFisico) {
+                                    if (p.peso) meta += `<p><strong>Peso:</strong> ${p.peso} kg</p>`;
+                                    if (p.dimensiones) meta += `<p><strong>Dimensiones:</strong> ${p.dimensiones}</p>`;
+                                } else {
+                                    if (p.fecha_inicio) {
+                                        const fIni = new Date(p.fecha_inicio).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+                                        meta += `<p><strong>${p.tipo_producto === 'taller' ? 'Inicio del taller:' : 'Fecha de salida:'}</strong> <span style="color:#0E2A47; font-weight:600;">${fIni}</span></p>`;
+                                    }
+                                    if (p.fecha_cierre_inscripcion) {
+                                        const fCie = new Date(p.fecha_cierre_inscripcion).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+                                        meta += `<p><strong>Cierre de inscripción:</strong> <span style="color:#C78515; font-weight:600;">${fCie}</span></p>`;
+                                    }
+                                }
+                                return meta;
+                            })()}
                         </div>
-                        ${p.tipo_producto === 'digital' 
-                            ? `<div style="background-color: #fcf6f5; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid var(--primary-color);">
-                                 <p style="color: #2c3e50; font-size: 14px; margin: 0;"><strong>ℹ️ Envío automático por Email</strong><br>El enlace de descarga llegará a tu correo al confirmarse el pago y <strong>tendrá una validez de 7 días</strong> por seguridad.</p>
-                               </div>`
-                            : `<p style="color: #7f8c8d; font-size: 14px; margin-top: 10px; font-style: italic;">El envío es a cargo del cliente y se abona al momento de la entrega.</p>`
-                        }
+
+                        ${(() => {
+                            const isFisico = !p.tipo_producto || p.tipo_producto === 'fisico';
+                            const isDigital = p.tipo_producto === 'digital';
+                            if (isFisico) {
+                                return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
+                                     <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
+                                         <strong><i class="fas fa-box"></i> Embalaje y Envío Especializado</strong><br>
+                                         Cada obra sagrada se embala con protección especial para piezas únicas. Envíos coordinados a todo el país.
+                                     </p>
+                                   </div>`;
+                            } else if (isDigital) {
+                                return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
+                                     <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
+                                         <strong><i class="fas fa-envelope-open-text"></i> Información enviada por Email</strong><br>
+                                         Al confirmarse el pago, recibirás de forma automática en tu correo electrónico el enlace de acceso y los archivos descargables.
+                                     </p>
+                                   </div>`;
+                            } else {
+                                return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
+                                     <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
+                                         <strong><i class="fas fa-envelope-open-text"></i> Información enviada por Email</strong><br>
+                                         Una vez confirmada tu inscripción, recibirás en tu correo electrónico la información completa, cronograma, instrucciones y enlaces de encuentro.
+                                     </p>
+                                   </div>`;
+                            }
+                        })()}
 
                         <div class="add-to-cart-section">
                             <input type="number" id="detail-qty" class="qty-input" value="1" min="1" max="${p.stock}">
                             <button class="btn" onclick="agregarMultipleAlCarrito(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, ${parseFloat(p.precio_usd) || 0}, '${img1}', '${p.tipo_producto || 'fisico'}')">
-                                <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                                <i class="${(p.tipo_producto === 'taller' || p.tipo_producto === 'viaje') ? 'fas fa-calendar-check' : 'fas fa-cart-plus'}"></i> ${(p.tipo_producto === 'taller' || p.tipo_producto === 'viaje') ? 'Inscribirme / Reservar' : 'Agregar al Carrito'}
                             </button>
                         </div>
                     </div>

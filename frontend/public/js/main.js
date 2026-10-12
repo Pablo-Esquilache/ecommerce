@@ -173,8 +173,10 @@ function validarCarrito(productosDB) {
     }
 }
 
-let currentPageDigital = 1;
-let currentPageFisico = 1;
+let currentPageIconografias = 1;
+let currentPageDigitales = 1;
+let currentPageTalleres = 1;
+let currentPageViajes = 1;
 const itemsPerPageMain = 12;
 
 // Renderizar en el DOM
@@ -183,24 +185,40 @@ function renderProductos(arrayProductos) {
     if (!container) return;
     container.innerHTML = '';
     
-    if (arrayProductos.length === 0) {
-        container.innerHTML = '<p style="text-align:center; width: 100%;">No se encontraron productos.</p>';
+    if (!Array.isArray(arrayProductos) || arrayProductos.length === 0) {
+        container.innerHTML = '<p style="text-align:center; width: 100%; color:#64748B; font-size:16px; margin: 40px 0;">No se encontraron productos disponibles en este momento.</p>';
         return;
     }
 
+    const iconografias = arrayProductos.filter(p => !p.tipo_producto || p.tipo_producto === 'fisico');
     const digitales = arrayProductos.filter(p => p.tipo_producto === 'digital');
-    const fisicos = arrayProductos.filter(p => p.tipo_producto !== 'digital');
+    const talleres = arrayProductos.filter(p => p.tipo_producto === 'taller');
+    const viajes = arrayProductos.filter(p => p.tipo_producto === 'viaje');
 
-    if (digitales.length > 0) {
-        renderSeccionProductos(container, 'Productos Digitales', digitales, currentPageDigital, (newPage) => {
-            currentPageDigital = newPage;
+    if (iconografias.length > 0) {
+        renderSeccionProductos(container, 'Iconografías', iconografias, currentPageIconografias, (newPage) => {
+            currentPageIconografias = newPage;
             renderProductos(arrayProductos);
         });
     }
 
-    if (fisicos.length > 0) {
-        renderSeccionProductos(container, 'Productos Físicos', fisicos, currentPageFisico, (newPage) => {
-            currentPageFisico = newPage;
+    if (digitales.length > 0) {
+        renderSeccionProductos(container, 'Cursos Digitales', digitales, currentPageDigitales, (newPage) => {
+            currentPageDigitales = newPage;
+            renderProductos(arrayProductos);
+        });
+    }
+
+    if (talleres.length > 0) {
+        renderSeccionProductos(container, 'Talleres y Seminarios', talleres, currentPageTalleres, (newPage) => {
+            currentPageTalleres = newPage;
+            renderProductos(arrayProductos);
+        });
+    }
+
+    if (viajes.length > 0) {
+        renderSeccionProductos(container, 'Viajes y Retiros', viajes, currentPageViajes, (newPage) => {
+            currentPageViajes = newPage;
             renderProductos(arrayProductos);
         });
     }
@@ -240,8 +258,7 @@ function renderSeccionProductos(parentContainer, titulo, productos, currentPage,
             </a>
             <div style="padding: 0 20px 20px;">
                 <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, ${parseFloat(prod.precio_usd) || 0}, '${img}', '${prod.tipo_producto || 'fisico'}')">
-                    Agregar al Carrito
-                </button>
+                    ${(prod.tipo_producto === 'taller' || prod.tipo_producto === 'viaje') ? 'Inscribirme / Reservar' : 'Agregar al Carrito'}</button>
             </div>
         `;
         grid.appendChild(card);
