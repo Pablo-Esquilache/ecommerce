@@ -125,11 +125,13 @@ const pedidoController = {
       if (metodo_pago === 'mercadopago') {
         const prefMp = await mercadopagoService.crearPreferencia(nuevoPedido, carrito, clienteRecord);
         preferenciaMpId = prefMp.id;
-        // Using real init_point to show exact transaction value
-        initPoint = prefMp.init_point; 
         
-        // Normalmente guardaremos la ref aca, pero por ahora no hay campo en DB
-        // await Pedido.updateMercadopagoRef(nuevoPedido.id, preferenciaMpId);
+        const isSandbox = process.env.MP_SANDBOX === 'true' || String(process.env.MP_ACCESS_TOKEN || '').startsWith('TEST-');
+        initPoint = (isSandbox && prefMp.sandbox_init_point) 
+          ? prefMp.sandbox_init_point 
+          : (prefMp.init_point || prefMp.sandbox_init_point);
+        
+        console.log(`[MercadoPago] Preferencia creada: ${preferenciaMpId} (Modo ${isSandbox ? 'Sandbox' : 'Producción'}): ${initPoint}`);
       } else {
         // Enviar mail inmediatamente si es transferencia
         // await mailer.enviarConfirmacionTransferencia(nuevoPedido, clienteRecord, detalles);

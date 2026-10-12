@@ -6,10 +6,18 @@ const Pedido = require('../models/Pedido');
 // Validar el retorno de MP (el cliente vuelve de pagar a nuestra tienda)
 router.get('/mercadopago/return', async (req, res) => {
     try {
-        const status = req.query.status;
+        const rawStatus = req.query.status;
+        const collectionStatus = req.query.collection_status;
         const externalRef = req.query.external_reference; 
         
-        if (status === 'success' && externalRef) {
+        const isApproved = (
+            rawStatus === 'success' ||
+            rawStatus === 'approved' ||
+            collectionStatus === 'approved' ||
+            (Array.isArray(rawStatus) && rawStatus.some(s => s === 'success' || s === 'approved'))
+        );
+
+        if (isApproved && externalRef) {
             const pedidoDetails = await Pedido.getById(externalRef);
             // Solo mandamos el email si el Webhook no llegó a procesarlo todavía
             if (pedidoDetails && pedidoDetails.estado !== 'pagado') {
@@ -26,12 +34,21 @@ router.get('/mercadopago/return', async (req, res) => {
                     new Promise(r => setTimeout(() => { console.warn('⚠️ [Webhooks Return] Emails excedieron 4500ms'); r(); }, 4500))
                 ]);
             }
-            // Redirigimos al Frontend limpecito
-            return res.redirect('/?pago=exitoso');
+            // Redirigimos al Frontend limpecito con referencia de pedido
+            return res.redirect(`/?pago=exitoso&pedido=${externalRef}`);
         }
         
+        const isPending = (
+            rawStatus === 'pending' ||
+            collectionStatus === 'pending' ||
+            collectionStatus === 'in_process'
+        );
+        if (isPending) {
+            return res.redirect(`/?pago=pendiente&pedido=${externalRef || ''}`);
+        }
+
         // Redirigir al Frontend indicando fallo
-        return res.redirect('/?pago=fallido');
+        return res.redirect(`/?pago=fallido&pedido=${externalRef || ''}`);
     } catch (error) {
         console.error("Error procesando retorno de Mercado Pago:", error);
         res.redirect('/?pago=error');

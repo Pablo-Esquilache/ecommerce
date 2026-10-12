@@ -84,24 +84,24 @@ document.addEventListener('DOMContentLoaded', () => {
 async function checkMercadoPagoReturn() {
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
-    const externalRef = urlParams.get('external_reference');
+    const pago = urlParams.get('pago');
+    const externalRef = urlParams.get('pedido') || urlParams.get('external_reference');
+    const collectionStatus = urlParams.get('collection_status');
     
-    if (status === 'success' && externalRef) {
-        try {
-            // Opcional: Llamar a nuestro propio webhook localmente para forzar el update (ideal para dev local sin ngrok)
-            await fetch(`${API_URL}/webhooks/mercadopago/return?status=${status}&external_reference=${externalRef}`);
-            
-            alert("¡Pago exitoso! Tu orden #" + externalRef + " ha sido confirmada.");
-            carrito = [];
-            saveCart();
-            window.history.replaceState({}, document.title, "/");
-        } catch(e) { console.error('Error verificando pago:', e); }
-    } else if (status === 'failure') {
-        alert("El pago no ha sido procesado correctamente.");
-        window.history.replaceState({}, document.title, "/");
-    } else if (status === 'pending') {
+    if (pago === 'exitoso' || status === 'success' || collectionStatus === 'approved') {
+        const ordenTexto = externalRef ? ` #${externalRef}` : '';
+        alert(`¡Pago exitoso! Tu orden${ordenTexto} ha sido confirmada.`);
+        carrito = [];
+        saveCart();
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (pago === 'fallido' || status === 'failure' || collectionStatus === 'rejected') {
+        alert("El pago no ha sido procesado o fue rechazado.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (pago === 'pendiente' || status === 'pending' || collectionStatus === 'in_process') {
         alert("Tu pago está pendiente de aprobación. Te avisaremos cuando se confirme.");
-        window.history.replaceState({}, document.title, "/");
+        carrito = [];
+        saveCart();
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
 

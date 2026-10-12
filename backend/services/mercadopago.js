@@ -1,12 +1,14 @@
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
-// Agregar las credenciales de MP. Como es un test, hardcodeamos u otenemos de env.
-const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
-const client = new MercadoPagoConfig({ accessToken: ACCESS_TOKEN, options: { timeout: 5000 } });
-
 const mercadopagoService = {
   crearPreferencia: async (pedido, carrito, cliente) => {
     try {
+      const accessToken = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
+      if (!accessToken) {
+        throw new Error('MP_ACCESS_TOKEN no está configurado en las variables de entorno.');
+      }
+      const client = new MercadoPagoConfig({ accessToken, options: { timeout: 8000 } });
+
       // 1. Armar los items para MP
       const items = carrito.map(item => ({
         id: item.id.toString(),
@@ -27,9 +29,8 @@ const mercadopagoService = {
         });
       }
 
-      // 2. Definir las URLs de retorno y webhooks (Ajustar a la URL real final)
-      // En entorno local (localhost), MP no podrá hacer POST al webhook a menos que uses ngrok
-      const basePath = process.env.PUBLIC_URL || 'http://localhost:3000';
+      // 2. Definir las URLs de retorno y webhooks
+      const basePath = process.env.PUBLIC_URL || process.env.URL || 'http://localhost:3000';
 
       const body = {
         items,
@@ -45,8 +46,11 @@ const mercadopagoService = {
         },
         auto_return: 'approved',
         external_reference: pedido.id.toString(),
-        notification_url: `${basePath}/api/webhooks/mercadopago`,
       };
+
+      if (basePath.startsWith('https://')) {
+        body.notification_url = `${basePath}/api/webhooks/mercadopago`;
+      }
 
       // 3. Crear preferencia
       const preference = new Preference(client);
