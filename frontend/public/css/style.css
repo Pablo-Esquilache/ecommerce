@@ -797,36 +797,36 @@ nav.glass-navbar ul.nav-links li a:hover {
 .categorias-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    max-width: 1040px;
-    margin: -110px auto 0 auto; /* Solapado profundo para entrar 100% en el 1er viewport */
+    gap: 20px;
+    max-width: 980px;
+    margin: -85px auto 0 auto; /* Solapamiento de cubo flotante */
     position: relative;
     z-index: 25;
 }
 
 .cat-card {
-    background: #FFFFFF;
-    border-radius: 16px;
+    position: relative;
+    aspect-ratio: 1 / 1; /* Cubo 100% Cuadrado Puro */
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(14, 42, 71, 0.12);
-    border: 1px solid rgba(199, 133, 21, 0.22);
+    box-shadow: 0 10px 25px rgba(14, 42, 71, 0.16);
+    border: 1px solid rgba(199, 133, 21, 0.28);
     cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.35s ease, border-color 0.35s ease;
     text-align: center;
     text-decoration: none;
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
 .cat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 35px rgba(14, 42, 71, 0.22);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 42px rgba(14, 42, 71, 0.28);
     border-color: #C78515;
 }
 
 .cat-card-img {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     overflow: hidden;
     background: #F4F1EA;
 }
@@ -836,34 +836,47 @@ nav.glass-navbar ul.nav-links li a:hover {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.4s ease;
+    transition: transform 0.5s ease;
 }
 
 .cat-card:hover .cat-card-img img {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .cat-card-info {
-    padding: 10px 8px;
-    background: #FFFFFF;
-    border-top: 1px solid rgba(199, 133, 21, 0.12);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 10px 14px 10px;
+    background: linear-gradient(to top, rgba(14, 42, 71, 0.94) 0%, rgba(14, 42, 71, 0.72) 65%, rgba(14, 42, 71, 0) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    box-sizing: border-box;
+    transition: background 0.35s ease;
 }
 
 .cat-card-info h3 {
     margin: 0;
-    color: #0E2A47;
-    font-size: 0.95rem;
+    color: #FFFFFF;
+    font-size: 0.96rem;
     font-weight: 600;
     font-family: var(--font-body);
-    letter-spacing: 0.2px;
+    letter-spacing: 0.3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     transition: color 0.3s ease;
 }
 
+.cat-card:hover .cat-card-info {
+    background: linear-gradient(to top, rgba(14, 42, 71, 0.98) 0%, rgba(199, 133, 21, 0.65) 75%, rgba(14, 42, 71, 0) 100%);
+}
+
 .cat-card:hover .cat-card-info h3 {
-    color: #C78515;
+    color: #FFE699;
 }
 
 .submenu {
@@ -922,15 +935,15 @@ nav.glass-navbar ul.nav-links li a:hover {
     .hero {
         margin: 65px auto 0 auto;
         width: calc(100% - 24px);
-        height: 44vh;
-        min-height: 300px;
-        border-radius: 16px;
+        height: 48vh;
+        min-height: 320px;
+        border-radius: 18px;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 14px !important;
-        max-width: 520px;
-        margin: -75px auto 0 auto !important;
+        max-width: 480px;
+        margin: -65px auto 0 auto !important;
     }
 }
 
@@ -938,21 +951,21 @@ nav.glass-navbar ul.nav-links li a:hover {
     .hero {
         margin: 62px auto 0 auto;
         width: calc(100% - 16px);
-        height: 42vh;
-        min-height: 270px;
+        height: 45vh;
+        min-height: 280px;
         border-radius: 14px;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
         max-width: 100%;
-        margin: -55px auto 0 auto !important;
+        margin: -50px auto 0 auto !important;
     }
     .cat-card {
-        border-radius: 12px;
+        border-radius: 14px;
     }
     .cat-card-info {
-        padding: 8px 4px;
+        padding: 20px 6px 10px 6px;
     }
     .cat-card-info h3 {
         font-size: 0.85rem;
