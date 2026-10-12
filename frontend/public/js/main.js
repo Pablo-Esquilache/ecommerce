@@ -625,6 +625,17 @@ async function loadCategoriasMenu() {
     }
     const cGrid = document.getElementById('categorias-grid');
     if (cGrid && categorias.length > 0) {
+      categorias.sort((a, b) => {
+        const getPriority = (nom) => {
+          const n = (nom || '').toLowerCase();
+          if (n.includes('iconograf')) return 1;
+          if (n.includes('curso')) return 2;
+          if (n.includes('taller') || n.includes('seminario')) return 3;
+          if (n.includes('viaje') || n.includes('retiro')) return 4;
+          return 5;
+        };
+        return getPriority(a.nombre) - getPriority(b.nombre);
+      });
       cGrid.innerHTML = '';
       categorias.forEach(cat => {
         const img = cat.imagen_url || 'img/logo.png';
