@@ -164,10 +164,14 @@ let adminPedidosCache = [];
 async function fetchPedidos() {
     try {
         const res = await fetch(`${API_URL}/pedidos`, { headers: authHeaders() });
-        adminPedidosCache = await res.json();
+        const data = await res.json();
+        adminPedidosCache = Array.isArray(data) ? data : [];
         poblarFiltroProductosPedidos();
         aplicarFiltrosPedidos();
-    } catch(e) { console.error('Error cargando pedidos:', e); }
+    } catch(e) { 
+        adminPedidosCache = [];
+        console.error('Error cargando pedidos:', e); 
+    }
 }
 
 function poblarFiltroProductosPedidos() {
@@ -1661,9 +1665,14 @@ async function quickAddSubcategoria() {
 
 async function setupSupabaseRealtime() {
     try {
+        if (typeof supabase === 'undefined') {
+            console.warn('⚠️ Supabase JS library no está disponible en este momento');
+            return;
+        }
         const res = await fetch(`${API_URL}/admin/supabase-keys`, { headers: authHeaders() });
         if (!res.ok) return;
         const keys = await res.json();
+        if (!keys || !keys.url || !keys.key) return;
         
         const { createClient } = supabase;
         const supa = createClient(keys.url, keys.key);
@@ -1708,9 +1717,12 @@ async function fetchArticulosBlog() {
     try {
         const res = await fetch(`${API_URL}/blog/admin/all`, { headers: authHeaders() });
         if (!res.ok) throw new Error('Error al cargar artículos');
-        adminBlogCache = await res.json();
+        const data = await res.json();
+        adminBlogCache = Array.isArray(data) ? data : [];
         renderAdminArticulosBlog(adminBlogCache);
     } catch (e) {
+        adminBlogCache = [];
+        renderAdminArticulosBlog(adminBlogCache);
         console.error('Error cargando artículos de blog:', e);
     }
 }

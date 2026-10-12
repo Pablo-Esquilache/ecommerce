@@ -152,7 +152,8 @@ const pedidoController = {
       const pedidos = await Pedido.getAll();
       res.json(pedidos);
     } catch (error) {
-      res.status(500).json({ error: 'Error al obtener pedidos' });
+      console.error('Error al obtener pedidos:', error);
+      res.status(500).json({ error: 'Error al obtener pedidos: ' + error.message });
     }
   },
 

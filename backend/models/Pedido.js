@@ -59,24 +59,27 @@ const Pedido = {
              c.provincia as cliente_provincia,
              c.codigo_postal as cliente_cp,
              COALESCE(
-               json_agg(
-                 json_build_object(
-                   'id', d.id,
-                   'producto_id', d.producto_id,
-                   'producto_nombre', pr.nombre,
-                   'tipo_producto', pr.tipo_producto,
-                   'modalidad', d.modalidad,
-                   'cantidad', d.cantidad,
-                   'precio_unitario', d.precio_unitario,
-                   'subtotal', d.subtotal
+               (
+                 SELECT json_agg(
+                   json_build_object(
+                     'id', d.id,
+                     'producto_id', d.producto_id,
+                     'producto_nombre', pr.nombre,
+                     'tipo_producto', pr.tipo_producto,
+                     'modalidad', d.modalidad,
+                     'cantidad', d.cantidad,
+                     'precio_unitario', d.precio_unitario,
+                     'subtotal', d.subtotal
+                   )
                  )
-               ) FILTER (WHERE d.id IS NOT NULL), '[]'
+                 FROM detalles_pedido d
+                 LEFT JOIN productos pr ON d.producto_id = pr.id
+                 WHERE d.pedido_id = p.id
+               ),
+               '[]'::json
              ) as items
       FROM pedidos p
       JOIN clientes c ON p.cliente_id = c.id
-      LEFT JOIN detalles_pedido d ON p.id = d.pedido_id
-      LEFT JOIN productos pr ON d.producto_id = pr.id
-      GROUP BY p.id, c.nombre, c.apellido, c.email, c.telefono, c.direccion, c.ciudad, c.provincia, c.codigo_postal
       ORDER BY p.id DESC
     `;
     const { rows } = await db.query(query);
