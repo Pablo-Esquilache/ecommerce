@@ -1,4 +1,8 @@
 ﻿:root {
+    --font-title: 'Cinzel', serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --primary-color: #0E2A47;
+    --accent-color: #C78515;
     --primary: #2563EB;
     --secondary: #06B6D4;
     --bg: #F8F9FA;
@@ -284,6 +288,7 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 
 /* About Section Flotante & Alineada */
 .about-section {
+    scroll-margin-top: 90px;
     padding: 70px 0 30px 0;
     background-color: transparent !important;
 }
@@ -1176,4 +1181,10 @@ footer, .footer {
     .nav-links .dropdown-menu > li > a {
         color: #FFFFFF !important;
     }
+}
+
+
+/* Scroll Offset para Header Fijo */
+#quienes-somos, #productos, #contacto, #inicio {
+    scroll-margin-top: 90px;
 }
