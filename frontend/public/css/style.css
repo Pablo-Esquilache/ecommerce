@@ -113,9 +113,9 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
     margin: 68px auto 0 auto;
     max-width: 1240px;
     width: calc(100% - 40px);
-    height: 56vh;
-    min-height: 440px;
-    max-height: 550px;
+    height: 54vh;
+    min-height: 400px;
+    max-height: 515px;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
