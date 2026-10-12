@@ -191,12 +191,29 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 
 /* Productos */
 .productos-section {
-    padding: 80px 0;
+    scroll-margin-top: 65px;
+    padding: 20px 0 50px 0;
 }
 .productos-section h2 {
     text-align: center;
-    margin-bottom: 40px;
-    font-size: 32px;
+    margin-bottom: 35px;
+    font-size: 28px;
+    color: #0E2A47;
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 10px;
+}
+.productos-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #C78515;
+    border-radius: 2px;
 }
 .filters {
     display: flex;
@@ -339,8 +356,8 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 }
 
 .about-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 22px 45px rgba(14, 42, 71, 0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 42px rgba(14, 42, 71, 0.14), 0 0 0 1px #C78515;
     border-color: #C78515;
 }
 
@@ -872,21 +889,21 @@ nav.glass-navbar ul.nav-links li a:hover {
 
 .cat-card {
     position: relative;
-    aspect-ratio: 1 / 1; /* Cubo 100% Cuadrado Puro */
+    aspect-ratio: 1 / 1;
     border-radius: 18px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(14, 42, 71, 0.16);
     border: 1px solid rgba(199, 133, 21, 0.28);
     cursor: pointer;
-    transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
     text-align: center;
     text-decoration: none;
     display: block;
 }
 
 .cat-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 42px rgba(14, 42, 71, 0.28);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 42px rgba(14, 42, 71, 0.22), 0 0 0 1px #C78515;
     border-color: #C78515;
 }
 
@@ -906,7 +923,7 @@ nav.glass-navbar ul.nav-links li a:hover {
 }
 
 .cat-card:hover .cat-card-img img {
-    transform: scale(1.08);
+    transform: scale(1.06);
 }
 
 .cat-card-info {
@@ -1055,7 +1072,8 @@ footer {
 
 /* --- REBRANDING: GRAPHITE + ORANGE --- */
 :root {
-    --primary: #F97316;
+    --primary: #C78515;
+    --primary-hover: #A86E10;
     --secondary: #1F2937;
     --bg: #F3F4F6;
     --text: #111827;
@@ -1097,19 +1115,19 @@ body {
     border: 1px solid var(--primary) !important;
 }
 .btn:hover {
-    background-color: #ea580c !important; /* Darker orange */
-    border-color: #ea580c !important;
+    background-color: #A86E10 !important;
+    border-color: #A86E10 !important;
 }
 
 /* Cards (Clean & Flat) */
-.producto-card, .cat-card {
+.producto-card {
     background-color: #FFFFFF !important;
     border: none !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     border-radius: 12px !important;
     transition: transform 0.2s, box-shadow 0.2s !important;
 }
-.producto-card:hover, .cat-card:hover {
+.producto-card:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 6px rgba(0,0,0,0.08) !important;
 }
@@ -1236,6 +1254,9 @@ footer, .footer {
 #quienes-somos {
     scroll-margin-top: 65px;
 }
-#productos, #contacto, #inicio {
+#productos {
+    scroll-margin-top: 65px;
+}
+#contacto, #inicio {
     scroll-margin-top: 85px;
 }
