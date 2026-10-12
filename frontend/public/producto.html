@@ -96,9 +96,13 @@
             }
 
             try {
-                const res = await fetch(`/api/productos/${productId}`);
+                const [res, resConf] = await Promise.all([
+                    fetch(`/api/productos/${productId}`),
+                    fetch('/api/configuracion').catch(() => null)
+                ]);
                 if (!res.ok) throw new Error("Producto no encontrado");
                 const p = await res.json();
+                const conf = (resConf && resConf.ok) ? await resConf.json() : {};
                 
                 const img1 = p.imagen_1 || 'https://via.placeholder.com/600';
                 const img2Attr = p.imagen_2 ? `src="${p.imagen_2}"` : 'style="display:none"';
@@ -117,6 +121,7 @@
                         <h1>${p.nombre}</h1>
                         ${renderPriceHTML(p)}
                         
+                        <div id="cupos-container">
                         ${(() => {
                             const isFisico = !p.tipo_producto || p.tipo_producto === 'fisico';
                             const isDigital = p.tipo_producto === 'digital';
@@ -126,11 +131,28 @@
                             if (isFisico) {
                                 return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Stock disponible: <strong style="color:#C78515;">${p.stock} unidades</strong></p>`;
                             } else if (isTaller || isViaje) {
-                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos disponibles: <strong style="color:#C78515;">${p.stock} lugares</strong></p>`;
+                                return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos presenciales disponibles: <strong style="color:#C78515;">${p.stock} lugares</strong></p>`;
                             } else if (isDigital) {
                                 return `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Formato: <strong style="color:#C78515;">Acceso Digital Inmediato</strong></p>`;
                             }
                             return '';
+                        })()}
+                        </div>
+
+                        ${(() => {
+                            const isEvento = p.tipo_producto === 'taller' || p.tipo_producto === 'viaje';
+                            if (!isEvento) return '';
+                            return `
+                                <div style="margin: 15px 0; background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; border: 1px solid #E2D9CC;">
+                                    <label for="select-modalidad" style="display:block; font-weight:600; font-size:14px; color:#0E2A47; margin-bottom:8px;">
+                                        <i class="fas fa-user-check" style="color:#C78515;"></i> Modalidad de participación:
+                                    </label>
+                                    <select id="select-modalidad" onchange="window.cambiarModalidadEvento(this.value, ${p.stock})" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid #C78515; font-size:14px; font-weight:600; color:#0E2A47; background:#fff; outline:none; cursor:pointer;">
+                                        <option value="presencial">Presencial (Cupos limitados en sede)</option>
+                                        <option value="online">Online (En vivo / Transmisión remota)</option>
+                                    </select>
+                                </div>
+                            `;
                         })()}
                         
                         <div class="description">
@@ -164,12 +186,21 @@
                             const isFisico = !p.tipo_producto || p.tipo_producto === 'fisico';
                             const isDigital = p.tipo_producto === 'digital';
                             if (isFisico) {
-                                return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
-                                     <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
-                                         <strong><i class="fas fa-box"></i> Embalaje y Envío Especializado</strong><br>
-                                         Cada obra sagrada se embala con protección especial para piezas únicas. Envíos coordinados a todo el país.
-                                     </p>
-                                   </div>`;
+                                if (conf.correo_activo) {
+                                    return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
+                                         <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
+                                             <strong><i class="fas fa-truck"></i> Envíos a todo el país</strong><br>
+                                             Envíos gestionados por Correo Argentino. El costo exacto se calculará automáticamente según tu código postal en el checkout. Embalaje especializado para piezas sagradas.
+                                         </p>
+                                       </div>`;
+                                } else {
+                                    return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
+                                         <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
+                                             <strong><i class="fas fa-box"></i> Envío a convenir</strong><br>
+                                             El envío es a cargo del comprador y se abona al momento de la entrega. Embalaje y protección especializada para piezas sagradas únicas.
+                                         </p>
+                                       </div>`;
+                                }
                             } else if (isDigital) {
                                 return `<div style="background-color: #FAF8F5; padding: 14px 16px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #C78515;">
                                      <p style="color: #0E2A47; font-size: 14px; margin: 0; line-height: 1.5;">
@@ -201,17 +232,44 @@
             }
         });
 
+        window.cambiarModalidadEvento = function(modalidad, stockReal) {
+            const cuposDiv = document.getElementById('cupos-container');
+            const qtyInput = document.getElementById('detail-qty');
+            if (!cuposDiv) return;
+            if (modalidad === 'online') {
+                cuposDiv.innerHTML = '<p class="stock-info" style="color:#0E2A47; font-weight:500;">Modalidad Online: <strong style="color:#C78515;">Acceso virtual (Sin límite de cupo presencial)</strong></p>';
+                if (qtyInput) qtyInput.setAttribute('max', '99');
+            } else {
+                cuposDiv.innerHTML = `<p class="stock-info" style="color:#0E2A47; font-weight:500;">Cupos presenciales disponibles: <strong style="color:#C78515;">${stockReal} lugares</strong></p>`;
+                if (qtyInput) qtyInput.setAttribute('max', stockReal);
+            }
+        };
+
         function agregarMultipleAlCarrito(id, nombre, precio, precio_usd, img, tipo_producto) {
             const qtyInput = document.getElementById('detail-qty');
             if (!qtyInput) return;
             const cant = parseInt(qtyInput.value) || 1;
             
-            // Función expuesta por main.js pero readaptada para sumar n cantidad
-            let itemExistente = carrito.find(item => item.id === id);
+            const selectMod = document.getElementById('select-modalidad');
+            const modalidad = selectMod ? selectMod.value : (tipo_producto === 'digital' ? 'online' : 'presencial');
+            const modLabel = (tipo_producto === 'taller' || tipo_producto === 'viaje') ? (modalidad === 'online' ? ' (Online)' : ' (Presencial)') : '';
+            const nombreCompleto = nombre + modLabel;
+
+            let itemExistente = carrito.find(item => item.id === id && item.modalidad === modalidad);
             if (itemExistente) {
                 itemExistente.cantidad += cant;
             } else {
-                carrito.push({ id, nombre, precio, precio_usd, img, tipo_producto, cantidad: cant });
+                carrito.push({
+                    id,
+                    nombre: nombreCompleto,
+                    nombre_base: nombre,
+                    precio,
+                    precio_usd,
+                    img,
+                    tipo_producto,
+                    modalidad,
+                    cantidad: cant
+                });
             }
             saveCart();
             toggleCart();

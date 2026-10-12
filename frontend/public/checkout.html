@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout | ElectroShop</title>
+    <title>Checkout | María Magdalena — Iconografía Bizantina</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .checkout-wrapper { margin-top: 100px; margin-bottom: 60px; }
         .checkout-grid {
@@ -43,7 +45,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="/"><img src="/img/logo.png" alt="ElectroShop" style="height: 65px; display: block; margin: 5px 0;"></a>
+                <a href="/"><img src="/img/logo.png" alt="Iconografía Bizantina" style="height: 52px; width: 52px; object-fit: cover; border-radius: 6px; display: block; margin: 4px 0;"></a>
             </div>
         </div>
     </nav>
@@ -56,15 +58,15 @@
         <div class="checkout-grid">
             <!-- Formulario del Cliente -->
             <div class="form-section">
-                <h2 style="margin-top: 0; margin-bottom: 20px;">Datos de Envío y Facturación</h2>
+                <h2 id="checkout-form-title" style="margin-top: 0; margin-bottom: 20px; color:#0E2A47; font-family:var(--font-title, 'Cinzel', serif);">Datos de Envío y Facturación</h2>
                 <form id="checkout-form">
-                <h3>Información Personal</h3>
+                <h3 style="color:#0E2A47;">Información Personal</h3>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <div class="form-group" style="flex:1; min-width: 150px;"><label class="required">Nombre</label><input type="text" id="nombre" required></div>
                     <div class="form-group" style="flex:1; min-width: 150px;"><label class="required">Apellido</label><input type="text" id="apellido" required></div>
                 </div>
                 <div class="form-group"><label class="required">Email</label><input type="email" id="email" required></div>
-                <div class="form-group"><label class="required">Teléfono</label><input type="text" id="telefono" required></div>
+                <div class="form-group"><label class="required">Teléfono / WhatsApp</label><input type="text" id="telefono" required></div>
                 <div class="form-group"><label>Género (Opcional)</label>
                     <select id="genero">
                         <option value="">Seleccionar...</option>
@@ -75,20 +77,20 @@
                 </div>
                 
                 <div id="seccion-envio">
-                    <h3 style="margin-top: 20px;">Dirección de Envío</h3>
-                    <div class="form-group"><label class="required">Dirección Completa</label><input type="text" id="direccion" required></div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <h3 style="margin-top: 20px; color:#0E2A47;" id="titulo-direccion">Dirección de Envío</h3>
+                    <div class="form-group" id="grupo-direccion"><label class="required">Dirección Completa</label><input type="text" id="direccion" required></div>
+                    <div id="grupo-georef" style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Provincia</label><select id="provincia" required><option value="">Cargando...</option></select></div>
                         <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Partido/Depto</label><select id="partido" required disabled><option value="">Elija Provincia...</option></select></div>
                         <div class="form-group" style="flex:1; min-width:150px;"><label class="required">Localidad</label><select id="ciudad" required disabled><option value="">Elija Partido...</option></select></div>
                     </div>
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div id="grupo-codigo-postal" style="display: flex; gap: 10px; align-items: flex-end;">
                         <div class="form-group" style="flex:1;"><label class="required">Código Postal</label><input type="text" id="codigo_postal" required></div>
-                        <div class="form-group"><button type="button" class="btn" style="background:#3498db; color:white; height:42px; padding:0 20px; line-height:42px;" onclick="calcularEnvio()">Calcular Envío</button></div>
+                        <div class="form-group" id="contenedor-btn-calcular-envio"><button type="button" id="btn-calcular-envio" class="btn" style="background:#C78515; color:white; height:42px; padding:0 20px; line-height:42px;" onclick="calcularEnvio()">Calcular Envío</button></div>
                     </div>
                     
-                    <div id="opciones-envio-container" style="display:none; background:#f9f9f9; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #e1e8ed;">
-                        <h4 style="margin-top:0; margin-bottom:10px;"><i class="fas fa-truck"></i> Opciones de Envío</h4>
+                    <div id="opciones-envio-container" style="display:none; background:#FAF8F5; padding:15px; border-radius:6px; margin-bottom:15px; border:1px solid #E2D9CC;">
+                        <h4 style="margin-top:0; margin-bottom:10px; color:#0E2A47;"><i class="fas fa-truck" style="color:#C78515;"></i> Opciones de Envío</h4>
                         <div id="opciones-envio-lista">
                             <!-- Opciones cargadas dinámicamente -->
                         </div>

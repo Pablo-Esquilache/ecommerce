@@ -1,23 +1,36 @@
-document.addEventListener('DOMContentLoaded', () => {
+let appConfig = {};
+
+document.addEventListener('DOMContentLoaded', async () => {
     let carrito = JSON.parse(localStorage.getItem('cart')) || [];
     if (carrito.length === 0) {
         window.location.href = '/';
         return;
     }
+
+    try {
+        const res = await fetch('/api/configuracion');
+        appConfig = await res.json();
+    } catch (e) {
+        appConfig = {};
+    }
+
     renderSummary();
-    calcularEnvio(); // Calcular un envío inicial por defecto
-    inicializarGeoRef(); // Iniciar selectores de GeoRef
+    inicializarGeoRef();
+
+    const hayFisico = carrito.some(item => !item.tipo_producto || item.tipo_producto === 'fisico');
+    if (hayFisico && appConfig.correo_activo) {
+        calcularEnvio();
+    }
 
     document.getElementById('checkout-form').addEventListener('submit', procesarCheckout);
 
     const isUSD = localStorage.getItem('currency') === 'USD';
-
     const metodoPagoSelect = document.getElementById('metodo_pago');
     const datosBancariosDiv = document.getElementById('datos-bancarios');
 
     if (metodoPagoSelect) {
         if (isUSD) {
-            metodoPagoSelect.innerHTML = `<option value="transferencia_usd">Transferencia Bancaria (USD)</option>`;
+            metodoPagoSelect.innerHTML = '<option value="transferencia_usd">Transferencia Bancaria (USD)</option>';
         } else {
             metodoPagoSelect.innerHTML = `
                 <option value="mercadopago">Mercado Pago</option>
@@ -30,50 +43,53 @@ document.addEventListener('DOMContentLoaded', () => {
         metodoPagoSelect.addEventListener('change', async (e) => {
             if (e.target.value === 'transferencia' || e.target.value === 'transferencia_usd') {
                 datosBancariosDiv.style.display = 'block';
-                try {
-                    const res = await fetch('/api/configuracion');
-                    const conf = await res.json();
-                    if (e.target.value === 'transferencia_usd') {
-                        document.getElementById('b_banco').innerText = conf.banco_usd_nombre || '-';
-                        document.getElementById('b_titular').innerText = conf.banco_usd_titular || '-';
-                        document.getElementById('b_cuit').innerText = conf.banco_usd_cuit || '-';
-                        document.getElementById('b_cbu').innerText = conf.banco_usd_cbu || '-';
-                        document.getElementById('b_alias').innerText = conf.banco_usd_alias || '-';
-                    } else {
-                        document.getElementById('b_banco').innerText = conf.banco_nombre || '-';
-                        document.getElementById('b_titular').innerText = conf.banco_titular || '-';
-                        document.getElementById('b_cuit').innerText = conf.banco_cuit || '-';
-                        document.getElementById('b_cbu').innerText = conf.banco_cbu || '-';
-                        document.getElementById('b_alias').innerText = conf.banco_alias || '-';
-                    }
-                } catch (err) {
-                    console.error('Error cargando los datos bancarios:', err);
+                if (e.target.value === 'transferencia_usd') {
+                    document.getElementById('b_banco').innerText = appConfig.banco_usd_nombre || '-';
+                    document.getElementById('b_titular').innerText = appConfig.banco_usd_titular || '-';
+                    document.getElementById('b_cuit').innerText = appConfig.banco_usd_cuit || '-';
+                    document.getElementById('b_cbu').innerText = appConfig.banco_usd_cbu || '-';
+                    document.getElementById('b_alias').innerText = appConfig.banco_usd_alias || '-';
+                } else {
+                    document.getElementById('b_banco').innerText = appConfig.banco_nombre || '-';
+                    document.getElementById('b_titular').innerText = appConfig.banco_titular || '-';
+                    document.getElementById('b_cuit').innerText = appConfig.banco_cuit || '-';
+                    document.getElementById('b_cbu').innerText = appConfig.banco_cbu || '-';
+                    document.getElementById('b_alias').innerText = appConfig.banco_alias || '-';
                 }
             } else {
                 datosBancariosDiv.style.display = 'none';
             }
         });
 
-        // Trigger the check once on initialization
         metodoPagoSelect.dispatchEvent(new Event('change'));
     }
 });
 
 let subtotalCheckout = 0;
 let costoEnvioFinal = 0;
+let envioSeleccionado = { costo: 0, nombre: '', id: '' };
 
 function renderSummary() {
     let carrito = JSON.parse(localStorage.getItem('cart')) || [];
     const container = document.getElementById('checkout-items');
+    container.innerHTML = '';
     subtotalCheckout = 0;
+
     let hayDigital = false;
     let hayFisico = false;
+    let hayEvento = false;
+
     const isUSD = localStorage.getItem('currency') === 'USD';
     const sign = isUSD ? 'USD $' : '$';
     
     carrito.forEach(item => {
-        if (item.tipo_producto === 'digital') hayDigital = true;
-        else hayFisico = true;
+        if (item.tipo_producto === 'digital') {
+            hayDigital = true;
+        } else if (item.tipo_producto === 'taller' || item.tipo_producto === 'viaje') {
+            hayEvento = true;
+        } else {
+            hayFisico = true;
+        }
         
         let price = isUSD && parseFloat(item.precio_usd) > 0 ? parseFloat(item.precio_usd) : parseFloat(item.precio);
         subtotalCheckout += price * item.cantidad;
@@ -87,41 +103,93 @@ function renderSummary() {
     
     document.getElementById('resumen-subtotal').innerText = `${sign}${subtotalCheckout.toFixed(2)}`;
     
+    const formTitle = document.getElementById('checkout-form-title');
     const seccionEnvio = document.getElementById('seccion-envio');
+    const tituloDireccion = document.getElementById('titulo-direccion');
+    const grupoDireccion = document.getElementById('grupo-direccion');
+    const dirInput = document.getElementById('direccion');
+    const grupoCP = document.getElementById('grupo-codigo-postal');
+    const cpInput = document.getElementById('codigo_postal');
+    const btnCalcularEnvio = document.getElementById('contenedor-btn-calcular-envio');
+    const opcionesContainer = document.getElementById('opciones-envio-container');
+
     if (seccionEnvio) {
-        if (!hayFisico && hayDigital) {
-            seccionEnvio.style.display = 'none';
-            document.getElementById('direccion').removeAttribute('required');
-            document.getElementById('provincia').removeAttribute('required');
-            document.getElementById('partido').removeAttribute('required');
-            document.getElementById('ciudad').removeAttribute('required');
-            document.getElementById('codigo_postal').removeAttribute('required');
-        } else {
+        if (hayFisico) {
             seccionEnvio.style.display = 'block';
-            document.getElementById('direccion').setAttribute('required', 'true');
+            if (formTitle) formTitle.innerText = 'Datos de Envío y Facturación';
+            if (tituloDireccion) tituloDireccion.innerText = 'Dirección de Envío';
+            if (grupoDireccion) grupoDireccion.style.display = 'block';
+            if (dirInput) dirInput.setAttribute('required', 'true');
+            if (grupoCP) grupoCP.style.display = 'flex';
+            if (cpInput) cpInput.setAttribute('required', 'true');
+
             document.getElementById('provincia').setAttribute('required', 'true');
             document.getElementById('partido').setAttribute('required', 'true');
             document.getElementById('ciudad').setAttribute('required', 'true');
-            document.getElementById('codigo_postal').setAttribute('required', 'true');
+
+            if (appConfig.correo_activo) {
+                if (btnCalcularEnvio) btnCalcularEnvio.style.display = 'block';
+            } else {
+                if (btnCalcularEnvio) btnCalcularEnvio.style.display = 'none';
+                if (opcionesContainer) opcionesContainer.style.display = 'none';
+                seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'a_convenir');
+            }
+        } else if (hayEvento) {
+            seccionEnvio.style.display = 'block';
+            if (formTitle) formTitle.innerText = 'Datos de Inscripción y Facturación';
+            if (tituloDireccion) tituloDireccion.innerText = 'Ubicación del Participante';
+            if (grupoDireccion) grupoDireccion.style.display = 'none';
+            if (dirInput) dirInput.removeAttribute('required');
+            if (grupoCP) grupoCP.style.display = 'none';
+            if (cpInput) cpInput.removeAttribute('required');
+            if (btnCalcularEnvio) btnCalcularEnvio.style.display = 'none';
+            if (opcionesContainer) opcionesContainer.style.display = 'none';
+
+            document.getElementById('provincia').setAttribute('required', 'true');
+            document.getElementById('partido').setAttribute('required', 'true');
+            document.getElementById('ciudad').setAttribute('required', 'true');
+
+            seleccionarOpcionEnvio(0, 'Inscripción Digital / Acceso', 'Digital');
+        } else {
+            // 100% digital
+            seccionEnvio.style.display = 'none';
+            if (formTitle) formTitle.innerText = 'Datos del Comprador y Facturación';
+            if (dirInput) dirInput.removeAttribute('required');
+            if (cpInput) cpInput.removeAttribute('required');
+            document.getElementById('provincia').removeAttribute('required');
+            document.getElementById('partido').removeAttribute('required');
+            document.getElementById('ciudad').removeAttribute('required');
+            seleccionarOpcionEnvio(0, 'Envío Digital', 'Digital');
         }
-        
+
         let avisoEnvio = document.getElementById('aviso-envio-dinamico');
         if (!avisoEnvio) {
             avisoEnvio = document.createElement('div');
             avisoEnvio.id = 'aviso-envio-dinamico';
-            avisoEnvio.style.marginTop = '15px';
+            avisoEnvio.style.marginTop = '18px';
+            avisoEnvio.style.padding = '14px 16px';
+            avisoEnvio.style.borderRadius = '8px';
+            avisoEnvio.style.backgroundColor = '#FAF8F5';
+            avisoEnvio.style.borderLeft = '4px solid #C78515';
             avisoEnvio.style.fontSize = '14px';
-            avisoEnvio.style.color = '#e67e22';
-            avisoEnvio.style.fontWeight = 'bold';
-            seccionEnvio.parentNode.insertBefore(avisoEnvio, seccionEnvio.nextSibling); // Puesto afuera de seccionEnvio para que se vea siempre
+            avisoEnvio.style.color = '#0E2A47';
+            avisoEnvio.style.lineHeight = '1.5';
+            seccionEnvio.parentNode.insertBefore(avisoEnvio, seccionEnvio.nextSibling);
         }
         
         let mensajes = [];
-        if (hayDigital) {
-            mensajes.push('📧 <b>Producto Digital:</b> Una vez confirmado el pago, recibirás automáticamente un correo con el acceso a tu material.');
+        if (hayEvento) {
+            mensajes.push('📧 <b>Información por Email:</b> Una vez confirmada tu inscripción / reserva, recibirás en tu correo electrónico la información completa, cronograma, instrucciones y enlaces de encuentro.');
+        }
+        if (hayDigital && !hayEvento) {
+            mensajes.push('📧 <b>Producto Digital:</b> Al confirmarse el pago, recibirás de forma automática en tu correo electrónico el enlace de acceso y los archivos descargables.');
         }
         if (hayFisico) {
-            mensajes.push('⚠️ <b>Producto Físico:</b> El envío se coordina directamente con el vendedor posterior a la compra.');
+            if (appConfig.correo_activo) {
+                mensajes.push('🚚 <b>Envíos por Correo Argentino:</b> Ingresá tu código postal y hacé clic en "Calcular Envío" para seleccionar el costo de entrega.');
+            } else {
+                mensajes.push('📦 <b>Envío a convenir:</b> El costo de envío se coordina directamente con el vendedor luego de la compra y se abona al momento de la entrega.');
+            }
         }
         
         avisoEnvio.innerHTML = mensajes.join('<br><br>');
@@ -129,20 +197,20 @@ function renderSummary() {
 }
 
 async function calcularEnvio() {
-    const cp = document.getElementById('codigo_postal').value;
+    const cpEl = document.getElementById('codigo_postal');
+    const cp = cpEl ? cpEl.value.trim() : '';
     const opcionesContainer = document.getElementById('opciones-envio-container');
     const opcionesLista = document.getElementById('opciones-envio-lista');
     
-    if (!cp || cp.length < 4) return;
+    if (!appConfig.correo_activo || !cp || cp.length < 4) return;
     
     const isUSD = localStorage.getItem('currency') === 'USD';
     const sign = isUSD ? 'USD $' : '$';
 
     try {
         const carrito = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        opcionesContainer.style.display = 'block';
-        opcionesLista.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Calculando envíos...</p>';
+        if (opcionesContainer) opcionesContainer.style.display = 'block';
+        if (opcionesLista) opcionesLista.innerHTML = '<p><i class="fas fa-spinner fa-spin" style="color:#C78515;"></i> Calculando envíos con Correo Argentino...</p>';
         
         const res = await fetch('/api/envios/cotizar', {
             method: 'POST',
@@ -153,59 +221,50 @@ async function calcularEnvio() {
         const data = await res.json();
         
         if (data.isDigital) {
-            opcionesLista.innerHTML = '<p style="color:#27ae60;"><i class="fas fa-check-circle"></i> Envío Digital Gratuito</p>';
+            if (opcionesLista) opcionesLista.innerHTML = '<p style="color:#27ae60;"><i class="fas fa-check-circle"></i> Envío Digital Gratuito</p>';
             seleccionarOpcionEnvio(0, 'Envío Digital', 'Digital');
             return;
         }
 
-        if (data.success) {
+        if (data.success && data.opciones && data.opciones.length > 0) {
             let html = '';
             data.opciones.forEach((opcion, index) => {
                 const checked = index === 0 ? 'checked' : '';
                 html += `
-                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer;" onclick="document.getElementById('envio_${index}').click()">
+                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; background:#fff;" onclick="document.getElementById('envio_${index}').click()">
                         <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
                             <input type="radio" name="opcion_envio" id="envio_${index}" value="${opcion.costo}" data-nombre="${opcion.nombre}" data-id="${opcion.id}" ${checked} onchange="seleccionarOpcionEnvio(${opcion.costo}, '${opcion.nombre}', '${opcion.id}')" style="margin-right: 10px;">
                             <div style="flex:1;">
-                                <strong style="display:block;">${opcion.nombre}</strong>
+                                <strong style="display:block; color:#0E2A47;">${opcion.nombre}</strong>
                                 <span style="font-size:12px; color:#7f8c8d;">${opcion.tiempo_entrega}</span>
                             </div>
-                            <strong style="color:#2c3e50;">${sign}${opcion.costo.toFixed(2)}</strong>
+                            <strong style="color:#C78515;">${sign}${opcion.costo.toFixed(2)}</strong>
                         </label>
                     </div>
                 `;
             });
-            opcionesLista.innerHTML = html;
-            
-            // Auto select the first one
-            if (data.opciones.length > 0) {
-                seleccionarOpcionEnvio(data.opciones[0].costo, data.opciones[0].nombre, data.opciones[0].id);
-            }
+            if (opcionesLista) opcionesLista.innerHTML = html;
+            seleccionarOpcionEnvio(data.opciones[0].costo, data.opciones[0].nombre, data.opciones[0].id);
         } else {
-            // Mostrar fallback (A convenir)
-            console.error("Error devuelto por el servidor:", data.error || data.message || 'Error desconocido');
-            opcionesLista.innerHTML = `
-                <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background:#fff3cd; color:#856404;">
-                    <p style="margin:0 0 10px 0;"><i class="fas fa-info-circle"></i> A convenir con el vendedor</p>
-                    <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
-                        <input type="radio" name="opcion_envio" id="envio_convenir" value="0" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir')">
-                        <span style="margin-left: 8px;">Pagaré el envío luego de la compra</span>
-                    </label>
-                    <p style="font-size: 11px; color: red; margin-top: 10px;"><strong>Error (Solo para debug):</strong> ${data.error || data.message || 'No se devolvió un error específico'}</p>
-                </div>
-            `;
+            if (opcionesLista) {
+                opcionesLista.innerHTML = `
+                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background:#fff3cd; color:#856404;">
+                        <p style="margin:0 0 10px 0;"><i class="fas fa-info-circle"></i> A convenir con el vendedor</p>
+                        <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
+                            <input type="radio" name="opcion_envio" id="envio_convenir" value="0" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir')">
+                            <span style="margin-left: 8px;">Pagaré el envío al momento de recibir la obra</span>
+                        </label>
+                    </div>
+                `;
+            }
             seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir');
-            return;
         }
     } catch (e) {
-        console.error('Error:', e);
-        opcionesLista.innerHTML = '<p style="color:#e74c3c;">Ocurrió un error al cotizar. Por favor, reintente en unos minutos o continúe y acordaremos el envío.</p>';
+        console.error('Error calculando envio:', e);
+        if (opcionesLista) opcionesLista.innerHTML = '<p style="color:#e74c3c;">Ocurrió un error al cotizar. Coordinaremos el envío tras la compra.</p>';
         seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR');
     }
 }
-
-// Global para la orden
-let envioSeleccionado = { costo: 0, nombre: '', id: '' };
 
 function seleccionarOpcionEnvio(costo, nombre, id) {
     costoEnvioFinal = parseFloat(costo) || 0;
@@ -225,25 +284,36 @@ async function procesarCheckout(e) {
     e.preventDefault();
     const carrito = JSON.parse(localStorage.getItem('cart')) || [];
     
-    const hayFisico = carrito.some(item => item.tipo_producto !== 'digital');
+    const hayFisico = carrito.some(item => !item.tipo_producto || item.tipo_producto === 'fisico');
     const hayDigital = carrito.some(item => item.tipo_producto === 'digital');
+    const hayEvento = carrito.some(item => item.tipo_producto === 'taller' || item.tipo_producto === 'viaje');
     
+    const dirInput = document.getElementById('direccion');
+    const cpInput = document.getElementById('codigo_postal');
+    const provSelect = document.getElementById('provincia');
+    const partidoSelect = document.getElementById('partido');
+    const ciudadSelect = document.getElementById('ciudad');
+
+    const dirVal = dirInput ? dirInput.value.trim() : '';
+    const cpVal = cpInput ? cpInput.value.trim() : '';
+    const provVal = provSelect ? provSelect.value : '';
+    const partidoVal = partidoSelect ? partidoSelect.value : '';
+    const ciudadVal = ciudadSelect ? ciudadSelect.value : '';
+
     const cliente = {
-        nombre: document.getElementById('nombre').value,
-        apellido: document.getElementById('apellido').value,
-        email: document.getElementById('email').value,
-        telefono: document.getElementById('telefono').value,
-        genero: document.getElementById('genero').value,
-        direccion: (!hayFisico && hayDigital) ? 'Envío Digital' : document.getElementById('direccion').value,
-        // Combinamos Partido y Ciudad de forma transparente para el Backend
-        ciudad: (!hayFisico && hayDigital) ? 'Digital' : (document.getElementById('partido').value + ' - ' + document.getElementById('ciudad').value),
-        provincia: (!hayFisico && hayDigital) ? 'Digital' : document.getElementById('provincia').value,
-        codigo_postal: (!hayFisico && hayDigital) ? '0000' : document.getElementById('codigo_postal').value
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        telefono: document.getElementById('telefono').value.trim(),
+        genero: document.getElementById('genero').value || null,
+        direccion: hayFisico ? dirVal : (hayEvento ? 'Inscripción Evento / Taller' : 'Envío Digital'),
+        ciudad: (partidoVal && ciudadVal) ? `${partidoVal} - ${ciudadVal}` : (ciudadVal || partidoVal || 'Digital'),
+        provincia: provVal || 'Digital',
+        codigo_postal: hayFisico ? cpVal : '0000'
     };
 
     const metodo_pago = document.getElementById('metodo_pago').value;
     
-    // Enviar la opción seleccionada al backend
     const metodo_envio = (envioSeleccionado.id && envioSeleccionado.id !== 'A_CONVENIR' && envioSeleccionado.id !== 'Digital') 
                           ? `correo_${envioSeleccionado.id}` 
                           : (envioSeleccionado.id === 'Digital' ? 'digital' : 'a_convenir');
@@ -253,7 +323,7 @@ async function procesarCheckout(e) {
         carrito,
         metodo_pago,
         metodo_envio,
-        costo_envio: costoEnvioFinal // Mandamos el costo calculado para que lo sumen en el ticket
+        costo_envio: costoEnvioFinal
     };
 
     try {
@@ -270,11 +340,9 @@ async function procesarCheckout(e) {
         const data = await response.json();
 
         if (response.ok) {
-            // Vaciar carrito
             localStorage.removeItem('cart');
             
             if (metodo_pago === 'mercadopago' && data.mpUrl) {
-                // Redirigir a MercadoPago
                 window.location.href = data.mpUrl;
             } else {
                 alert(`¡Pedido #${data.pedido.id} confirmado con éxito! Nos comunicaremos vía email.`);
@@ -293,7 +361,6 @@ async function procesarCheckout(e) {
     }
 }
 
-// --- Integración API GeoRef / Argentina ---
 async function inicializarGeoRef() {
     const provSelect = document.getElementById('provincia');
     const partidoSelect = document.getElementById('partido');
@@ -321,7 +388,6 @@ async function inicializarGeoRef() {
             }
 
             try {
-                // Departamentos abarca a "Partidos" en Buenos Aires y "Departamentos" en el resto de Argentina
                 const deptoRes = await fetch(`https://apis.datos.gob.ar/georef/api/departamentos?provincia=${provId}&campos=id,nombre&max=500`);
                 const deptoData = await deptoRes.json();
                 deptoData.departamentos.sort((a,b) => a.nombre.localeCompare(b.nombre));
@@ -352,7 +418,6 @@ async function inicializarGeoRef() {
                  locData.localidades.sort((a,b) => a.nombre.localeCompare(b.nombre));
                  
                  ciudadSelect.innerHTML = '<option value="">Seleccione Localidad...</option>';
-                 // Usamos un Set para evitar las localidades con mismo nombre pero distinto ID (barrios/parajes integrados)
                  const localidadesUnicas = [...new Set(locData.localidades.map(l => l.nombre))];
                  localidadesUnicas.forEach(l => ciudadSelect.innerHTML += `<option value="${l}">${l}</option>`);
                  ciudadSelect.disabled = false;

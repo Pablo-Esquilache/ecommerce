@@ -257,8 +257,15 @@ function renderSeccionProductos(parentContainer, titulo, productos, currentPage,
                 </div>
             </a>
             <div style="padding: 0 20px 20px;">
-                <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, ${parseFloat(prod.precio_usd) || 0}, '${img}', '${prod.tipo_producto || 'fisico'}')">
-                    ${(prod.tipo_producto === 'taller' || prod.tipo_producto === 'viaje') ? 'Inscribirme / Reservar' : 'Agregar al Carrito'}</button>
+                ${(prod.tipo_producto === 'taller' || prod.tipo_producto === 'viaje') ? `
+                    <button class="btn btn-block btn-add" onclick="window.location.href='/producto.html?id=${prod.id}'">
+                        <i class="fas fa-calendar-check"></i> Inscribirme / Reservar
+                    </button>
+                ` : `
+                    <button class="btn btn-block btn-add" onclick="agregarAlCarrito(${prod.id}, '${prod.nombre.replace(/'/g, "\\'")}', ${prod.precio}, ${parseFloat(prod.precio_usd) || 0}, '${img}', '${prod.tipo_producto || 'fisico'}')">
+                        <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                    </button>
+                `}
             </div>
         `;
         grid.appendChild(card);
@@ -336,12 +343,12 @@ function toggleCart() {
     document.getElementById('overlay').classList.toggle('open');
 }
 
-function agregarAlCarrito(id, nombre, precio, precio_usd, img, tipo_producto) {
-    const itemExistente = carrito.find(item => item.id === id);
+function agregarAlCarrito(id, nombre, precio, precio_usd, img, tipo_producto, modalidad = 'presencial') {
+    const itemExistente = carrito.find(item => item.id === id && (item.modalidad || 'presencial') === modalidad);
     if (itemExistente) {
         itemExistente.cantidad++;
     } else {
-        carrito.push({ id, nombre, precio, precio_usd, img, tipo_producto, cantidad: 1 });
+        carrito.push({ id, nombre, precio, precio_usd, img, tipo_producto, modalidad, cantidad: 1 });
     }
     saveCart();
     toggleCart(); // Abre el carrito al añadir

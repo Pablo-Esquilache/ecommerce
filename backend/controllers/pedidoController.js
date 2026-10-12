@@ -10,6 +10,10 @@ const pedidoController = {
       let { cliente, carrito, metodo_envio, metodo_pago } = req.body;
 
       // 1. Gestionar cliente (ver si existe su email, si no crearlo)
+      cliente.direccion = cliente.direccion || 'N/A';
+      cliente.codigo_postal = cliente.codigo_postal || 'N/A';
+      cliente.ciudad = cliente.ciudad || 'Digital';
+      cliente.provincia = cliente.provincia || 'Digital';
       let clienteRecord = await Cliente.getByEmail(cliente.email);
       if (!clienteRecord) {
         clienteRecord = await Cliente.create(cliente);
@@ -48,11 +52,14 @@ const pedidoController = {
         
         const itemSubtotal = precioReal * item.cantidad;
         subtotal += itemSubtotal;
+        const modalidadItem = item.modalidad || 'presencial';
         detalles.push({
           producto_id: item.id,
           cantidad: item.cantidad,
           precio_unitario: precioReal,
-          tipo_producto: resultDb.rows[0].tipo_producto
+          tipo_producto: resultDb.rows[0].tipo_producto,
+          modalidad: modalidadItem,
+          producto_nombre: item.nombre || resultDb.rows[0].nombre
         });
         
         carritoValidado.push(item);
@@ -93,7 +100,7 @@ const pedidoController = {
 
       // [NUEVO] Check for low stock alerts (<= 3) únicamente para productos físicos
       for (let det of detalles) {
-          if (det.tipo_producto === 'digital') continue;
+          if (det.tipo_producto === 'digital' || det.modalidad === 'online') continue;
           try {
               const { rows } = await db.query('SELECT stock, nombre FROM productos WHERE id = $1', [det.producto_id]);
               if (rows.length > 0 && rows[0].stock <= 3) {

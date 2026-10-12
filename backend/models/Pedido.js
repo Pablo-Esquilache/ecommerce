@@ -31,8 +31,9 @@ const Pedido = {
         const detSubtotal = cantidad * precio_unitario;
         await client.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal]);
         
-        // Descontar el stock de forma atómica en la misma transacción SÓLO si NO es producto digital
-        if (tipo_producto !== 'digital') {
+        // Descontar el stock de forma atómica en la misma transacción SÓLO si NO es producto digital NI modalidad online
+        const esOnline = det.modalidad === 'online' || tipo_producto === 'digital';
+        if (!esOnline) {
             await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
         }
       }
