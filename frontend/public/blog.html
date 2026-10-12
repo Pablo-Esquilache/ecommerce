@@ -214,6 +214,16 @@
     <!-- Scripts -->
     <script src="/js/main.js"></script>
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         let blogArticulosCache = [];
 
         async function cargarArticulosBlog() {
@@ -256,18 +266,20 @@
                 });
 
                 const portadaUrl = art.imagen_portada || '/img/portada1.webp';
+                const titEsc = escapeHtml(art.titulo);
+                const subEsc = art.subtitulo ? escapeHtml(art.subtitulo) : '';
 
                 return `
                     <a href="articulo.html?id=${art.id}" class="blog-card">
                         <div class="blog-card-img-wrap">
-                            <img src="${portadaUrl}" alt="${art.titulo}" loading="lazy">
+                            <img src="${portadaUrl}" alt="${titEsc}" loading="lazy">
                         </div>
                         <div class="blog-card-body">
                             <div class="blog-card-meta">
                                 <i class="far fa-calendar-alt"></i> ${fecha}
                             </div>
-                            <h2 class="blog-card-title">${art.titulo}</h2>
-                            <p class="blog-card-subtitle">${art.subtitulo || ''}</p>
+                            <h2 class="blog-card-title">${titEsc}</h2>
+                            <p class="blog-card-subtitle">${subEsc}</p>
                             <span class="blog-card-cta">Leer artículo <i class="fas fa-arrow-right"></i></span>
                         </div>
                     </a>

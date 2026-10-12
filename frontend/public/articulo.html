@@ -247,6 +247,16 @@
     <!-- Scripts -->
     <script src="/js/main.js"></script>
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         async function cargarDetalleArticulo() {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
@@ -263,7 +273,7 @@
                 const art = await res.json();
 
                 // Actualizar título de la pestaña
-                document.title = `${art.titulo} | Iconografía Bizantina`;
+                document.title = `${escapeHtml(art.titulo)} | Iconografía Bizantina`;
 
                 const fecha = new Date(art.creado_en || Date.now()).toLocaleDateString('es-AR', {
                     day: 'numeric',
@@ -272,13 +282,15 @@
                 });
 
                 const portadaUrl = art.imagen_portada || '/img/portada1.webp';
+                const tituloEsc = escapeHtml(art.titulo);
+                const subtituloEsc = art.subtitulo ? escapeHtml(art.subtitulo) : '';
 
-                // Formatear párrafos del contenido
+                // Formatear párrafos del contenido de forma segura con escapeHtml
                 const parrafos = (art.contenido || '')
                     .split(/\n\s*\n/)
                     .map(p => p.trim())
                     .filter(p => p.length > 0)
-                    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+                    .map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
                     .join('');
 
                 wrapper.innerHTML = `
@@ -287,8 +299,8 @@
                         <div class="article-hero-overlay"></div>
                         <div class="article-hero-content">
                             <span class="article-hero-badge"><i class="fas fa-feather-alt"></i> Arte Sacro</span>
-                            <h1 class="article-hero-title">${art.titulo}</h1>
-                            ${art.subtitulo ? `<p class="article-hero-subtitle">${art.subtitulo}</p>` : ''}
+                            <h1 class="article-hero-title">${tituloEsc}</h1>
+                            ${subtituloEsc ? `<p class="article-hero-subtitle">${subtituloEsc}</p>` : ''}
                         </div>
                     </header>
 
@@ -331,13 +343,20 @@
                                 </a>
 
                                 <!-- Menú nativo del dispositivo (WhatsApp, redes, otras apps) -->
-                                <button type="button" onclick="compartirArticuloNativo('${art.titulo.replace(/'/g, "\\'")}', '${(art.subtitulo || '').replace(/'/g, "\\'")}')" title="Más opciones de compartir" style="background: #C78515; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; font-size: 16px; box-shadow: 0 4px 10px rgba(199, 133, 21, 0.3); transition: transform 0.2s;">
+                                <button type="button" id="btn-compartir-nativo" title="Más opciones de compartir" style="background: #C78515; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; font-size: 16px; box-shadow: 0 4px 10px rgba(199, 133, 21, 0.3); transition: transform 0.2s;">
                                     <i class="fas fa-ellipsis-h"></i>
                                 </button>
                             </div>
                         </div>
                     </main>
                 `;
+
+                const btnShare = document.getElementById('btn-compartir-nativo');
+                if (btnShare) {
+                    btnShare.addEventListener('click', () => {
+                        compartirArticuloNativo(art.titulo, art.subtitulo || '');
+                    });
+                }
 
             } catch (err) {
                 console.error(err);

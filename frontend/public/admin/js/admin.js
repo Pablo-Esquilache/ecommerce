@@ -1,5 +1,15 @@
 const API_URL = '/api';
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // --- Pagination Variables ---
 let currentAdminPageProductos = 1;
 let currentAdminPagePedidos = 1;
@@ -283,11 +293,12 @@ function renderAdminPedidos(pedidos) {
                 } else if (it.tipo_producto === 'digital') {
                     badge = '<span style="background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold;">💻 Digital</span>';
                 }
-                const modBadge = it.modalidad ? ` <span style="font-size:0.75em; color:#555; background:#eee; padding:1px 5px; border-radius:3px; text-transform:capitalize;">${it.modalidad}</span>` : '';
+                const nombreEsc = escapeHtml(it.producto_nombre || 'Producto');
+                const modBadge = it.modalidad ? ` <span style="font-size:0.75em; color:#555; background:#eee; padding:1px 5px; border-radius:3px; text-transform:capitalize;">${escapeHtml(it.modalidad)}</span>` : '';
                 return `<div style="margin-bottom:4px; line-height:1.3;">
                     ${badge}${modBadge}
-                    <div style="font-size:0.82em; font-weight:600; color:#2c3e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;" title="${it.producto_nombre || ''}">
-                        ${it.cantidad > 1 ? `(${it.cantidad}x) ` : ''}${it.producto_nombre || 'Producto'}
+                    <div style="font-size:0.82em; font-weight:600; color:#2c3e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;" title="${nombreEsc}">
+                        ${it.cantidad > 1 ? `(${it.cantidad}x) ` : ''}${nombreEsc}
                     </div>
                 </div>`;
             }).join('');
@@ -296,14 +307,14 @@ function renderAdminPedidos(pedidos) {
         pTB.innerHTML += `<tr>
             <td>#${p.id}</td>
             <td>
-                <div style="font-weight:bold;">${p.cliente_nombre || 'Cliente'}</div>
-                <small style="color:#7f8c8d;">${p.cliente_email || ''}</small>
-                ${p.cliente_telefono ? `<br><small style="color:#27ae60;"><i class="fab fa-whatsapp"></i> ${p.cliente_telefono}</small>` : ''}
+                <div style="font-weight:bold;">${escapeHtml(p.cliente_nombre || 'Cliente')}</div>
+                <small style="color:#7f8c8d;">${escapeHtml(p.cliente_email || '')}</small>
+                ${p.cliente_telefono ? `<br><small style="color:#27ae60;"><i class="fab fa-whatsapp"></i> ${escapeHtml(p.cliente_telefono)}</small>` : ''}
             </td>
             <td>${tipoHtml}</td>
             <td>$<strong>${parseFloat(p.total).toLocaleString('es-AR')}</strong></td>
-            <td><span class="badge ${p.estado}">${p.estado}</span></td>
-            <td>${p.metodo_pago}</td>
+            <td><span class="badge ${escapeHtml(p.estado)}">${escapeHtml(p.estado)}</span></td>
+            <td>${escapeHtml(p.metodo_pago)}</td>
             <td>
                 <select onchange="updatePedidoStatus(${p.id}, this.value)" style="padding:4px; border-radius:4px;">
                     <option value="pendiente" ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
@@ -338,7 +349,7 @@ async function verEticket(pedidoId) {
         let detalleHtml = '';
         if (p.detalles && p.detalles.length > 0) {
             p.detalles.forEach(d => {
-                detalleHtml += `<div>${d.cantidad}x ${d.producto_nombre} - $${parseFloat(d.subtotal).toLocaleString('es-AR')}</div>`;
+                detalleHtml += `<div>${d.cantidad}x ${escapeHtml(d.producto_nombre)} - $${parseFloat(d.subtotal).toLocaleString('es-AR')}</div>`;
             });
         }
         
@@ -352,10 +363,10 @@ async function verEticket(pedidoId) {
                 <span>Fecha: ${fecha}</span>
             </div>
             <div style="margin-bottom:10px;">
-                <strong>Cliente:</strong> ${p.nombre} ${p.apellido}<br>
-                <strong>Email:</strong> ${p.email}<br>
-                <strong>Método Pago:</strong> ${p.metodo_pago}<br>
-                <strong>Estado:</strong> ${p.estado.toUpperCase()}
+                <strong>Cliente:</strong> ${escapeHtml(p.nombre)} ${escapeHtml(p.apellido)}<br>
+                <strong>Email:</strong> ${escapeHtml(p.email)}<br>
+                <strong>Método Pago:</strong> ${escapeHtml(p.metodo_pago)}<br>
+                <strong>Estado:</strong> ${escapeHtml(p.estado ? p.estado.toUpperCase() : '')}
             </div>
             <div style="border-top:1px dashed #ccc; padding-top:10px;">
                 <strong>Artículos:</strong>
@@ -423,11 +434,11 @@ function renderAdminClientes(clientes) {
         const generoDisplay = c.genero ? c.genero.charAt(0).toUpperCase() + c.genero.slice(1) : '-';
         cTB.innerHTML += `<tr>
             <td>${c.id}</td>
-            <td>${c.nombre} ${c.apellido}</td>
-            <td>${c.email}</td>
-            <td>${c.telefono || '-'}</td>
-            <td>${generoDisplay}</td>
-            <td>${c.dni_cuil || '-'}</td>
+            <td>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</td>
+            <td>${escapeHtml(c.email)}</td>
+            <td>${escapeHtml(c.telefono || '-')}</td>
+            <td>${escapeHtml(generoDisplay)}</td>
+            <td>${escapeHtml(c.dni_cuil || '-')}</td>
             <td><button class="btn" style="background:#3498db; color:white; padding: 4px 8px;" onclick="verHistorialCliente(${c.id})"><i class="fas fa-history"></i> Ver</button></td>
         </tr>`;
     });
@@ -1414,17 +1425,17 @@ async function loadCategorias() {
             
             // Subcategorias badges
             const subsHtml = cat.subcategorias.map(sub => 
-                `<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">${sub} <i class="fas fa-times" style="cursor:pointer; color:#999; margin-left:4px;" onclick="deleteSubcategoria('${cat.nombre}', '${sub}')"></i></span>`
+                `<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">${escapeHtml(sub)} <i class="fas fa-times" style="cursor:pointer; color:#999; margin-left:4px;" onclick="deleteSubcategoria('${escapeHtml(cat.nombre)}', '${escapeHtml(sub)}')"></i></span>`
             ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
             
             tr.innerHTML = `
                 <td>${imgHtml}</td>
-                <td><strong>${cat.nombre}</strong></td>
+                <td><strong>${escapeHtml(cat.nombre)}</strong></td>
                 <td>${subsHtml}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(${cat.id}, '${cat.nombre}', '${cat.imagen_url || ''}')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(${cat.id}, '${escapeHtml(cat.nombre)}', '${escapeHtml(cat.imagen_url || '')}')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
                     <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(${cat.id})" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
-                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('${cat.nombre}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('${escapeHtml(cat.nombre)}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1759,8 +1770,8 @@ function renderAdminArticulosBlog(lista) {
         bTB.innerHTML += `<tr>
             <td>${art.id}</td>
             <td>${imgHtml}</td>
-            <td style="font-weight:600; max-width:220px;">${art.titulo}</td>
-            <td style="color:#666; font-size:0.9em; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${art.subtitulo || ''}">${art.subtitulo || '-'}</td>
+            <td style="font-weight:600; max-width:220px;">${escapeHtml(art.titulo)}</td>
+            <td style="color:#666; font-size:0.9em; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(art.subtitulo || '')}">${escapeHtml(art.subtitulo || '-')}</td>
             <td style="font-size:0.85em; color:#555;">${fecha}</td>
             <td>${estadoBadge}</td>
             <td style="display:flex; gap:8px; align-items:center;">
