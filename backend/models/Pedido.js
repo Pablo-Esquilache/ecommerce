@@ -154,6 +154,12 @@ const Pedido = {
     const query = 'UPDATE pedidos SET preferencia_mp_id = $1 WHERE id = $2 RETURNING *';
     const { rows } = await db.query(query, [ref, id]);
     return rows[0];
+  },
+
+  marcarComoPagado: async (id) => {
+    const query = "UPDATE pedidos SET estado = 'pagado' WHERE id = $1 AND estado <> 'pagado' RETURNING *";
+    const { rows } = await db.query(query, [id]);
+    return rows[0] || null;
   }
 };
 
