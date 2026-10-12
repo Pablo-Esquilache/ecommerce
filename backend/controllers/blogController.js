@@ -24,29 +24,67 @@ async function uploadToSupabase(file, bucket = 'productos') {
 }
 
 const blogController = {
-  getAll: async (req, res) => {
+  // Ruta pública: NUNCA lee req.query.all, siempre devuelve sólo artículos con activo = true
+  getPublicAll: async (req, res) => {
     try {
-      const all = req.query.all === 'true';
-      const articulos = await ArticuloBlog.getAll(all);
+      const articulos = await ArticuloBlog.getAll(false);
       res.json(articulos);
     } catch (error) {
       console.error('Error al obtener articulos del blog:', error);
-      res.status(500).json({ error: 'Error al obtener publicaciones: ' + error.message });
+      res.status(500).json({ error: 'Error al obtener publicaciones' });
     }
   },
 
-  getById: async (req, res) => {
+  // Ruta administrativa: protegida con JWT, devuelve todos los artículos (publicados y ocultos)
+  getAdminAll: async (req, res) => {
+    try {
+      const articulos = await ArticuloBlog.getAll(true);
+      res.json(articulos);
+    } catch (error) {
+      console.error('Error al obtener articulos para admin:', error);
+      res.status(500).json({ error: 'Error al obtener publicaciones' });
+    }
+  },
+
+  // Ruta pública: SOLO devuelve el artículo si activo = true
+  getPublicById: async (req, res) => {
     try {
       const { id } = req.params;
-      const articulo = await ArticuloBlog.getById(id);
+      const articulo = await ArticuloBlog.getById(id, false);
       if (!articulo) {
         return res.status(404).json({ error: 'Artículo no encontrado' });
       }
       res.json(articulo);
     } catch (error) {
       console.error('Error al obtener articulo:', error);
-      res.status(500).json({ error: 'Error al obtener el artículo: ' + error.message });
+      res.status(500).json({ error: 'Error al obtener el artículo' });
     }
+  },
+
+  // Ruta administrativa: permite al admin ver cualquier artículo por id para editarlo
+  getAdminById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articulo = await ArticuloBlog.getById(id, true);
+      if (!articulo) {
+        return res.status(404).json({ error: 'Artículo no encontrado' });
+      }
+      res.json(articulo);
+    } catch (error) {
+      console.error('Error al obtener articulo admin:', error);
+      res.status(500).json({ error: 'Error al obtener el artículo' });
+    }
+  },
+
+  // Compatibilidad con invocaciones directas
+  getAll: async (req, res) => {
+    if (req.user) return blogController.getAdminAll(req, res);
+    return blogController.getPublicAll(req, res);
+  },
+
+  getById: async (req, res) => {
+    if (req.user) return blogController.getAdminById(req, res);
+    return blogController.getPublicById(req, res);
   },
 
   create: async (req, res) => {

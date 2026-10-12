@@ -1801,7 +1801,7 @@ async function abrirModalArticulo(id = null) {
     if (id) {
         document.getElementById('modal-articulo-title').innerText = 'Editar Publicación';
         try {
-            const res = await fetch(`${API_URL}/blog/${id}`);
+            const res = await fetch(`${API_URL}/blog/admin/${id}`, { headers: authHeaders() });
             if (!res.ok) throw new Error('No se pudo cargar el artículo');
             const art = await res.json();
 

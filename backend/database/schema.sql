@@ -79,6 +79,7 @@ CREATE TABLE "pedidos" (
   "total" DECIMAL(10, 2) NOT NULL,
   "estado" VARCHAR(50) NOT NULL DEFAULT 'pendiente', -- pendiente, pagado, enviado, entregado
   "metodo_pago" VARCHAR(50) NOT NULL, -- mercadopago, transferencia
+  "metodo_envio" VARCHAR(100),
   "preferencia_mp_id" VARCHAR(255),
   "tracking_number" VARCHAR(255),
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -93,8 +94,21 @@ CREATE TABLE "detalles_pedido" (
   "cantidad" INTEGER NOT NULL,
   "precio_unitario" DECIMAL(10, 2) NOT NULL,
   "subtotal" DECIMAL(10, 2) NOT NULL,
+  "modalidad" VARCHAR(50),
   FOREIGN KEY ("pedido_id") REFERENCES "pedidos" ("id") ON DELETE CASCADE,
   FOREIGN KEY ("producto_id") REFERENCES "productos" ("id") ON DELETE RESTRICT
+);
+
+-- Tabla de Artículos del Blog
+CREATE TABLE IF NOT EXISTS "articulos_blog" (
+  "id" SERIAL PRIMARY KEY,
+  "titulo" VARCHAR(255) NOT NULL,
+  "subtitulo" TEXT,
+  "contenido" TEXT NOT NULL,
+  "imagen_portada" TEXT,
+  "activo" BOOLEAN DEFAULT true,
+  "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "actualizado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de Configuración Global
