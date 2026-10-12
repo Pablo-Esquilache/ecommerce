@@ -163,8 +163,69 @@ async function fetchPedidos() {
     try {
         const res = await fetch(`${API_URL}/pedidos`, { headers: authHeaders() });
         adminPedidosCache = await res.json();
-        renderAdminPedidos(adminPedidosCache);
+        poblarFiltroProductosPedidos();
+        aplicarFiltrosPedidos();
     } catch(e) { console.error('Error cargando pedidos:', e); }
+}
+
+function poblarFiltroProductosPedidos() {
+    const tipoSelect = document.getElementById('admin-filter-pedidos-tipo');
+    const prodSelect = document.getElementById('admin-filter-pedidos-producto');
+    if (!prodSelect) return;
+
+    const tipoSeleccionado = tipoSelect ? tipoSelect.value : '';
+    const valorPrevio = prodSelect.value;
+
+    prodSelect.innerHTML = '<option value="">Todos los productos</option>';
+
+    let prods = [];
+    if (adminProductosCache && adminProductosCache.length > 0) {
+        prods = adminProductosCache;
+    } else {
+        const map = new Map();
+        adminPedidosCache.forEach(p => {
+            (p.items || []).forEach(it => {
+                if (it.producto_id && !map.has(it.producto_id)) {
+                    map.set(it.producto_id, { id: it.producto_id, nombre: it.producto_nombre, tipo_producto: it.tipo_producto });
+                }
+            });
+        });
+        prods = Array.from(map.values());
+    }
+
+    if (tipoSeleccionado) {
+        prods = prods.filter(pr => pr.tipo_producto === tipoSeleccionado);
+    }
+
+    prods.forEach(pr => {
+        prodSelect.innerHTML += `<option value="${pr.id}">${pr.nombre}</option>`;
+    });
+
+    if (Array.from(prodSelect.options).some(o => o.value === valorPrevio)) {
+        prodSelect.value = valorPrevio;
+    }
+}
+
+function aplicarFiltrosPedidos() {
+    const estado = document.getElementById('admin-filter-pedidos-estado')?.value || '';
+    const tipo = document.getElementById('admin-filter-pedidos-tipo')?.value || '';
+    const prodId = document.getElementById('admin-filter-pedidos-producto')?.value || '';
+
+    const filtrados = adminPedidosCache.filter(p => {
+        if (estado && p.estado !== estado) return false;
+        if (tipo) {
+            const hasTipo = (p.items || []).some(it => it.tipo_producto === tipo);
+            if (!hasTipo) return false;
+        }
+        if (prodId) {
+            const hasProd = (p.items || []).some(it => String(it.producto_id) === String(prodId));
+            if (!hasProd) return false;
+        }
+        return true;
+    });
+
+    currentAdminPagePedidos = 1;
+    renderAdminPedidos(filtrados);
 }
 
 function renderAdminPedidos(pedidos) {
@@ -173,7 +234,7 @@ function renderAdminPedidos(pedidos) {
     pTB.innerHTML = '';
     
     if(!Array.isArray(pedidos) || pedidos.length === 0) {
-        pTB.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No hay pedidos registrados en este estado</td></tr>';
+        pTB.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px;">No hay pedidos registrados con estos filtros</td></tr>';
         const pCont = document.getElementById('pedidos-pagination');
         if(pCont) pCont.innerHTML = '';
         return;
@@ -192,15 +253,6 @@ function renderAdminPedidos(pedidos) {
         let envioHtml = `<span style="color:#aaa; font-size:12px;">N/A</span>`;
         if (p.metodo_envio !== 'Digital') {
             if (p.tracking_number) {
-                // [COMENTADO SEGÃšN API MICORREO - NO DEVUELVE PDF]
-                /*
-                envioHtml = `
-                    <button class="btn" style="background:#3498db; color:white; padding:4px 8px; font-size:12px; margin-bottom:4px;" onclick="descargarEtiqueta(${p.id})">
-                        <i class="fas fa-print"></i> Etiqueta
-                    </button>
-                    <div style="font-size:11px; font-weight:bold; color:#2c3e50;">${p.tracking_number}</div>
-                `;
-                */
                 envioHtml = `
                     <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado a MiCorreo (Orden #${p.id})"><i class="fas fa-check-circle"></i></div>
                 `;
@@ -213,13 +265,37 @@ function renderAdminPedidos(pedidos) {
             }
         }
 
+        // Construir visualización de ítems y tipo de producto
+        let tipoHtml = '<span style="color:#aaa; font-size:12px;">-</span>';
+        if (p.items && p.items.length > 0) {
+            tipoHtml = p.items.map(it => {
+                let badge = '<span style="background: #f3f4f6; color: #4b5563; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold;">📦 Iconografía</span>';
+                if (it.tipo_producto === 'taller') {
+                    badge = '<span style="background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold;">🎨 Taller</span>';
+                } else if (it.tipo_producto === 'viaje') {
+                    badge = '<span style="background: #ede9fe; color: #6d28d9; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold;">✈️ Viaje</span>';
+                } else if (it.tipo_producto === 'digital') {
+                    badge = '<span style="background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold;">💻 Digital</span>';
+                }
+                const modBadge = it.modalidad ? ` <span style="font-size:0.75em; color:#555; background:#eee; padding:1px 5px; border-radius:3px; text-transform:capitalize;">${it.modalidad}</span>` : '';
+                return `<div style="margin-bottom:4px; line-height:1.3;">
+                    ${badge}${modBadge}
+                    <div style="font-size:0.82em; font-weight:600; color:#2c3e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;" title="${it.producto_nombre || ''}">
+                        ${it.cantidad > 1 ? `(${it.cantidad}x) ` : ''}${it.producto_nombre || 'Producto'}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         pTB.innerHTML += `<tr>
             <td>#${p.id}</td>
             <td>
-                <div style="font-weight:bold;">${p.cliente_nombre}</div>
-                <small style="color:#7f8c8d;">${p.cliente_email}</small>
+                <div style="font-weight:bold;">${p.cliente_nombre || 'Cliente'}</div>
+                <small style="color:#7f8c8d;">${p.cliente_email || ''}</small>
+                ${p.cliente_telefono ? `<br><small style="color:#27ae60;"><i class="fab fa-whatsapp"></i> ${p.cliente_telefono}</small>` : ''}
             </td>
-            <td>$${parseFloat(p.total).toLocaleString('es-AR')}</td>
+            <td>${tipoHtml}</td>
+            <td>$<strong>${parseFloat(p.total).toLocaleString('es-AR')}</strong></td>
             <td><span class="badge ${p.estado}">${p.estado}</span></td>
             <td>${p.metodo_pago}</td>
             <td>
@@ -264,7 +340,7 @@ async function verEticket(pedidoId) {
 
         document.getElementById('eticket-content').innerHTML = `
             <div style="text-align:center; border-bottom:1px dashed #ccc; padding-bottom:10px; margin-bottom:10px;">
-                <h3 style="margin:0;">ElectroShop</h3>
+                <h3 style="margin:0;">Iconografía Bizantina</h3>
                 <small>Comprobante de Venta</small><br>
                 <strong>Ticket #${p.id}</strong><br>
                 <span>Fecha: ${fecha}</span>
@@ -434,6 +510,7 @@ async function fetchProductos() {
         const res = await fetch(`${API_URL}/productos/admin/all?all=true`, { headers: authHeaders() }); 
         adminProductosCache = await res.json();
         renderAdminProductos(adminProductosCache);
+        poblarFiltroProductosPedidos();
     } catch(e) { console.error(e); }
 }
 
@@ -457,13 +534,20 @@ function renderAdminProductos(lista) {
     const paginatedItems = lista.slice(start, start + ITEMS_PER_PAGE_ADMIN);
 
     paginatedItems.forEach(p => {
-        const stockDisplay = p.stock <= 3
-            ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">âš ï¸ ${p.stock} (Bajo)</span>`
-            : `<span style="font-weight: 500;">${p.stock}</span>`;
+        const stockDisplay = (p.tipo_producto === 'digital')
+            ? '<span style="color: #6b7280; font-size: 0.9em;">Ilimitado</span>'
+            : (p.stock <= 3
+                ? `<span style="color: #991b1b; font-weight: bold; background: #fee2e2; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; display: inline-block;">⚠️ ${p.stock} (Bajo)</span>`
+                : `<span style="font-weight: 500;">${p.stock}</span>`);
 
-        const tipoDisplay = p.tipo_producto === 'digital' 
-            ? '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💻 Digital</span>' 
-            : '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 Físico</span>';
+        let tipoDisplay = '<span style="background: #f3f4f6; color: #4b5563; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">📦 Iconografía</span>';
+        if (p.tipo_producto === 'digital') {
+            tipoDisplay = '<span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">💻 Digital</span>';
+        } else if (p.tipo_producto === 'taller') {
+            tipoDisplay = '<span style="background: #fef3c7; color: #b45309; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">🎨 Taller</span>';
+        } else if (p.tipo_producto === 'viaje') {
+            tipoDisplay = '<span style="background: #ede9fe; color: #6d28d9; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">✈️ Viaje</span>';
+        }
 
         pTB.innerHTML += `<tr>
             <td>${p.id}</td>
@@ -842,16 +926,72 @@ if (searchAdminInput) {
 // Lógica de filtro para pedidos
 const filterPedidosSelect = document.getElementById('admin-filter-pedidos-estado');
 if (filterPedidosSelect) {
-    filterPedidosSelect.addEventListener('change', (e) => {
-        const estado = e.target.value;
-        currentAdminPagePedidos = 1;
-        if (!estado) {
-            renderAdminPedidos(adminPedidosCache);
-        } else {
-            const filtrados = adminPedidosCache.filter(p => p.estado === estado);
-            renderAdminPedidos(filtrados);
-        }
+    filterPedidosSelect.addEventListener('change', () => {
+        aplicarFiltrosPedidos();
     });
+}
+const filterPedidosTipo = document.getElementById('admin-filter-pedidos-tipo');
+if (filterPedidosTipo) {
+    filterPedidosTipo.addEventListener('change', () => {
+        poblarFiltroProductosPedidos();
+        aplicarFiltrosPedidos();
+    });
+}
+const filterPedidosProd = document.getElementById('admin-filter-pedidos-producto');
+if (filterPedidosProd) {
+    filterPedidosProd.addEventListener('change', () => {
+        aplicarFiltrosPedidos();
+    });
+}
+
+// Descargar Excel de pedidos (Inscripciones / Ventas)
+async function descargarExcelPedidos() {
+    try {
+        const btn = document.querySelector('button[onclick="descargarExcelPedidos()"]');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            btn.disabled = true;
+        }
+
+        const estado = document.getElementById('admin-filter-pedidos-estado')?.value || '';
+        const tipo = document.getElementById('admin-filter-pedidos-tipo')?.value || '';
+        const prodId = document.getElementById('admin-filter-pedidos-producto')?.value || '';
+
+        const params = new URLSearchParams();
+        if (estado) params.append('estado', estado);
+        if (tipo) params.append('tipo', tipo);
+        if (prodId) params.append('producto_id', prodId);
+
+        const res = await fetch(`${API_URL}/admin/pedidos/excel?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` }
+        });
+
+        if (!res.ok) throw new Error('No se pudo generar el reporte Excel');
+
+        const blob = await res.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `pedidos_${tipo || 'todos'}_${new Date().toISOString().slice(0,10)}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        a.remove();
+
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    } catch(err) {
+        alert('Error descargando el Excel de pedidos: ' + err.message);
+        console.error(err);
+        const btn = document.querySelector('button[onclick="descargarExcelPedidos()"]');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-excel"></i> Descargar Excel';
+        }
+    }
 }
 
 // Lógica de búsqueda de clientes

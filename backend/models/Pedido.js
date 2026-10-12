@@ -17,19 +17,19 @@ const Pedido = {
       const pedido = pedRows[0];
 
       const insertDetalleQuery = `
-        INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario, subtotal)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario, subtotal, modalidad)
+        VALUES ($1, $2, $3, $4, $5, $6)
       `;
 
       for (let det of detallesData) {
-        const { producto_id, cantidad, precio_unitario } = det;
+        const { producto_id, cantidad, precio_unitario, modalidad } = det;
         let { tipo_producto } = det;
         if (!tipo_producto) {
             const { rows: prodRows } = await client.query('SELECT tipo_producto FROM productos WHERE id = $1', [producto_id]);
             if (prodRows[0]) tipo_producto = prodRows[0].tipo_producto;
         }
         const detSubtotal = cantidad * precio_unitario;
-        await client.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal]);
+        await client.query(insertDetalleQuery, [pedido.id, producto_id, cantidad, precio_unitario, detSubtotal, modalidad || null]);
         
         // Descontar el stock de forma atómica en la misma transacción SÓLO si NO es producto digital NI modalidad online
         const esOnline = det.modalidad === 'online' || tipo_producto === 'digital';
@@ -50,9 +50,33 @@ const Pedido = {
 
   getAll: async () => {
     const query = `
-      SELECT p.*, c.nombre || ' ' || c.apellido as cliente_nombre, c.email as cliente_email 
+      SELECT p.*, 
+             c.nombre || ' ' || c.apellido as cliente_nombre, 
+             c.email as cliente_email,
+             c.telefono as cliente_telefono,
+             c.direccion as cliente_direccion,
+             c.ciudad as cliente_ciudad,
+             c.provincia as cliente_provincia,
+             c.codigo_postal as cliente_cp,
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', d.id,
+                   'producto_id', d.producto_id,
+                   'producto_nombre', pr.nombre,
+                   'tipo_producto', pr.tipo_producto,
+                   'modalidad', d.modalidad,
+                   'cantidad', d.cantidad,
+                   'precio_unitario', d.precio_unitario,
+                   'subtotal', d.subtotal
+                 )
+               ) FILTER (WHERE d.id IS NOT NULL), '[]'
+             ) as items
       FROM pedidos p
       JOIN clientes c ON p.cliente_id = c.id
+      LEFT JOIN detalles_pedido d ON p.id = d.pedido_id
+      LEFT JOIN productos pr ON d.producto_id = pr.id
+      GROUP BY p.id, c.nombre, c.apellido, c.email, c.telefono, c.direccion, c.ciudad, c.provincia, c.codigo_postal
       ORDER BY p.id DESC
     `;
     const { rows } = await db.query(query);

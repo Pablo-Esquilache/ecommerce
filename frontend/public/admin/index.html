@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Admin ElectroShop</title>
+    <title>Dashboard | Admin Iconografía Bizantina</title>
     <link rel="icon" type="image/png" href="/img/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +16,7 @@
     <div class="sidebar">
         <div class="logo" style="text-align: center; padding: 20px 10px;">
             <img src="/img/favicon.png" alt="Logo Redondo" style="width: 70px; margin-bottom: 10px; border-radius: 50%;">
-            <h2 style="font-size: 1.2rem; margin: 0;">ElectroShop</h2>
+            <h2 style="font-size: 1.2rem; margin: 0;">Iconografía Bizantina</h2>
             <span style="font-size: 0.9rem; opacity: 0.8;">Admin</span>
         </div>
         <ul class="nav">
@@ -107,7 +107,7 @@
                 <div class="table-responsive">
                     <table>
                     <thead>
-                        <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+                        <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Stock / Cupos</th><th>Acciones</th></tr>
                     </thead>
                     <tbody id="productos-tb"></tbody>
                     </table>
@@ -139,9 +139,9 @@
 </section>
 <!-- VIEW: PEDIDOS -->
         <section id="view-pedidos" class="view-section">
-            <div class="header-actions" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="header-actions" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <h3 style="margin:0;">Gestión de Pedidos</h3>
-                <div>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
                     <label style="font-weight:bold; margin-right:10px;">Filtrar por Estado:</label>
                     <select id="admin-filter-pedidos-estado" style="padding:8px; border-radius:4px; border:1px solid #ddd;">
                         <option value="">Todos</option>
@@ -151,13 +151,32 @@
                         <option value="entregado">Entregado</option>
                         <option value="cancelado">Cancelado</option>
                     </select>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label style="font-weight:bold; font-size:13px;">Tipo:</label>
+                        <select id="admin-filter-pedidos-tipo" style="padding:8px; border-radius:4px; border:1px solid #ddd; font-size:13px;">
+                            <option value="">Todos los tipos</option>
+                            <option value="taller">🎨 Talleres / Seminarios</option>
+                            <option value="viaje">✈️ Viajes / Retiros</option>
+                            <option value="fisico">📦 Iconografías</option>
+                            <option value="digital">💻 Cursos Digitales</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label style="font-weight:bold; font-size:13px;">Producto:</label>
+                        <select id="admin-filter-pedidos-producto" style="padding:8px; border-radius:4px; border:1px solid #ddd; font-size:13px; max-width:210px;">
+                            <option value="">Todos los productos</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="background-color: #27ae60; padding:8px 14px; font-size:13px;" onclick="descargarExcelPedidos()">
+                        <i class="fas fa-file-excel"></i> Descargar Excel
+                    </button>
                 </div>
             </div>
             <div class="table-card">
                 <div class="table-responsive">
                     <table>
                     <thead>
-                        <tr><th>ID</th><th>Cliente (Email)</th><th>Monto</th><th>Estado</th><th>Método</th><th>Actualizar Estado</th><th>Envío</th><th>Ver Ticket</th></tr>
+                        <tr><th>ID</th><th>Cliente (Email)</th><th>Tipo / Actividad</th><th>Monto</th><th>Estado</th><th>Método</th><th>Actualizar Estado</th><th>Envío</th><th>Ver Ticket</th></tr>
                     </thead>
                     <tbody id="pedidos-list-tb"></tbody>
                     </table>

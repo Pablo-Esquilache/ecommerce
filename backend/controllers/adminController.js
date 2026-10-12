@@ -84,6 +84,92 @@ const adminController = {
     }
   },
 
+  exportPedidosExcel: async (req, res) => {
+    try {
+      const Pedido = require('../models/Pedido');
+      const pedidos = await Pedido.getAll();
+      const xlsx = require('xlsx');
+
+      const { estado, tipo, producto_id } = req.query;
+
+      // Filtrar según query params
+      const pedidosFiltrados = pedidos.filter(p => {
+        if (estado && p.estado !== estado) return false;
+        if (tipo) {
+          const matchTipo = (p.items || []).some(it => it.tipo_producto === tipo);
+          if (!matchTipo) return false;
+        }
+        if (producto_id) {
+          const matchProd = (p.items || []).some(it => String(it.producto_id) === String(producto_id));
+          if (!matchProd) return false;
+        }
+        return true;
+      });
+
+      // Mapear filas (una fila por ítem/cupo comprado)
+      const datosExcel = [];
+      pedidosFiltrados.forEach(p => {
+        const fecha = new Date(p.creado_en || p.fecha_creacion || Date.now()).toLocaleDateString('es-AR');
+        let itemsAExportar = p.items && p.items.length > 0 ? p.items : [null];
+
+        if (tipo) {
+          const matchItems = itemsAExportar.filter(it => it && it.tipo_producto === tipo);
+          if (matchItems.length > 0) itemsAExportar = matchItems;
+        }
+        if (producto_id) {
+          const matchItems = itemsAExportar.filter(it => it && String(it.producto_id) === String(producto_id));
+          if (matchItems.length > 0) itemsAExportar = matchItems;
+        }
+
+        itemsAExportar.forEach(item => {
+          let tipoLabel = 'Iconografía (Físico)';
+          if (item) {
+            if (item.tipo_producto === 'taller') tipoLabel = 'Taller / Seminario';
+            else if (item.tipo_producto === 'viaje') tipoLabel = 'Viaje / Retiro';
+            else if (item.tipo_producto === 'digital') tipoLabel = 'Curso Digital';
+            else tipoLabel = 'Iconografía (Físico)';
+          }
+
+          let modLabel = '-';
+          if (item && item.modalidad) {
+            modLabel = item.modalidad.charAt(0).toUpperCase() + item.modalidad.slice(1);
+          }
+
+          datosExcel.push({
+            "Nº Pedido": p.id,
+            "Fecha": fecha,
+            "Cliente": p.cliente_nombre || '',
+            "Email": p.cliente_email || '',
+            "Teléfono": p.cliente_telefono || '',
+            "Producto / Actividad": item ? item.producto_nombre : 'Varios',
+            "Tipo": tipoLabel,
+            "Modalidad": modLabel,
+            "Cantidad / Cupos": item ? item.cantidad : 1,
+            "Precio Unitario": item ? item.precio_unitario : p.total,
+            "Monto Total Pedido": p.total,
+            "Estado": (p.estado || '').toUpperCase(),
+            "Método de Pago": p.metodo_pago || '',
+            "Provincia": p.cliente_provincia || '',
+            "Ciudad": p.cliente_ciudad || ''
+          });
+        });
+      });
+
+      const ws = xlsx.utils.json_to_sheet(datosExcel);
+      const wb = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(wb, ws, "Pedidos");
+
+      const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      res.setHeader('Content-Disposition', 'attachment; filename="pedidos_inscripciones.xlsx"');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      return res.send(buffer);
+    } catch (error) {
+      console.error('Error exportando pedidos a excel', error);
+      res.status(500).json({ error: 'Error al exportar pedidos' });
+    }
+  },
+
   updateConfiguracion: async (req, res) => {
     try {
       const {
