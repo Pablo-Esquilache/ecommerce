@@ -102,6 +102,7 @@ async function initDashboard() {
     fetchClientes(); // Precargar clientes
     fetchConfiguracion(); // Precargar Módulo de Ajustes
     loadCategorias(); // Cargar categorías para el modal de productos
+    fetchArticulosBlog(); // Precargar Artículos del Blog
     setupSupabaseRealtime(); // Arrancar WebSocket
 
     // Restaurar última pestaña activa
@@ -127,7 +128,7 @@ function switchTab(tabId, el) {
     const section = document.getElementById(`view-${tabId}`);
     if(section) section.classList.add('active'); // Added safety check
 
-    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', usuarios: 'Configuración de Usuarios', envios: 'Configuración de Envíos', ajustes: 'Ajustes del Sistema' };
+    const titles = { dashboard: 'Dashboard', productos: 'Gestión de Productos', pedidos: 'Gestión de Pedidos', clientes: 'Listado de Clientes', blog: 'Artículos del Blog', usuarios: 'Configuración de Usuarios', envios: 'Configuración de Envíos', ajustes: 'Ajustes del Sistema' };
     document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
     
     // Cerrar sidebar en móviles tras hacer clic
@@ -136,6 +137,7 @@ function switchTab(tabId, el) {
     }
     
     if (tabId === 'usuarios') loadUsuarios();
+    if (tabId === 'blog') fetchArticulosBlog();
 }
 
 // Lógica de Menú Responsive (Hamburguesa)
@@ -1693,3 +1695,212 @@ async function setupSupabaseRealtime() {
         console.error('Error configurando Realtime:', e);
     }
 }
+
+
+// ==========================================
+// GESTIÓN DE ARTÍCULOS DE BLOG
+// ==========================================
+let adminBlogCache = [];
+let currentAdminPageBlog = 1;
+const ITEMS_PER_PAGE_BLOG = 10;
+
+async function fetchArticulosBlog() {
+    try {
+        const res = await fetch(`${API_URL}/blog/admin/all`, { headers: authHeaders() });
+        if (!res.ok) throw new Error('Error al cargar artículos');
+        adminBlogCache = await res.json();
+        renderAdminArticulosBlog(adminBlogCache);
+    } catch (e) {
+        console.error('Error cargando artículos de blog:', e);
+    }
+}
+
+function renderAdminArticulosBlog(lista) {
+    const bTB = document.getElementById('blog-list-tb');
+    if (!bTB) return;
+    bTB.innerHTML = '';
+
+    if (!Array.isArray(lista) || lista.length === 0) {
+        bTB.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No se encontraron artículos publicados</td></tr>';
+        const bCont = document.getElementById('blog-pagination');
+        if (bCont) bCont.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(lista.length / ITEMS_PER_PAGE_BLOG);
+    if (currentAdminPageBlog > totalPages) currentAdminPageBlog = totalPages;
+    if (currentAdminPageBlog < 1) currentAdminPageBlog = 1;
+
+    const start = (currentAdminPageBlog - 1) * ITEMS_PER_PAGE_BLOG;
+    const paginatedItems = lista.slice(start, start + ITEMS_PER_PAGE_BLOG);
+
+    paginatedItems.forEach(art => {
+        const fecha = new Date(art.creado_en || Date.now()).toLocaleDateString('es-AR');
+        const imgHtml = art.imagen_portada
+            ? `<img src="${art.imagen_portada}" width="50" height="50" style="object-fit:cover; border-radius:4px; background:#f0f0f0;">`
+            : `<div style="width:50px; height:50px; background:#eee; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#aaa;"><i class="fas fa-image"></i></div>`;
+
+        const estadoBadge = art.activo
+            ? '<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:0.85em; font-weight:bold;">Publicado</span>'
+            : '<span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:4px; font-size:0.85em; font-weight:bold;">Oculto</span>';
+
+        bTB.innerHTML += `<tr>
+            <td>${art.id}</td>
+            <td>${imgHtml}</td>
+            <td style="font-weight:600; max-width:220px;">${art.titulo}</td>
+            <td style="color:#666; font-size:0.9em; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${art.subtitulo || ''}">${art.subtitulo || '-'}</td>
+            <td style="font-size:0.85em; color:#555;">${fecha}</td>
+            <td>${estadoBadge}</td>
+            <td style="display:flex; gap:8px; align-items:center;">
+                <button class="btn" style="background:#f1c40f; color:#fff; padding: 4px 8px;" onclick="abrirModalArticulo(${art.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                <label class="switch" title="Publicar / Ocultar">
+                    <input type="checkbox" ${art.activo ? 'checked' : ''} onchange="toggleArticuloActivo(${art.id})">
+                    <span class="slider"></span>
+                </label>
+                <button class="btn" style="background:#e74c3c; color:#fff; padding: 4px 8px;" onclick="eliminarArticulo(${art.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+
+    renderAdminPagination('blog-pagination', totalPages, currentAdminPageBlog, (page) => {
+        currentAdminPageBlog = page;
+        renderAdminArticulosBlog(lista);
+    });
+}
+
+async function abrirModalArticulo(id = null) {
+    const form = document.getElementById('form-articulo');
+    if (form) form.reset();
+    document.getElementById('art-id').value = '';
+    const prevCont = document.getElementById('art-preview-container');
+    if (prevCont) prevCont.style.display = 'none';
+
+    if (id) {
+        document.getElementById('modal-articulo-title').innerText = 'Editar Publicación';
+        try {
+            const res = await fetch(`${API_URL}/blog/${id}`);
+            if (!res.ok) throw new Error('No se pudo cargar el artículo');
+            const art = await res.json();
+
+            document.getElementById('art-id').value = art.id;
+            document.getElementById('art-titulo').value = art.titulo || '';
+            document.getElementById('art-subtitulo').value = art.subtitulo || '';
+            document.getElementById('art-contenido').value = art.contenido || '';
+            document.getElementById('art-imagen-url').value = art.imagen_portada || '';
+
+            if (art.imagen_portada) {
+                const prevImg = document.getElementById('art-preview-img');
+                if (prevImg) {
+                    prevImg.src = art.imagen_portada;
+                    prevCont.style.display = 'block';
+                }
+            }
+        } catch (e) {
+            alert('Error al cargar datos de la publicación');
+            return;
+        }
+    } else {
+        document.getElementById('modal-articulo-title').innerText = 'Nueva Publicación de Blog';
+    }
+
+    openModal('articulo-modal');
+}
+
+async function toggleArticuloActivo(id) {
+    try {
+        const res = await fetch(`${API_URL}/blog/${id}/toggle`, {
+            method: 'PATCH',
+            headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('Error al cambiar estado');
+        fetchArticulosBlog();
+    } catch (e) {
+        alert('Error al cambiar estado de la publicación');
+        fetchArticulosBlog();
+    }
+}
+
+async function eliminarArticulo(id) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este artículo del blog? Esta acción no se puede deshacer.')) return;
+    try {
+        const res = await fetch(`${API_URL}/blog/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('Error al eliminar');
+        fetchArticulosBlog();
+    } catch (e) {
+        alert('Error al eliminar artículo: ' + e.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Submit form de artículo
+    const formArticulo = document.getElementById('form-articulo');
+    if (formArticulo) {
+        formArticulo.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar-articulo');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const id = document.getElementById('art-id').value;
+            const formData = new FormData();
+            formData.append('titulo', document.getElementById('art-titulo').value);
+            formData.append('subtitulo', document.getElementById('art-subtitulo').value);
+            formData.append('contenido', document.getElementById('art-contenido').value);
+            
+            const imgUrl = document.getElementById('art-imagen-url').value.trim();
+            if (imgUrl) formData.append('imagen_portada_url', imgUrl);
+
+            const fileInput = document.getElementById('art-imagen-file');
+            if (fileInput && fileInput.files[0]) {
+                formData.append('imagen_portada', await compressImage(fileInput.files[0]));
+            }
+
+            try {
+                let url = `${API_URL}/blog`;
+                let method = 'POST';
+                if (id) {
+                    url = `${API_URL}/blog/${id}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem("admin_token")}` },
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Error al guardar');
+                }
+
+                closeModal('articulo-modal');
+                formArticulo.reset();
+                fetchArticulosBlog();
+            } catch (err) {
+                alert('Error al guardar publicación: ' + err.message);
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Buscador de blog
+    const searchBlogInput = document.getElementById('admin-search-blog');
+    if (searchBlogInput) {
+        searchBlogInput.addEventListener('input', (e) => {
+            const term = e.target.value.trim().toLowerCase();
+            const filtrados = adminBlogCache.filter(art => 
+                (art.titulo || '').toLowerCase().includes(term) ||
+                (art.subtitulo || '').toLowerCase().includes(term)
+            );
+            currentAdminPageBlog = 1;
+            renderAdminArticulosBlog(filtrados);
+        });
+    }
+});

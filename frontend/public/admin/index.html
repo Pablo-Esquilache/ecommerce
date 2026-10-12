@@ -25,6 +25,7 @@
             <li onclick="switchTab('categorias', this)"><i class="fas fa-tags"></i> Categorías</li>
             <li onclick="switchTab('pedidos', this)"><i class="fas fa-shopping-cart"></i> Pedidos</li>
             <li onclick="switchTab('clientes', this)"><i class="fas fa-users"></i> Clientes</li>
+            <li onclick="switchTab('blog', this)"><i class="fas fa-feather-alt"></i> Blog</li>
             <li onclick="switchTab('usuarios', this)"><i class="fas fa-user-shield"></i> Usuarios</li>
             <li onclick="switchTab('envios', this)"><i class="fas fa-truck"></i> Envíos</li>
             <li onclick="switchTab('ajustes', this)"><i class="fas fa-cog"></i> Ajustes</li>
@@ -205,6 +206,30 @@
                 </div>
             </div>
             <div id="clientes-pagination" class="pagination" style="text-align:center; margin-top:15px;"></div>
+        </section>
+
+        <!-- VIEW: BLOG -->
+        <section id="view-blog" class="view-section">
+            <div class="header-actions" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin:0;">Artículos del Blog</h3>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="text" id="admin-search-blog" placeholder="Buscar artículo..." style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-width: 250px; outline: none;">
+                    <button class="btn btn-primary" onclick="abrirModalArticulo()"><i class="fas fa-plus"></i> Nueva Publicación</button>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table>
+                    <thead>
+                        <tr><th>ID</th><th>Portada</th><th>Título</th><th>Bajada / Subtítulo</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="blog-list-tb">
+                        <tr><td colspan="7" style="text-align:center; padding:20px;">Cargando artículos...</td></tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="blog-pagination" class="pagination" style="text-align:center; margin-top:15px;"></div>
         </section>
 
         <!-- VIEW: AJUSTES -->
@@ -571,6 +596,62 @@
                         <input type="password" id="u-password" required minlength="6">
                     </div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Crear Administrador</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL ARTICULO BLOG -->
+        <div class="modal" id="articulo-modal">
+            <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2 id="modal-articulo-title" style="color: #0E2A47;">Nueva Publicación de Blog</h2>
+                    <span class="close" onclick="closeModal('articulo-modal')">&times;</span>
+                </div>
+                <form id="form-articulo">
+                    <input type="hidden" id="art-id">
+
+                    <!-- Título -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; color: #0E2A47;">Título del Artículo</label>
+                        <input type="text" id="art-titulo" required placeholder="Ej: La técnica del temple al huevo en el arte sacro" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px;">
+                    </div>
+
+                    <!-- Subtítulo / Bajada -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; color: #0E2A47;">Subtítulo o Bajada <span style="font-size: 12px; font-weight: normal; color: #7f8c8d;">(Resumen que se verá en la miniatura)</span></label>
+                        <textarea id="art-subtitulo" rows="2" placeholder="Breve introducción o resumen del artículo..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Imagen de Portada -->
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="font-weight: 600; color: #0E2A47;">Imagen de Portada</label>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <small style="display:block; margin-bottom:4px; color:#555;">Subir archivo:</small>
+                                <input type="file" id="art-imagen-file" accept="image/*" style="width:100%;">
+                            </div>
+                            <div style="flex:1; min-width:200px;">
+                                <small style="display:block; margin-bottom:4px; color:#555;">O Enlace directo (URL):</small>
+                                <input type="url" id="art-imagen-url" placeholder="https://..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                            </div>
+                        </div>
+                        <div id="art-preview-container" style="margin-top:10px; display:none;">
+                            <img id="art-preview-img" src="" alt="Previsualización" style="max-height:120px; border-radius:6px; object-fit:cover; border:1px solid #ddd;">
+                        </div>
+                    </div>
+
+                    <!-- Contenido Completo -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; color: #0E2A47;">Cuerpo del Artículo <span style="font-size: 12px; font-weight: normal; color: #7f8c8d;">(Texto completo que se desplegará en la lectura)</span></label>
+                        <textarea id="art-contenido" required rows="12" placeholder="Escribe aquí todo el contenido del artículo. Puedes separar los párrafos dejando una línea en blanco..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; line-height: 1.6; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn" style="background:#e0e0e0; color:#333;" onclick="closeModal('articulo-modal')">Cancelar</button>
+                        <button type="submit" id="btn-guardar-articulo" class="btn btn-primary" style="background-color: #C78515; border-color: #C78515; color:#fff;">
+                            <i class="fas fa-save"></i> Guardar Publicación
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

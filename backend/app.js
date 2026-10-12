@@ -27,6 +27,7 @@ const webhooksRoutes = require('./routes/webhooks');
 const contactoRoutes = require('./routes/contacto');
 const configuracionRoutes = require('./routes/configuracion');
 const categoriasRoutes = require('./routes/categorias');
+const blogRoutes = require('./routes/blog');
 
 // Iniciar procesos en segundo plano (Cron Jobs)
 // require('./cron/sincronizarTracking');
@@ -53,6 +54,7 @@ app.use('/api/webhooks', webhooksRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/configuracion', configuracionRoutes);
 app.use('/api/categorias', categoriasRoutes);
+app.use('/api/blog', blogRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 

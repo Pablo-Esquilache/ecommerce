@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artículo | Iconografía Bizantina — María Magdalena</title>
+    <meta name="description" content="Lectura de artículo sobre iconografía bizantina y arte sacro tradicional.">
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+
+    <!-- Tipografías y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .article-hero {
+            margin: 78px auto 0 auto;
+            max-width: 1240px;
+            width: calc(100% - 40px);
+            height: 54vh;
+            min-height: 400px;
+            max-height: 520px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(14, 42, 71, 0.16);
+            background-color: #0E2A47;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .article-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(14, 42, 71, 0.25) 0%, rgba(14, 42, 71, 0.88) 100%);
+            z-index: 1;
+        }
+
+        .article-hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 40px 45px;
+            max-width: 900px;
+            color: #fff;
+        }
+
+        .article-hero-badge {
+            display: inline-block;
+            background: #C78515;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .article-hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            line-height: 1.25;
+            margin: 0 0 14px;
+            color: #FAF8F5;
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+        }
+
+        .article-hero-subtitle {
+            font-size: 1.15rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            font-weight: 400;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Contenido de Lectura */
+        .article-reading-container {
+            max-width: 860px;
+            margin: 40px auto 90px;
+            padding: 0 20px;
+        }
+
+        .article-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 35px;
+            border-bottom: 1px solid rgba(199, 133, 21, 0.25);
+            font-size: 0.92rem;
+            color: #666;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .article-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .article-author img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #C78515;
+        }
+
+        .article-body {
+            font-size: 1.12rem;
+            line-height: 1.85;
+            color: #2c3e50;
+            letter-spacing: 0.2px;
+        }
+
+        .article-body p {
+            margin-bottom: 24px;
+        }
+
+        .article-body h2, .article-body h3 {
+            font-family: 'Cinzel', serif;
+            color: #0E2A47;
+            margin-top: 40px;
+            margin-bottom: 18px;
+            line-height: 1.35;
+        }
+
+        .article-body blockquote {
+            margin: 35px 0;
+            padding: 20px 25px;
+            border-left: 4px solid #C78515;
+            background: #FAF8F5;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #444;
+            font-size: 1.15rem;
+        }
+
+        /* Banner CTA al final del artículo */
+        .article-cta-box {
+            margin-top: 60px;
+            padding: 35px;
+            background: linear-gradient(135deg, #0E2A47 0%, #153e66 100%);
+            border-radius: 14px;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(14, 42, 71, 0.15);
+        }
+        .article-cta-box h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            color: #FAF8F5;
+            margin-bottom: 10px;
+        }
+        .article-cta-box p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        .article-cta-box .btn {
+            background-color: #C78515;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .article-cta-box .btn:hover {
+            background-color: #a66d0e;
+        }
+
+        .back-nav-wrap {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .article-hero {
+                margin: 65px auto 0 auto;
+                width: calc(100% - 24px);
+                height: 46vh;
+                min-height: 320px;
+                border-radius: 16px;
+            }
+            .article-hero-content {
+                padding: 25px 20px;
+            }
+            .article-hero-title {
+                font-size: 1.7rem;
+            }
+            .article-hero-subtitle {
+                font-size: 0.95rem;
+            }
+            .article-body {
+                font-size: 1.05rem;
+                line-height: 1.75;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar glass-navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="img/logo.png" alt="Iconografía Bizantina" style="height: 52px; width: 52px; object-fit: cover; border-radius: 6px; display: block; margin: 4px 0;" width="52" height="52">
+                </a>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="blog.html"><i class="fas fa-arrow-left"></i> Volver al Blog</a></li>
+                <li><a href="index.html#productos">Obras y Talleres</a></li>
+                <li><a href="index.html#contacto">Contacto</a></li>
+            </ul>
+
+            <div class="nav-icons">
+                <div class="cart-icon" onclick="toggleCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal (cargado dinámicamente) -->
+    <div id="article-wrapper">
+        <div style="text-align:center; padding: 160px 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #C78515;"></i>
+            <p style="margin-top: 15px; color: #666; font-size: 16px;">Cargando publicación...</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-col">
+                <img src="img/logo.png" alt="Iconografía Bizantina" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px; margin-bottom: 15px;">
+                <p>María Magdalena — Iconografía Bizantina. Arte sagrado tradicional pintado en oración y contemplación.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navegación</h4>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="index.html#productos">Obras y Talleres</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="index.html#contacto">Contacto</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contacto</h4>
+                <p><i class="fas fa-envelope"></i> giseochoa0@gmail.com</p>
+                <p><i class="fab fa-instagram"></i> @iconografiabizantina</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Iconografía Bizantina. Todos los derechos reservados. | Desarrollador: Pablo Esquilache</p>
+        </div>
+    </footer>
+
+    <!-- Side Cart -->
+    <div class="side-cart" id="side-cart">
+        <div class="cart-header">
+            <h3>Tu Carrito</h3>
+            <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+            <div class="subtotal"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
+            <a href="checkout.html" class="btn btn-block" style="text-align: center; text-decoration: none;">Finalizar Compra</a>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    <script>
+        async function cargarDetalleArticulo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const wrapper = document.getElementById('article-wrapper');
+
+            if (!id) {
+                window.location.href = 'blog.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/blog/${id}`);
+                if (!res.ok) throw new Error('Artículo no encontrado');
+                const art = await res.json();
+
+                // Actualizar título de la pestaña
+                document.title = `${art.titulo} | Iconografía Bizantina`;
+
+                const fecha = new Date(art.creado_en || Date.now()).toLocaleDateString('es-AR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                const portadaUrl = art.imagen_portada || '/img/portada1.webp';
+
+                // Formatear párrafos del contenido
+                const parrafos = (art.contenido || '')
+                    .split(/\n\s*\n/)
+                    .map(p => p.trim())
+                    .filter(p => p.length > 0)
+                    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+                    .join('');
+
+                wrapper.innerHTML = `
+                    <!-- Hero Section -->
+                    <header class="article-hero" style="background-image: url('${portadaUrl}');">
+                        <div class="article-hero-overlay"></div>
+                        <div class="article-hero-content">
+                            <span class="article-hero-badge"><i class="fas fa-feather-alt"></i> Arte Sacro</span>
+                            <h1 class="article-hero-title">${art.titulo}</h1>
+                            ${art.subtitulo ? `<p class="article-hero-subtitle">${art.subtitulo}</p>` : ''}
+                        </div>
+                    </header>
+
+                    <!-- Zona de Lectura 100% -->
+                    <main class="article-reading-container">
+                        <div class="article-meta-bar">
+                            <div class="article-author">
+                                <img src="/img/quienes_somos_1.webp" alt="Giselle Ochoa" onerror="this.src='/img/favicon.png'">
+                                <div>
+                                    <strong style="color:#0E2A47; display:block;">Giselle Ochoa</strong>
+                                    <small style="color:#777;">Iconógrafa y Docente</small>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="far fa-calendar-alt" style="color:#C78515;"></i> Publicado el ${fecha}
+                            </div>
+                        </div>
+
+                        <article class="article-body">
+                            ${parrafos}
+                        </article>
+
+                        <!-- Llamado a la acción de Talleres / Obras -->
+                        <div class="article-cta-box">
+                            <h3>¿Te apasiona el Arte Sacro?</h3>
+                            <p>Descubre nuestros talleres presenciales, cursos digitales y las obras originales bendecidas pintadas en el taller.</p>
+                            <a href="index.html#productos" class="btn">Explorar Talleres y Obras</a>
+                        </div>
+
+                        <!-- Barra de navegación inferior -->
+                        <div class="back-nav-wrap">
+                            <a href="blog.html" class="btn" style="background:#f4f4f4; color:#333; text-decoration:none;">
+                                <i class="fas fa-arrow-left"></i> Volver a todas las publicaciones
+                            </a>
+                            <button class="btn" style="background:#C78515; color:#fff;" onclick="navigator.clipboard.writeText(window.location.href); alert('¡Enlace del artículo copiado al portapapeles!');">
+                                <i class="fas fa-share-alt"></i> Compartir
+                            </button>
+                        </div>
+                    </main>
+                `;
+
+            } catch (err) {
+                console.error(err);
+                wrapper.innerHTML = `
+                    <div style="text-align:center; padding: 140px 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e74c3c; margin-bottom: 15px;"></i>
+                        <h2 style="font-family:'Cinzel', serif; color:#0E2A47;">No pudimos encontrar este artículo</h2>
+                        <p style="color:#666; margin: 15px 0 25px;">Es posible que la publicación haya sido eliminada o que el enlace sea incorrecto.</p>
+                        <a href="blog.html" class="btn btn-primary" style="background:#C78515; border-color:#C78515; text-decoration:none; display:inline-block;">
+                            Volver al Blog
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarDetalleArticulo);
+    </script>
+</body>
+</html>
