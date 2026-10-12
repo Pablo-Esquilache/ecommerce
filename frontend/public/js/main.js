@@ -385,6 +385,11 @@ function updateCartUI() {
     const cartItems = document.getElementById('cart-items');
     const cartSubtotal = document.getElementById('cart-subtotal');
     
+    if (!cartItems) {
+        if (cartCount) cartCount.innerText = carrito.reduce((a, b) => a + (b.cantidad || 1), 0);
+        return;
+    }
+    
     cartItems.innerHTML = '';
     let totalItems = 0;
     let subtotal = 0;

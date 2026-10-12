@@ -169,25 +169,17 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar glass-navbar">
-        <div class="nav-container">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="logo">
-                <a href="index.html">
+                <a href="/">
                     <img src="img/logo.png" alt="Iconografía Bizantina" style="height: 52px; width: 52px; object-fit: cover; border-radius: 6px; display: block; margin: 4px 0;" width="52" height="52">
                 </a>
             </div>
             
-            <ul class="nav-links">
-                <li><a href="index.html"><i class="fas fa-arrow-left"></i> Volver a la Tienda</a></li>
-                <li><a href="index.html#productos">Productos</a></li>
-                <li><a href="index.html#quienes-somos">Quiénes Somos</a></li>
-                <li><a href="index.html#contacto">Contacto</a></li>
-            </ul>
-
-            <div class="nav-icons">
-                <div class="cart-icon" onclick="toggleCart()">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span id="cart-count">0</span>
-                </div>
+            <div>
+                <a href="/" style="display: inline-flex; align-items: center; gap: 8px; background: #0E2A47; color: #FAF8F5; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(14, 42, 71, 0.15);">
+                    <i class="fas fa-arrow-left"></i> Volver a la Tienda
+                </a>
             </div>
         </div>
     </nav>
@@ -212,46 +204,12 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-col">
-                <img src="img/logo.png" alt="Iconografía Bizantina" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px; margin-bottom: 15px;">
-                <p>María Magdalena — Iconografía Bizantina. Arte sagrado tradicional pintado en oración y contemplación.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Navegación</h4>
-                <ul>
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="index.html#productos">Obras y Talleres</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="index.html#contacto">Contacto</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Contacto</h4>
-                <p><i class="fas fa-envelope"></i> giseochoa0@gmail.com</p>
-                <p><i class="fab fa-instagram"></i> @iconografiabizantina</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
+    <!-- Footer Simplificado -->
+    <footer style="padding: 25px 0; background: #07192b; border-top: 1px solid rgba(199, 133, 21, 0.2);">
+        <div class="footer-bottom" style="border-top: none; margin-top: 0; padding-top: 0;">
             <p>&copy; 2026 Iconografía Bizantina. Todos los derechos reservados. | Desarrollador: Pablo Esquilache</p>
         </div>
     </footer>
-
-    <!-- Side Cart -->
-    <div class="side-cart" id="side-cart">
-        <div class="cart-header">
-            <h3>Tu Carrito</h3>
-            <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="cart-items" id="cart-items"></div>
-        <div class="cart-footer">
-            <div class="subtotal"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
-            <a href="checkout.html" class="btn btn-block" style="text-align: center; text-decoration: none;">Finalizar Compra</a>
-        </div>
-    </div>
-    <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
 
     <!-- Scripts -->
     <script src="/js/main.js"></script>
