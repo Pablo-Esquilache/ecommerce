@@ -323,8 +323,10 @@ function filtrarProductos() {
         return matchTexto && matchCategoria && matchSubcategoria;
     });
 
-    currentPageDigital = 1;
-    currentPageFisico = 1;
+    currentPageIconografias = 1;
+    currentPageDigitales = 1;
+    currentPageTalleres = 1;
+    currentPageViajes = 1;
     renderProductos(filtrados);
 }
 
