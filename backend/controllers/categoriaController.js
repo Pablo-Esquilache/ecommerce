@@ -2,14 +2,14 @@ const db = require('../config/database');
 
 exports.getAll = async (req, res) => {
     try {
-        const { rows } = await db.query('SELECT * FROM categorias ORDER BY 
+        const { rows } = await db.query(`SELECT * FROM categorias ORDER BY 
             CASE 
               WHEN nombre ILIKE '%iconograf%' THEN 1
               WHEN nombre ILIKE '%curso%' THEN 2
               WHEN nombre ILIKE '%taller%' OR nombre ILIKE '%seminario%' THEN 3
               WHEN nombre ILIKE '%viaje%' OR nombre ILIKE '%retiro%' THEN 4
               ELSE 5
-            END, id ASC');
+            END, id ASC`);
         res.json(rows);
     } catch (error) {
         console.error("Error obteniendo categorias:", error);
