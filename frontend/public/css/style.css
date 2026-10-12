@@ -286,10 +286,10 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
     background: #1a252f;
 }
 
-/* About Section Flotante & Alineada */
+/* About Section Flotante & Alineada (Viewport Height Calibrado) */
 .about-section {
-    scroll-margin-top: 90px;
-    padding: 70px 0 30px 0;
+    scroll-margin-top: 65px;
+    padding: 16px 0 40px 0;
     background-color: transparent !important;
 }
 
@@ -302,13 +302,13 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 
 .about-title {
     text-align: center;
-    margin-bottom: 45px;
-    font-size: 32px;
+    margin-bottom: 18px;
+    font-size: 28px;
     color: #0E2A47;
     font-family: var(--font-title);
     letter-spacing: 1px;
     position: relative;
-    padding-bottom: 12px;
+    padding-bottom: 10px;
 }
 
 .about-title::after {
@@ -328,11 +328,13 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
     border-radius: 20px;
     border: 1px solid rgba(199, 133, 21, 0.22);
     box-shadow: 0 16px 36px rgba(14, 42, 71, 0.08);
-    padding: 40px;
-    margin-bottom: 35px;
+    padding: 30px 40px;
+    margin-bottom: 45px;
     display: flex;
     align-items: center;
     gap: 45px;
+    height: 480px; /* Ambas tarjetas con la misma altura exacta */
+    box-sizing: border-box;
     transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
@@ -342,67 +344,112 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
     border-color: #C78515;
 }
 
-.about-card.reverse {
-    flex-direction: row-reverse;
-}
-
 .about-card-img {
     flex: 0 0 340px;
     max-width: 340px;
+    height: 100%;
     border-radius: 16px;
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
+    background: transparent;
 }
 
 .about-card-img img {
-    width: 100%;
-    height: auto;
-    max-height: 380px;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
-    border-radius: 16px;
+    border-radius: 14px;
     display: block;
     transition: transform 0.4s ease;
 }
 
 .about-card:hover .about-card-img img {
-    transform: scale(1.03);
+    transform: scale(1.02);
 }
 
 .about-card-content {
     flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding-top: 5px;
+    box-sizing: border-box;
 }
 
 .about-card-content h3 {
     font-family: var(--font-title);
     color: #0E2A47;
-    font-size: 1.55rem;
-    margin-bottom: 16px;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
 }
 
-.about-card-content p {
+.about-card-text {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 18px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(199, 133, 21, 0.45) rgba(14, 42, 71, 0.05);
+}
+
+.about-card-text::-webkit-scrollbar {
+    width: 6px;
+}
+
+.about-card-text::-webkit-scrollbar-track {
+    background: rgba(14, 42, 71, 0.05);
+    border-radius: 4px;
+}
+
+.about-card-text::-webkit-scrollbar-thumb {
+    background: rgba(199, 133, 21, 0.4);
+    border-radius: 4px;
+}
+
+.about-card-text::-webkit-scrollbar-thumb:hover {
+    background: #C78515;
+}
+
+.about-card-text p {
     font-family: var(--font-body);
     color: #334155;
-    font-size: 1.02rem;
-    line-height: 1.8;
+    font-size: 1.01rem;
+    line-height: 1.75;
     margin-bottom: 14px;
     text-align: justify;
 }
 
-.about-card-content p:last-child {
-    margin-bottom: 0;
+.about-card-text p:last-child {
+    margin-bottom: 5px;
 }
 
 @media (max-width: 992px) {
-    .about-card, .about-card.reverse {
+    .about-card {
+        height: auto;
+        min-height: unset;
         flex-direction: column;
-        padding: 30px 22px;
+        padding: 30px 20px;
         gap: 25px;
     }
     .about-card-img {
-        max-width: 280px;
+        max-width: 260px;
+        height: 260px;
+        width: 100%;
+    }
+    .about-card-content {
+        height: auto;
+    }
+    .about-card-text {
+        max-height: 280px;
+        padding-right: 10px;
+    }
+    .about-card-text p {
+        text-align: left;
     }
     .about-section .container {
         width: calc(100% - 24px);
@@ -1185,6 +1232,10 @@ footer, .footer {
 
 
 /* Scroll Offset para Header Fijo */
-#quienes-somos, #productos, #contacto, #inicio {
-    scroll-margin-top: 90px;
+/* Scroll Offset para Header Fijo */
+#quienes-somos {
+    scroll-margin-top: 65px;
+}
+#productos, #contacto, #inicio {
+    scroll-margin-top: 85px;
 }
