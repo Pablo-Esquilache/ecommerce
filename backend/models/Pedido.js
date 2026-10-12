@@ -1,9 +1,25 @@
 const db = require('../config/database');
 
+let columnsChecked = false;
+async function ensurePedidoColumns(clientOrDb) {
+  if (columnsChecked) return;
+  try {
+    await clientOrDb.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS metodo_envio VARCHAR(100);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100);
+      ALTER TABLE detalles_pedido ADD COLUMN IF NOT EXISTS modalidad VARCHAR(50);
+    `);
+    columnsChecked = true;
+  } catch (err) {
+    console.error('Error asegurando columnas de pedidos:', err);
+  }
+}
+
 const Pedido = {
   createOrder: async (pedidoData, detallesData) => {
     const client = await db.connect();
     try {
+      await ensurePedidoColumns(client);
       await client.query('BEGIN');
       
       const { cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio } = pedidoData;

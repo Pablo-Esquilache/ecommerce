@@ -83,9 +83,10 @@ const enviarOConsola = async (mailOptions) => {
 
 const emailService = {
     enviarCorreoContacto: async (nombre, email, asunto, mensaje) => {
+        const adminEmail = await getAdminEmail();
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
-            to: process.env.EMAIL_CONTACTO || process.env.EMAIL_FROM || 'admin@tienda.com',
+            to: adminEmail || process.env.EMAIL_CONTACTO || process.env.EMAIL_FROM || 'admin@tienda.com',
             subject: `Nuevo mensaje de contacto: ${asunto}`,
             html: getHtmlTemplate('Nuevo Mensaje de Contacto', `
                 <p><strong>Nombre:</strong> ${nombre}</p>
