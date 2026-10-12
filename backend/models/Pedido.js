@@ -50,7 +50,13 @@ const Pedido = {
         // Descontar el stock de forma atómica en la misma transacción SÓLO si NO es producto digital NI modalidad online
         const esOnline = det.modalidad === 'online' || tipo_producto === 'digital';
         if (!esOnline) {
-            await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [cantidad, producto_id]);
+            const stockRes = await client.query(
+                'UPDATE productos SET stock = stock - $1 WHERE id = $2 AND stock >= $1 RETURNING stock', 
+                [cantidad, producto_id]
+            );
+            if (stockRes.rowCount === 0) {
+                throw new Error(`Stock insuficiente o producto agotado: "${det.producto_nombre || 'ID ' + producto_id}".`);
+            }
         }
       }
 
@@ -125,28 +131,38 @@ const Pedido = {
   },
 
   updateStatus: async (id, status) => {
+    const client = await db.connect();
     try {
-        const { rows: currRows } = await db.query('SELECT estado FROM pedidos WHERE id = $1', [id]);
+        await client.query('BEGIN');
+        const { rows: currRows } = await client.query('SELECT estado FROM pedidos WHERE id = $1 FOR UPDATE', [id]);
         if (!currRows[0]) throw new Error('Pedido no encontrado');
         const estadoAnterior = currRows[0].estado;
 
         const query = 'UPDATE pedidos SET estado = $1 WHERE id = $2 RETURNING *';
-        const { rows } = await db.query(query, [status, id]);
+        const { rows } = await client.query(query, [status, id]);
         
         if (status === 'cancelado' && estadoAnterior !== 'cancelado') {
-            const { rows: detalles } = await db.query('SELECT d.producto_id, d.cantidad, p.tipo_producto FROM detalles_pedido d JOIN productos p ON d.producto_id = p.id WHERE d.pedido_id = $1', [id]);
+            const { rows: detalles } = await client.query(
+                'SELECT d.producto_id, d.cantidad, d.modalidad, p.tipo_producto FROM detalles_pedido d JOIN productos p ON d.producto_id = p.id WHERE d.pedido_id = $1', 
+                [id]
+            );
             for (let det of detalles) {
-                if (det.tipo_producto !== 'digital') {
-                    await db.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [det.cantidad, det.producto_id]);
+                const esOnline = det.modalidad === 'online' || det.tipo_producto === 'digital';
+                if (!esOnline) {
+                    await client.query('UPDATE productos SET stock = stock + $1 WHERE id = $2', [det.cantidad, det.producto_id]);
                 }
             }
-            console.log(`✅ [Stock] Stock restaurado (+unidades) para productos físicos por cancelación del pedido #${id}`);
+            console.log(`✅ [Stock] Stock restaurado (+unidades) para productos físicos/presenciales por cancelación del pedido #${id}`);
         }
 
+        await client.query('COMMIT');
         return rows[0];
     } catch (e) {
-        console.error("Error en updateStatus SQl:", e);
+        await client.query('ROLLBACK');
+        console.error("Error en updateStatus SQL:", e);
         throw e;
+    } finally {
+        client.release();
     }
   },
   

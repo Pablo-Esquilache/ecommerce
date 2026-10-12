@@ -153,7 +153,7 @@ const productoController = {
       res.status(201).json(nuevoProducto);
     } catch (error) {
       console.error('Error creando producto:', error);
-      res.status(500).json({ error: error.message || 'Error al crear producto', detail: error.detail, code: error.code });
+      res.status(500).json({ error: error.message || 'Error al crear producto' });
     }
   },
 
@@ -212,7 +212,7 @@ const productoController = {
       res.json(productoActualizado);
     } catch (error) {
       console.error('Error actualizando producto:', error);
-      res.status(500).json({ error: error.message || 'Error al actualizar producto', detail: error.detail, code: error.code });
+      res.status(500).json({ error: error.message || 'Error al actualizar producto' });
     }
   },
 
