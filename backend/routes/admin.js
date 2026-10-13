@@ -25,6 +25,7 @@ router.get('/dashboard', authMiddleware, adminController.getDashboard);
 router.get('/clientes', authMiddleware, adminController.getAllClientes);
 router.get('/clientes/excel', authMiddleware, adminController.exportClientesExcel);
 router.get('/pedidos/excel', authMiddleware, adminController.exportPedidosExcel);
+router.get('/configuracion', authMiddleware, adminController.getConfiguracion);
 router.put('/configuracion', authMiddleware, adminController.updateConfiguracion);
 router.get('/supabase-keys', authMiddleware, adminController.getSupabaseKeys);
 

@@ -1066,7 +1066,7 @@ async function descargarExcelClientes() {
 // --- CONFIGURACIÃ“N GLOBAL ---
 async function fetchConfiguracion() {
     try {
-        const res = await fetch(`${API_URL}/configuracion`);
+        const res = await fetch(`${API_URL}/admin/configuracion`, { headers: authHeaders() });
         const conf = await res.json();
         
         if(conf.id) {

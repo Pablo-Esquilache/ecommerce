@@ -43,22 +43,32 @@ const simularEnvio = (opciones) => {
     console.log('----------------------------------------\n');
 };
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 const getHtmlTemplate = (titulo, contenido) => {
-    const publicUrl = process.env.PUBLIC_URL || 'https://tumarca.com';
+    const publicUrl = process.env.PUBLIC_URL || 'https://iconografiabizantina.netlify.app';
     return `
-    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
-        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #2C3E50;">
-            <h1 style="color: #2C3E50; margin: 0; font-size: 24px;">E-Shopper</h1>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAF8F5; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #0E2A47;">
+            <h1 style="color: #0E2A47; margin: 0; font-size: 22px; font-family: 'Cinzel', serif;">Iconografía Bizantina</h1>
         </div>
-        <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-            <h2 style="color: #2C3E50; margin-top: 0;">${titulo}</h2>
-            <div style="color: #555555; font-size: 16px; line-height: 1.5;">
+        <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #efe8df;">
+            <h2 style="color: #0E2A47; margin-top: 0;">${titulo}</h2>
+            <div style="color: #444444; font-size: 15px; line-height: 1.6;">
                 ${contenido}
             </div>
         </div>
-        <div style="text-align: center; margin-top: 20px; color: #999999; font-size: 12px;">
-            <p>© ${new Date().getFullYear()} E-Shopper. Todos los derechos reservados.</p>
-            <p><a href="${publicUrl}" style="color: #3498db; text-decoration: none;">Visitar Tienda</a></p>
+        <div style="text-align: center; margin-top: 20px; color: #888888; font-size: 12px;">
+            <p>© ${new Date().getFullYear()} Iconografía Bizantina — Giselle Ochoa. Todos los derechos reservados.</p>
+            <p><a href="${publicUrl}" style="color: #C78515; text-decoration: none; font-weight: 600;">Visitar Tienda Oficial</a></p>
         </div>
     </div>
     `;
@@ -84,15 +94,21 @@ const enviarOConsola = async (mailOptions) => {
 const emailService = {
     enviarCorreoContacto: async (nombre, email, asunto, mensaje) => {
         const adminEmail = await getAdminEmail();
+        const nomEsc = escapeHtml(nombre);
+        const mailEsc = escapeHtml(email);
+        const asuntoEsc = escapeHtml(asunto || 'Sin asunto');
+        const msgEsc = escapeHtml(mensaje || '').replace(/\n/g, '<br>');
+
         const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
-            to: adminEmail || process.env.EMAIL_CONTACTO || process.env.EMAIL_FROM || 'admin@tienda.com',
-            subject: `Nuevo mensaje de contacto: ${asunto}`,
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Iconografía Bizantina" <noreply@iconografiabizantina.com>',
+            to: adminEmail || 'admin@tienda.com',
+            replyTo: email,
+            subject: `Nuevo mensaje de contacto: ${asuntoEsc}`,
             html: getHtmlTemplate('Nuevo Mensaje de Contacto', `
-                <p><strong>Nombre:</strong> ${nombre}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <div style="padding: 15px; background-color: #f1f2f6; border-left: 4px solid #3498db; margin-top: 15px;">
-                    ${mensaje.replace(/\n/g, '<br>')}
+                <p><strong>Nombre:</strong> ${nomEsc}</p>
+                <p><strong>Email:</strong> ${mailEsc}</p>
+                <div style="padding: 15px; background-color: #f7f4ee; border-left: 4px solid #C78515; margin-top: 15px; border-radius: 4px;">
+                    ${msgEsc}
                 </div>
             `)
         };
