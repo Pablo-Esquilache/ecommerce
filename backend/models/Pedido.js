@@ -86,6 +86,7 @@ const Pedido = {
   },
 
   getAll: async () => {
+    await ensurePedidoColumns(db);
     const query = `
       SELECT p.*, 
              COALESCE(p.nombre_receptor, c.nombre || ' ' || c.apellido) as cliente_nombre, 
@@ -124,6 +125,7 @@ const Pedido = {
   },
 
   getById: async (id) => {
+    await ensurePedidoColumns(db);
     // Info del pedido con snapshot congelado de envío
     const { rows: pedidoRow } = await db.query(`
       SELECT p.*, 
