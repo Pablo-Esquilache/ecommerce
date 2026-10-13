@@ -7,6 +7,7 @@ router.get('/', async (req, res) => {
     try {
         const query = `
             SELECT 
+                id,
                 email, telefono, direccion,
                 instagram_activo, instagram_url,
                 facebook_activo, facebook_url,

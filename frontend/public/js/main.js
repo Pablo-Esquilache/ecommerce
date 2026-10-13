@@ -556,7 +556,7 @@ async function fetchConfigWeb() {
     try {
         const res = await fetch(`${API_URL}/configuracion`);
         const conf = await res.json();
-        if(conf.id) {
+        if(conf && (conf.id || conf.email || conf.telefono)) {
             globalConfig = conf;
             
             // Renderizar Banner
