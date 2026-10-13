@@ -4,6 +4,16 @@ let carrito = JSON.parse(localStorage.getItem('cart')) || [];
 let globalConfig = null;
 let userCurrency = localStorage.getItem('currency') || null;
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 async function detectCurrency() {
     if (userCurrency) return;
     try {
@@ -28,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchProductos();
     fetchCategoriasPublic();
     loadCategoriasMenu();
+    loadBlogHome();
     updateCartUI();
     initCarousel();
 
@@ -675,9 +686,15 @@ async function loadCategoriasMenu() {
       cGrid.innerHTML = '';
       categorias.forEach(cat => {
         const img = cat.imagen_url || 'img/logo.png';
-        cGrid.innerHTML += '<a href="#productos" class="cat-card" onclick="filCat(\'' + cat.nombre + '\')">' +
-          '<div class="cat-card-img"><img src="'+img+'" alt="'+cat.nombre+'" width="300" height="300" loading="lazy"></div>' +
-          '<div class="cat-card-info"><h3>' + cat.nombre + '</h3></div></a>';
+        const nomEsc = escapeHtml(cat.nombre);
+        cGrid.innerHTML += `
+          <div class="cat-card" role="button" tabindex="0" onclick="abrirModalCategoria('${nomEsc}', '${escapeHtml(img)}')">
+            <div class="cat-card-img"><img src="${img}" alt="${nomEsc}" width="300" height="300" loading="lazy"></div>
+            <div class="cat-card-info">
+              <h3>${nomEsc}</h3>
+              <span class="cat-card-badge-info"><i class="fas fa-info-circle"></i> Conocer más</span>
+            </div>
+          </div>`;
       });
     } else if (cGrid) {
       document.querySelector('.categorias-cards-section').style.display = 'none';
@@ -695,3 +712,248 @@ function scrollToProductos() {
         window.scrollTo({ top, behavior: 'smooth' });
     }
 }
+
+// ======================================================
+// MODAL DE DETALLE DE CATEGORÍAS EN PORTADA
+// ======================================================
+const CATEGORIAS_DETALLES = {
+  iconografia: {
+    titulo: "Iconografía Bizantina Tradicional",
+    subtitulo: "Venta de pinturas sacras originales y obras personalizadas a pedido",
+    parrafos: [
+      "En esta sección podés adquirir pinturas sacras auténticas y originales, creadas individualmente bajo los cánones estéticos y teológicos de la tradición bizantina milenaria.",
+      "Además de las obras disponibles en catálogo, podés solicitar íconos personalizados por encargo: podés elegir la advocación mariana, Cristo, santos patronos o escenas bíblicas particulares, así como las dimensiones y detalles ornamentales específicos para capillas, oratorios familiares, parroquias, o como regalo conmemorativo de bodas, bautismos y ordenaciones.",
+      "Cada obra es una pieza única de colección y devoción. Se realiza sobre tablas de madera maciza preparadas artesanalmente con levkas (yeso y cola de conejo), doradas con pan de oro legítimo, y pintadas pacientemente mediante la técnica histórica del temple al huevo con pigmentos minerales y naturales molidos a mano. Cada pintura se entrega lista para colgar, firmada por la artista y con su certificado de autenticidad y memoria técnica."
+    ],
+    botonTexto: "Ver obras disponibles",
+    categoriaFiltro: "Iconografías"
+  },
+  cursos: {
+    titulo: "Cursos y Capacitaciones Online",
+    subtitulo: "Formación integral en arte sacro para aprender desde cualquier lugar del mundo",
+    parrafos: [
+      "Nuestros programas formativos en video están pensados tanto para quienes nunca tomaron un pincel como para artistas, restauradores y docentes que desean dominar el método riguroso de la iconografía bizantina.",
+      "Al adquirir un curso digital, obtenés acceso inmediato, ilimitado y de por vida a un aula virtual donde aprenderás cada fase del proceso: la teología de la imagen, el dibujo geométrico canónico, la preparación de la emulsión al temple de huevo, la molienda de tierras y minerales, y las sucesivas capas de luces (ochrenie) y sombras (proplasmos).",
+      "El material incluye lecciones en video en alta definición, manuales descargables en formato PDF con esquemas anatómicos y paletas cromáticas recomendadas, listas detalladas de proveedores de materiales e insumos, y canales directos para resolver dudas durante tu aprendizaje."
+    ],
+    botonTexto: "Ver cursos disponibles",
+    categoriaFiltro: "Cursos Digitales"
+  },
+  talleres: {
+    titulo: "Talleres y Seminarios Vivos",
+    subtitulo: "Experiencia práctica intensiva con acompañamiento personalizado y corrección en tiempo real",
+    parrafos: [
+      "Si preferís la dinámica de un taller interactivo y el intercambio directo con la docente, estos espacios están diseñados para guiarte en la elaboración completa de un ícono, acompañando cada pincelada paso a paso.",
+      "Modalidad Presencial: Se dictan en el atelier y en espacios culturales y religiosos de distintas ciudades. Son cupos reducidos para garantizar un seguimiento minucioso. Brindamos un entorno de silencio, concentración y calidez fraterna, con todas las maderas curadas, pinceles finos y pigmentos tradicionales incluidos.",
+      "Modalidad Online en Vivo (Sincrónica): Clases magistrales y prácticas transmitidas por videoconferencia con cámara cenital sobre la mesa de trabajo. Te permiten pintar desde tu casa pero interactuando en vivo, recibiendo correcciones individuales y compartiendo la evolución con el resto del grupo. Las inscripciones se abren periódicamente con cupos limitados según el cronograma de fechas de cada ciclo."
+    ],
+    botonTexto: "Ver talleres y seminarios",
+    categoriaFiltro: "Talleres y Seminarios"
+  },
+  viajes: {
+    titulo: "Retiros y Viajes Contemplativos",
+    subtitulo: "Una vivencia profunda que une arte sagrado, espiritualidad, historia y silencio",
+    parrafos: [
+      "Una propuesta única para alejarse de las exigencias cotidianas y sumergirse en una experiencia transformadora donde la pintura del ícono se convierte en un camino de oración interior y comunión.",
+      "Retiros Espirituales y Artísticos: Convivencias de varios días en abadías, monasterios o entornos de naturaleza y tranquilidad. Combinamos jornadas intensivas de pintura y aprendizaje técnico con tiempos de meditación, charlas sobre historia del arte cristiano primitivo, liturgia y silencio contemplativo.",
+      "Viajes Temáticos y Rutas de Arte Sacro: Itinerarios culturales guiados hacia centros emblemáticos de la iconografía, templos y museos, pensados para contemplar las obras maestras en su contexto original y nutrir la mirada del artista y el creyente. Cada propuesta incluye alojamiento, comidas, kits completos de trabajo y la coordinación integral para vivir una experiencia enriquecedora tanto a nivel técnico como humano y espiritual."
+    ],
+    botonTexto: "Ver retiros disponibles",
+    categoriaFiltro: "Viajes y Retiros"
+  }
+};
+
+let currentModalCatFiltro = null;
+
+function getDetalleCategoria(nombre) {
+  const n = (nombre || '').toLowerCase();
+  if (n.includes('iconograf')) return CATEGORIAS_DETALLES.iconografia;
+  if (n.includes('curso')) return CATEGORIAS_DETALLES.cursos;
+  if (n.includes('taller') || n.includes('seminario')) return CATEGORIAS_DETALLES.talleres;
+  if (n.includes('viaje') || n.includes('retiro')) return CATEGORIAS_DETALLES.viajes;
+  return null;
+}
+
+function abrirModalCategoria(nombre, imgUrl) {
+  const detalle = getDetalleCategoria(nombre) || {
+    titulo: nombre,
+    subtitulo: 'Propuesta de arte sacro y formación bizantina',
+    parrafos: ['Conocé más sobre esta propuesta y consultá las opciones vigentes.'],
+    botonTexto: 'Ver en catálogo',
+    categoriaFiltro: nombre
+  };
+
+  currentModalCatFiltro = detalle.categoriaFiltro || nombre;
+
+  const modalBody = document.getElementById('modal-categoria-body');
+  const actionBtn = document.getElementById('modal-cat-action-btn');
+  const modal = document.getElementById('modal-categoria');
+  if (!modalBody || !modal) return;
+
+  const parrafosHtml = detalle.parrafos.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+
+  modalBody.innerHTML = `
+    ${imgUrl ? `<div class="cat-modal-hero-img"><img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(detalle.titulo)}"></div>` : ''}
+    <span class="cat-modal-badge"><i class="fas fa-feather-alt"></i> María Magdalena</span>
+    <h2 class="cat-modal-title">${escapeHtml(detalle.titulo)}</h2>
+    <p class="cat-modal-subtitle">${escapeHtml(detalle.subtitulo)}</p>
+    <div class="cat-modal-body-text">
+      ${parrafosHtml}
+    </div>
+  `;
+
+  if (actionBtn) {
+    actionBtn.innerHTML = `<span>${escapeHtml(detalle.botonTexto || 'Ver en catálogo')}</span> <i class="fas fa-arrow-right"></i>`;
+  }
+
+  // Scroll posicionado estrictamente al inicio
+  modalBody.scrollTop = 0;
+
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function explorarCategoriaDesdeModal() {
+  const cat = currentModalCatFiltro;
+  cerrarModalCategoria();
+  if (cat) {
+    filCat(cat);
+    scrollToProductos();
+  }
+}
+
+function cerrarModalCategoria(e) {
+  if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('custom-modal-close') && !e.target.classList.contains('btn-modal-close')) {
+    return;
+  }
+  const modal = document.getElementById('modal-categoria');
+  if (modal) {
+    modal.classList.remove('active');
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  }
+}
+
+// ======================================================
+// SECCIÓN DE ÚLTIMAS DEL BLOG EN HOME
+// ======================================================
+let blogHomeArticulos = [];
+
+async function loadBlogHome() {
+  const grid = document.getElementById('blog-home-grid');
+  if (!grid) return;
+  try {
+    const res = await fetch(`${API_URL}/blog`);
+    if (!res.ok) throw new Error('Error al cargar notas');
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      const sec = document.getElementById('blog-home');
+      if (sec) sec.style.display = 'none';
+      return;
+    }
+
+    // Tomar las 3 últimas publicaciones
+    blogHomeArticulos = data.slice(0, 3);
+
+    grid.innerHTML = blogHomeArticulos.map(art => {
+      const fecha = new Date(art.creado_en || Date.now()).toLocaleDateString('es-AR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const titEsc = escapeHtml(art.titulo);
+      const subEsc = art.subtitulo ? escapeHtml(art.subtitulo) : '';
+      const img = art.imagen_portada || 'img/portada1.webp';
+
+      return `
+        <article class="blog-home-card" onclick="abrirModalBlog(${art.id})" role="button" tabindex="0">
+          <div class="blog-home-img-wrap">
+            <img src="${img}" alt="${titEsc}" loading="lazy">
+          </div>
+          <div class="blog-home-content">
+            <span class="blog-home-date"><i class="far fa-calendar-alt"></i> ${fecha}</span>
+            <h3 class="blog-home-title">${titEsc}</h3>
+            ${subEsc ? `<p class="blog-home-sub">${subEsc}</p>` : ''}
+            <span class="blog-home-cta">Leer nota <i class="fas fa-arrow-right"></i></span>
+          </div>
+        </article>
+      `;
+    }).join('');
+  } catch (err) {
+    console.warn('No se pudieron cargar las notas en la portada:', err);
+    const sec = document.getElementById('blog-home');
+    if (sec) sec.style.display = 'none';
+  }
+}
+
+function abrirModalBlog(id) {
+  const art = blogHomeArticulos.find(a => a.id === id);
+  if (!art) {
+    window.location.href = `articulo.html?id=${id}`;
+    return;
+  }
+
+  const fecha = new Date(art.creado_en || Date.now()).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  const titEsc = escapeHtml(art.titulo);
+  const subEsc = art.subtitulo ? escapeHtml(art.subtitulo) : '';
+  const img = art.imagen_portada || 'img/portada1.webp';
+
+  const parrafos = (art.contenido || '')
+    .split(/\n\s*\n/)
+    .map(p => p.trim())
+    .filter(p => p.length > 0)
+    .map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+
+  const modalBody = document.getElementById('modal-blog-body');
+  const actionLink = document.getElementById('modal-blog-action-btn');
+  const modal = document.getElementById('modal-blog');
+  if (!modalBody || !modal) return;
+
+  modalBody.innerHTML = `
+    <div class="modal-blog-header-img">
+      <img src="${img}" alt="${titEsc}">
+    </div>
+    <div class="modal-blog-meta">
+      <span><i class="far fa-calendar-alt"></i> ${fecha}</span>
+      <span><i class="fas fa-feather-alt"></i> Por Giselle Ochoa</span>
+    </div>
+    <h2 class="modal-blog-title">${titEsc}</h2>
+    ${subEsc ? `<h4 class="modal-blog-sub">${subEsc}</h4>` : ''}
+    <div class="modal-blog-text">
+      ${parrafos}
+    </div>
+  `;
+
+  if (actionLink) {
+    actionLink.href = 'blog.html';
+  }
+
+  // Scroll posicionado al inicio
+  modalBody.scrollTop = 0;
+
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function cerrarModalBlog(e) {
+  if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('custom-modal-close') && !e.target.classList.contains('btn-modal-close')) {
+    return;
+  }
+  const modal = document.getElementById('modal-blog');
+  if (modal) {
+    modal.classList.remove('active');
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  }
+}
+
+// Cerrar cualquier modal con tecla Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    cerrarModalCategoria();
+    cerrarModalBlog();
+  }
+});

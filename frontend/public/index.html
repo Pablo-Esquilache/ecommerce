@@ -163,6 +163,24 @@
         </div>
     </section>
 
+    <!-- Novedades del Blog / Últimas Publicaciones -->
+    <section class="blog-home-section" id="blog-home">
+        <div class="container">
+            <div class="blog-home-header">
+                <h2>Últimas del Blog</h2>
+                <p>Reflexiones, técnica y espiritualidad del arte sacro tradicional</p>
+            </div>
+            
+            <div class="blog-home-grid" id="blog-home-grid">
+                <!-- Se inyectan dinámicamente las 3 últimas notas con miniaturas horizontales -->
+            </div>
+            
+            <div class="blog-home-footer">
+                <a href="blog.html" class="btn-blog-outline"><i class="fas fa-book-open"></i> Ir al Blog Completo</a>
+            </div>
+        </div>
+    </section>
+
     <!-- Información Importante / Contacto -->
     <footer id="contacto">
         <div class="container footer-grid">
@@ -232,6 +250,38 @@
         <i class="fas fa-arrow-up"></i>
     </button>
     
+    <!-- Modal Informativo de Categoría -->
+    <div class="custom-modal-backdrop" id="modal-categoria" style="display:none;" onclick="cerrarModalCategoria(event)">
+        <div class="custom-modal-card" onclick="event.stopPropagation()">
+            <button class="custom-modal-close" onclick="cerrarModalCategoria()" aria-label="Cerrar modal">&times;</button>
+            <div class="custom-modal-scroll" id="modal-categoria-body">
+                <!-- Contenido inyectado dinámicamente -->
+            </div>
+            <div class="custom-modal-footer" id="modal-categoria-footer">
+                <button class="btn-modal-close" onclick="cerrarModalCategoria()">Cerrar</button>
+                <button class="btn-modal-action" id="modal-cat-action-btn" onclick="explorarCategoriaDesdeModal()">
+                    <span>Ver en catálogo</span> <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Lectura de Nota de Blog -->
+    <div class="custom-modal-backdrop" id="modal-blog" style="display:none;" onclick="cerrarModalBlog(event)">
+        <div class="custom-modal-card custom-modal-card-lg" onclick="event.stopPropagation()">
+            <button class="custom-modal-close" onclick="cerrarModalBlog()" aria-label="Cerrar modal">&times;</button>
+            <div class="custom-modal-scroll" id="modal-blog-body">
+                <!-- Contenido de la nota inyectado dinámicamente -->
+            </div>
+            <div class="custom-modal-footer">
+                <button class="btn-modal-close" onclick="cerrarModalBlog()">Cerrar</button>
+                <a href="blog.html" class="btn-modal-action" id="modal-blog-action-btn">
+                    <span>Ir al Blog</span> <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
 </body>
 </html>
