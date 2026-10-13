@@ -124,7 +124,13 @@ const pedidoController = {
         costo_envio,
         total,
         metodo_pago,
-        metodo_envio
+        metodo_envio,
+        direccion_envio: cliente.direccion,
+        ciudad_envio: cliente.ciudad,
+        provincia_envio: cliente.provincia,
+        cp_envio: cliente.codigo_postal,
+        nombre_receptor: `${cliente.nombre} ${cliente.apellido || ''}`.trim(),
+        telefono_receptor: cliente.telefono || null
       };
 
       // 5. Crear el pedido localmente en DB y descontar stock atómicamente

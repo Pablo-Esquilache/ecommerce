@@ -60,7 +60,21 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }
 
 
 
-// Sentry Error Handler (debe ir despus de todas las rutas)
+// Manejador amigable de errores para Multer y validaciones de archivos
+app.use((err, req, res, next) => {
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'El archivo excede el tamaño máximo permitido.' });
+    }
+    return res.status(400).json({ error: `Error en la subida de archivos: ${err.message}` });
+  }
+  if (err.message && (err.message.includes('Solo se permiten') || err.message.includes('Formato de archivo'))) {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
+});
+
+// Sentry Error Handler (debe ir después de todas las rutas)
 Sentry.setupExpressErrorHandler(app);
 
 // Exportar la app envuelta para Netlify Functions

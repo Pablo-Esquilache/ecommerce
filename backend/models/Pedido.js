@@ -7,6 +7,12 @@ async function ensurePedidoColumns(clientOrDb) {
     await clientOrDb.query(`
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS metodo_envio VARCHAR(100);
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS direccion_envio VARCHAR(255);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS ciudad_envio VARCHAR(100);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS provincia_envio VARCHAR(100);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS cp_envio VARCHAR(20);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS nombre_receptor VARCHAR(200);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS telefono_receptor VARCHAR(50);
       ALTER TABLE detalles_pedido ADD COLUMN IF NOT EXISTS modalidad VARCHAR(50);
     `);
     columnsChecked = true;
@@ -22,14 +28,23 @@ const Pedido = {
       await ensurePedidoColumns(client);
       await client.query('BEGIN');
       
-      const { cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio } = pedidoData;
+      const { 
+        cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio,
+        direccion_envio, ciudad_envio, provincia_envio, cp_envio, nombre_receptor, telefono_receptor 
+      } = pedidoData;
       
       const insertPedidoQuery = `
-        INSERT INTO pedidos (cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio, estado)
-        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente')
+        INSERT INTO pedidos (
+          cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio, estado,
+          direccion_envio, ciudad_envio, provincia_envio, cp_envio, nombre_receptor, telefono_receptor
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $7, $8, $9, $10, $11, $12)
         RETURNING *
       `;
-      const { rows: pedRows } = await client.query(insertPedidoQuery, [cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio]);
+      const { rows: pedRows } = await client.query(insertPedidoQuery, [
+        cliente_id, subtotal, costo_envio, total, metodo_pago, metodo_envio,
+        direccion_envio || null, ciudad_envio || null, provincia_envio || null, cp_envio || null, nombre_receptor || null, telefono_receptor || null
+      ]);
       const pedido = pedRows[0];
 
       const insertDetalleQuery = `
@@ -73,13 +88,13 @@ const Pedido = {
   getAll: async () => {
     const query = `
       SELECT p.*, 
-             c.nombre || ' ' || c.apellido as cliente_nombre, 
+             COALESCE(p.nombre_receptor, c.nombre || ' ' || c.apellido) as cliente_nombre, 
              c.email as cliente_email,
-             c.telefono as cliente_telefono,
-             c.direccion as cliente_direccion,
-             c.ciudad as cliente_ciudad,
-             c.provincia as cliente_provincia,
-             c.codigo_postal as cliente_cp,
+             COALESCE(p.telefono_receptor, c.telefono) as cliente_telefono,
+             COALESCE(p.direccion_envio, c.direccion) as cliente_direccion,
+             COALESCE(p.ciudad_envio, c.ciudad) as cliente_ciudad,
+             COALESCE(p.provincia_envio, c.provincia) as cliente_provincia,
+             COALESCE(p.cp_envio, c.codigo_postal) as cliente_cp,
              COALESCE(
                (
                  SELECT json_agg(
@@ -109,9 +124,16 @@ const Pedido = {
   },
 
   getById: async (id) => {
-    // Info del pedido
+    // Info del pedido con snapshot congelado de envío
     const { rows: pedidoRow } = await db.query(`
-      SELECT p.*, c.nombre, c.apellido, c.email, c.direccion, c.ciudad, c.provincia, c.codigo_postal
+      SELECT p.*, 
+             COALESCE(p.nombre_receptor, c.nombre || ' ' || c.apellido) as cliente_nombre,
+             c.nombre, c.apellido, c.email,
+             COALESCE(p.telefono_receptor, c.telefono) as telefono,
+             COALESCE(p.direccion_envio, c.direccion) as direccion, 
+             COALESCE(p.ciudad_envio, c.ciudad) as ciudad, 
+             COALESCE(p.provincia_envio, c.provincia) as provincia, 
+             COALESCE(p.cp_envio, c.codigo_postal) as codigo_postal
       FROM pedidos p
       JOIN clientes c ON p.cliente_id = c.id
       WHERE p.id = $1

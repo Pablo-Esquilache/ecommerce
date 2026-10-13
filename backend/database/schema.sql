@@ -82,6 +82,12 @@ CREATE TABLE "pedidos" (
   "metodo_envio" VARCHAR(100),
   "preferencia_mp_id" VARCHAR(255),
   "tracking_number" VARCHAR(255),
+  "direccion_envio" VARCHAR(255),
+  "ciudad_envio" VARCHAR(100),
+  "provincia_envio" VARCHAR(100),
+  "cp_envio" VARCHAR(20),
+  "nombre_receptor" VARCHAR(200),
+  "telefono_receptor" VARCHAR(50),
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("cliente_id") REFERENCES "clientes" ("id") ON DELETE RESTRICT
 );

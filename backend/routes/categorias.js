@@ -5,7 +5,16 @@ const categoriaController = require('../controllers/categoriaController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      return cb(null, true);
+    }
+    cb(new Error('Solo se permiten archivos de imagen (JPG, PNG, WEBP, GIF).'));
+  }
+});
 const uploadCatImages = upload.fields([{ name: 'imagen', maxCount: 1 }]);
 
 router.get('/', categoriaController.getAll);
