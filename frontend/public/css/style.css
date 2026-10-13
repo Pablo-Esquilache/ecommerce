@@ -1268,7 +1268,7 @@ footer, .footer {
    BLOG EN HOME (ÚLTIMAS PUBLICACIONES)
 ====================================================== */
 .blog-home-section {
-    padding: 75px 0 85px;
+    padding: 60px 0 70px;
     background: #FAF8F5;
     border-top: 1px solid rgba(199, 133, 21, 0.16);
     border-bottom: 1px solid rgba(199, 133, 21, 0.16);
@@ -1276,56 +1276,74 @@ footer, .footer {
 
 .blog-home-header {
     text-align: center;
-    margin-bottom: 45px;
+    margin-bottom: 35px;
 }
 
 .blog-home-header h2 {
     font-family: var(--font-title);
-    font-size: 2.2rem;
+    font-size: 2rem;
     color: var(--primary-color);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     letter-spacing: 0.5px;
 }
 
 .blog-home-header p {
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: #666;
     max-width: 650px;
     margin: 0 auto;
 }
 
+/* Grilla en una sola línea de 3 tarjetas horizontales */
 .blog-home-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 880px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
+@media (max-width: 1024px) {
+    .blog-home-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 860px) {
+    .blog-home-grid {
+        grid-template-columns: 1fr;
+        max-width: 580px;
+        gap: 16px;
+    }
+}
+
+/* Tarjeta individual apaisada: imagen a un costado (izquierda), texto al otro (derecha) */
 .blog-home-card {
     background: #FFFFFF;
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1px solid rgba(199, 133, 21, 0.22);
-    box-shadow: 0 4px 18px rgba(14, 42, 71, 0.05);
+    box-shadow: 0 4px 14px rgba(14, 42, 71, 0.05);
     cursor: pointer;
     display: flex;
-    flex-direction: row; /* Horizontal: imagen a un costado, texto al otro */
+    flex-direction: row; /* Horizontal */
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    min-height: 155px;
+    height: 135px; /* Compacta para que no sea larga */
+    align-items: stretch;
 }
 
 .blog-home-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(199, 133, 21, 0.16);
+    box-shadow: 0 10px 24px rgba(199, 133, 21, 0.18);
     border-color: var(--accent-color);
 }
 
-/* MINIATURA AL COSTADO IZQUIERDO (APAISADA) */
+/* Miniatura al costado izquierdo */
 .blog-home-img-wrap {
-    flex: 0 0 240px;
-    width: 240px;
-    min-height: 100%;
+    flex: 0 0 115px;
+    width: 115px;
+    height: 100%;
     overflow: hidden;
     position: relative;
     background: #f4ede2;
@@ -1340,40 +1358,47 @@ footer, .footer {
 }
 
 .blog-home-card:hover .blog-home-img-wrap img {
-    transform: scale(1.06);
+    transform: scale(1.08);
 }
 
+/* Contenido al costado derecho */
 .blog-home-content {
     flex: 1;
-    padding: 18px 24px;
+    min-width: 0;
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
 .blog-home-date {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     color: var(--accent-color);
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    white-space: nowrap;
 }
 
 .blog-home-title {
     font-family: var(--font-title);
-    font-size: 1.15rem;
+    font-size: 0.92rem;
     color: var(--primary-color);
-    margin: 0 0 6px;
-    line-height: 1.35;
+    margin: 0 0 4px;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .blog-home-sub {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
     color: #666;
-    line-height: 1.45;
-    margin: 0 0 10px;
+    line-height: 1.35;
+    margin: 0 0 6px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -1381,41 +1406,35 @@ footer, .footer {
 }
 
 .blog-home-cta {
-    font-size: 0.85rem;
+    font-size: 0.76rem;
     font-weight: 600;
     color: var(--accent-color);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     transition: gap 0.2s ease;
 }
 
 .blog-home-card:hover .blog-home-cta {
-    gap: 10px;
+    gap: 7px;
 }
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
     .blog-home-card {
-        min-height: 135px;
+        height: 125px;
     }
     .blog-home-img-wrap {
-        flex: 0 0 125px;
-        width: 125px;
+        flex: 0 0 100px;
+        width: 100px;
     }
     .blog-home-content {
-        padding: 12px 14px;
+        padding: 8px 10px;
     }
     .blog-home-title {
-        font-size: 0.98rem;
-        margin-bottom: 4px;
+        font-size: 0.88rem;
     }
     .blog-home-sub {
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-        -webkit-line-clamp: 2;
-    }
-    .blog-home-cta {
-        font-size: 0.78rem;
+        font-size: 0.75rem;
     }
 }
 
