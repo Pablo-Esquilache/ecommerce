@@ -53,6 +53,19 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+const DEFAULT_FROM = process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Iconografía Bizantina" <noreply@iconografiabizantina.com>';
+
+function formatFechaEspanol(fechaStr) {
+    if (!fechaStr) return null;
+    try {
+        const d = new Date(fechaStr);
+        if (isNaN(d.getTime())) return fechaStr;
+        return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    } catch (_) {
+        return fechaStr;
+    }
+}
+
 const getHtmlTemplate = (titulo, contenido) => {
     const publicUrl = process.env.PUBLIC_URL || 'https://iconografiabizantina.netlify.app';
     return `
@@ -105,7 +118,7 @@ const emailService = {
         const msgEsc = escapeHtml(mensaje || '').replace(/\n/g, '<br>');
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Iconografía Bizantina" <noreply@iconografiabizantina.com>',
+            from: DEFAULT_FROM,
             to: adminEmail || 'admin@tienda.com',
             replyTo: email,
             subject: `Nuevo mensaje de contacto: ${asuntoEsc}`,
@@ -121,42 +134,136 @@ const emailService = {
     },
 
     enviarCorreoPago: async (clienteMail, detallesPedido) => {
-        let digitalContent = '';
-        if (detallesPedido.detalles && detallesPedido.detalles.length > 0) {
-            const digitalItems = detallesPedido.detalles.filter(d => d.tipo_producto === 'digital');
-            if (digitalItems.length > 0) {
-                digitalContent = '<h3 style="color:#2C3E50; margin-top:25px; border-top: 1px solid #eee; padding-top: 15px;">Tus Productos Digitales</h3><ul style="list-style-type:none; padding:0;">';
-                for (const item of digitalItems) {
-                    digitalContent += `<li style="background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:10px;"><strong>${item.producto_nombre}</strong>`;
-                    let archivoUrl = item.archivo_digital;
-                    if (archivoUrl && !archivoUrl.startsWith('http')) {
-                        const { data } = await supabase.storage.from('digitales').createSignedUrl(archivoUrl, 7 * 24 * 60 * 60);
-                        if (data) archivoUrl = data.signedUrl;
-                    }
-                    if (archivoUrl) {
-                        digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:10px; margin-bottom:5px; padding:10px 20px; background-color:#3498db; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">📥 Descargar Archivo</a>
-                        <p style="font-size: 13px; color: #7f8c8d; margin-top: 5px; margin-bottom: 0;"><em>⚠️ Por seguridad, este enlace es válido por 7 días. Te recomendamos descargarlo en tu dispositivo.</em></p>`;
-                    }
-                    if (item.video_url) {
-                        digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:10px; margin-left: 5px; padding:10px 20px; background-color:#e74c3c; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">▶ Ver Video</a>`;
-                    }
-                    digitalContent += `</li>`;
-                }
-                digitalContent += '</ul>';
+        const items = detallesPedido.detalles || [];
+        const digitalItems = items.filter(d => d.tipo_producto === 'digital');
+        const tallerItems = items.filter(d => d.tipo_producto === 'taller');
+        const viajeItems = items.filter(d => d.tipo_producto === 'viaje');
+        const fisicoItems = items.filter(d => !d.tipo_producto || d.tipo_producto === 'fisico');
+
+        let tallerContent = '';
+        if (tallerItems.length > 0) {
+            for (const t of tallerItems) {
+                const modalidadTexto = (t.modalidad || 'presencial').toLowerCase();
+                const esOnline = modalidadTexto === 'online';
+                const fechaInicioTexto = formatFechaEspanol(t.fecha_inicio);
+                const nombreEsc = escapeHtml(t.producto_nombre || 'Taller y Seminario');
+                const descEsc = t.producto_descripcion ? escapeHtml(t.producto_descripcion).replace(/\n/g, '<br>') : '';
+                const lugarEsc = t.lugar ? escapeHtml(t.lugar) : '';
+
+                tallerContent += `
+                <div style="background-color: #FAF8F5; border: 1px solid #efe8df; border-left: 4px solid #C78515; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                    <h3 style="color: #0E2A47; margin-top: 0; margin-bottom: 12px; font-size: 18px; font-family: 'Cinzel', serif;">🎨 Inscripción Confirmada: ${nombreEsc}</h3>
+                    <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0 0 15px 0; color: #333;">
+                        <li><strong>Modalidad elegida:</strong> <span style="text-transform: capitalize; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #ddd; font-weight: 600;">${modalidadTexto}</span></li>
+                        ${fechaInicioTexto ? `<li><strong>Fecha de inicio:</strong> ${fechaInicioTexto}</li>` : ''}
+                        ${lugarEsc ? `<li><strong>Lugar:</strong> ${lugarEsc}</li>` : ''}
+                    </ul>
+                    ${descEsc ? `
+                        <div style="background: #ffffff; padding: 12px 15px; border-radius: 4px; border: 1px dashed #d1c7b7; font-size: 14px; color: #555; margin-bottom: 15px;">
+                            <strong>ℹ️ Información importante para el inicio:</strong><br>
+                            ${descEsc}
+                        </div>
+                    ` : ''}
+                    ${esOnline ? `
+                        <div style="background: #e0f2fe; padding: 12px 15px; border-radius: 4px; font-size: 13px; color: #0369a1;">
+                            📹 <strong>Acceso a la transmisión:</strong> En los días previos al inicio del taller te enviaremos por este medio o por WhatsApp el enlace exclusivo de YouTube para conectarte a las clases en vivo.
+                        </div>
+                    ` : `
+                        <div style="background: #fef3c7; padding: 12px 15px; border-radius: 4px; font-size: 13px; color: #92400e;">
+                            📍 <strong>Lugar de encuentro:</strong> Te esperamos en el atelier en la fecha indicada.
+                        </div>
+                    `}
+                </div>`;
             }
         }
 
+        let viajeContent = '';
+        if (viajeItems.length > 0) {
+            for (const v of viajeItems) {
+                const fechaInicioTexto = formatFechaEspanol(v.fecha_inicio);
+                const nombreEsc = escapeHtml(v.producto_nombre || 'Viaje y Retiro');
+                const descEsc = v.producto_descripcion ? escapeHtml(v.producto_descripcion).replace(/\n/g, '<br>') : '';
+                const lugarEsc = v.lugar ? escapeHtml(v.lugar) : '';
+
+                viajeContent += `
+                <div style="background-color: #FAF8F5; border: 1px solid #efe8df; border-left: 4px solid #0E2A47; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                    <h3 style="color: #0E2A47; margin-top: 0; margin-bottom: 12px; font-size: 18px; font-family: 'Cinzel', serif;">✈️ Plaza Reservada: ${nombreEsc}</h3>
+                    <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0 0 15px 0; color: #333;">
+                        <li><strong>Concepto abonado:</strong> <span style="background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #ddd; font-weight: 600; color: #0E2A47;">Reserva de Plaza Confirmada</span></li>
+                        ${fechaInicioTexto ? `<li><strong>Fecha del viaje / retiro:</strong> ${fechaInicioTexto}</li>` : ''}
+                        ${lugarEsc ? `<li><strong>Destino:</strong> ${lugarEsc}</li>` : ''}
+                    </ul>
+                    ${descEsc ? `
+                        <div style="background: #ffffff; padding: 12px 15px; border-radius: 4px; border: 1px dashed #d1c7b7; font-size: 14px; color: #555; margin-bottom: 15px;">
+                            <strong>🧭 Información importante del retiro:</strong><br>
+                            ${descEsc}
+                        </div>
+                    ` : ''}
+                    <div style="background: #ede9fe; padding: 12px 15px; border-radius: 4px; font-size: 13px; color: #5b21b6;">
+                        📌 <strong>Próximos pasos y coordinación:</strong> Giselle se pondrá en contacto directo contigo a través de WhatsApp o teléfono en los próximos días para brindarte el itinerario completo, coordinar los puntos de encuentro y acompañarte en todo el proceso previo a la partida.
+                    </div>
+                </div>`;
+            }
+        }
+
+        let digitalContent = '';
+        if (digitalItems.length > 0) {
+            digitalContent = '<h3 style="color:#0E2A47; margin-top:25px; border-top: 1px solid #eee; padding-top: 15px; font-family: \'Cinzel\', serif;">💻 Tus Productos Digitales</h3><ul style="list-style-type:none; padding:0;">';
+            for (const item of digitalItems) {
+                digitalContent += `<li style="background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:10px;"><strong>${escapeHtml(item.producto_nombre)}</strong>`;
+                let archivoUrl = item.archivo_digital;
+                if (archivoUrl && !archivoUrl.startsWith('http')) {
+                    const { data } = await supabase.storage.from('digitales').createSignedUrl(archivoUrl, 7 * 24 * 60 * 60);
+                    if (data) archivoUrl = data.signedUrl;
+                }
+                if (archivoUrl) {
+                    digitalContent += `<br><a href="${archivoUrl}" target="_blank" style="display:inline-block; margin-top:10px; margin-bottom:5px; padding:10px 20px; background-color:#0E2A47; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">📥 Descargar Archivo</a>
+                    <p style="font-size: 13px; color: #7f8c8d; margin-top: 5px; margin-bottom: 0;"><em>⚠️ Por seguridad, este enlace es válido por 7 días. Te recomendamos descargarlo en tu dispositivo.</em></p>`;
+                }
+                if (item.video_url) {
+                    digitalContent += `<br><a href="${item.video_url}" target="_blank" style="display:inline-block; margin-top:10px; margin-left: 5px; padding:10px 20px; background-color:#C78515; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">▶ Ver Video</a>`;
+                }
+                digitalContent += `</li>`;
+            }
+            digitalContent += '</ul>';
+        }
+
+        let fisicoContent = '';
+        if (fisicoItems.length > 0) {
+            fisicoContent = '<p style="margin-top:20px; background: #FAF8F5; padding: 12px; border-radius: 6px; border: 1px solid #efe8df;">📦 <strong>Iconografías Físicas:</strong> Comenzaremos a preparar tu paquete cuidadosamente para su despacho. Te notificaremos por este medio cuando esté en camino con su código de seguimiento.</p>';
+        }
+
+        // Asunto y título adaptativos según los productos comprados
+        let asunto = `¡Pago confirmado! Pedido #${detallesPedido.id}`;
+        let tituloHtml = '¡Gracias por tu compra!';
+
+        if (tallerItems.length > 0 && viajeItems.length === 0 && digitalItems.length === 0 && fisicoItems.length === 0) {
+            asunto = `¡Inscripción confirmada! Taller: ${tallerItems[0].producto_nombre} — Pedido #${detallesPedido.id}`;
+            tituloHtml = '¡Tu cupo está reservado con éxito!';
+        } else if (viajeItems.length > 0 && tallerItems.length === 0 && digitalItems.length === 0 && fisicoItems.length === 0) {
+            asunto = `¡Plaza reservada! ${viajeItems[0].producto_nombre} — Pedido #${detallesPedido.id}`;
+            tituloHtml = '¡Tu reserva de viaje ha sido confirmada!';
+        } else if (digitalItems.length > 0 && tallerItems.length === 0 && viajeItems.length === 0 && fisicoItems.length === 0) {
+            asunto = `¡Pago confirmado y acceso a tu curso! Pedido #${detallesPedido.id}`;
+            tituloHtml = '¡Acceso habilitado a tu material digital!';
+        }
+
+        const nombreCliente = escapeHtml(detallesPedido.cliente_nombre || detallesPedido.nombre || 'Cliente');
+
         const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Tienda Online" <noreply@tienda.com>',
+            from: DEFAULT_FROM,
             to: clienteMail,
-            subject: `¡Pago confirmado! Pedido #${detallesPedido.id}`,
-            html: getHtmlTemplate('¡Gracias por tu compra!', `
-                <p>Hemos recibido el pago exitoso de tu pedido <strong>#${detallesPedido.id}</strong>.</p>
+            subject: asunto,
+            html: getHtmlTemplate(tituloHtml, `
+                <p>Hola <strong>${nombreCliente}</strong>, confirmamos que hemos recibido con éxito el pago de tu pedido <strong>#${detallesPedido.id}</strong>.</p>
                 <div style="background-color: #f1f2f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                    <p style="margin:0; font-size: 18px;">Total pagado: <strong>$${detallesPedido.total}</strong></p>
+                    <p style="margin:0; font-size: 18px;">Total abonado: <strong>$${detallesPedido.total}</strong></p>
                 </div>
+                ${tallerContent}
+                ${viajeContent}
                 ${digitalContent}
-                <p style="margin-top:20px;">Pronto comenzaremos a prepararlo para su envío (si contiene productos físicos). Te notificaremos cuando esté en camino.</p>
+                ${fisicoContent}
+                <p style="margin-top:25px; color:#666; font-size:14px;">¿Tenés alguna duda o consulta? Podés responder directamente a este correo o escribirnos por WhatsApp. ¡Muchas gracias por confiar en nuestra labor!</p>
             `)
         };
         await enviarOConsola(mailOptions);

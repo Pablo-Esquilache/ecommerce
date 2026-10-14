@@ -146,7 +146,9 @@ const Pedido = {
 
     // Info de los detalles
     const { rows: detalles } = await db.query(`
-      SELECT d.*, pr.nombre as producto_nombre, pr.imagen_1, pr.tipo_producto, pr.archivo_digital, pr.video_url
+      SELECT d.*, pr.nombre as producto_nombre, pr.descripcion as producto_descripcion, 
+             pr.imagen_1, pr.tipo_producto, pr.archivo_digital, pr.video_url, 
+             pr.fecha_inicio, pr.fecha_cierre_inscripcion, pr.lugar
       FROM detalles_pedido d
       JOIN productos pr ON d.producto_id = pr.id
       WHERE d.pedido_id = $1
@@ -163,9 +165,6 @@ const Pedido = {
         if (!currRows[0]) throw new Error('Pedido no encontrado');
         const estadoAnterior = currRows[0].estado;
 
-        const query = 'UPDATE pedidos SET estado = $1 WHERE id = $2 RETURNING *';
-        const { rows } = await client.query(query, [status, id]);
-        
         if (status === 'cancelado' && estadoAnterior !== 'cancelado') {
             const { rows: detalles } = await client.query(
                 'SELECT d.producto_id, d.cantidad, d.modalidad, p.tipo_producto FROM detalles_pedido d JOIN productos p ON d.producto_id = p.id WHERE d.pedido_id = $1', 
