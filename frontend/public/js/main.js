@@ -190,6 +190,43 @@ let currentPageTalleres = 1;
 let currentPageViajes = 1;
 const itemsPerPageMain = 12;
 
+// Inyección dinámica de Schema.org JSON-LD para Google Rich Results
+function actualizarSchemaProductos(productos) {
+    try {
+        let schemaScript = document.getElementById('schema-productos');
+        if (!schemaScript) {
+            schemaScript = document.createElement('script');
+            schemaScript.id = 'schema-productos';
+            schemaScript.type = 'application/ld+json';
+            document.head.appendChild(schemaScript);
+        }
+        const schemaData = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "Catálogo de Obras y Cursos de Iconografía Bizantina",
+            "itemListElement": productos.slice(0, 30).map((p, idx) => ({
+                "@type": "ListItem",
+                "position": idx + 1,
+                "item": {
+                    "@type": "Product",
+                    "name": p.nombre,
+                    "description": p.descripcion ? p.descripcion.substring(0, 160) : p.nombre,
+                    "image": p.imagen_1 || 'https://iconografiabizantina.netlify.app/img/og-image.jpg',
+                    "offers": {
+                        "@type": "Offer",
+                        "priceCurrency": "ARS",
+                        "price": p.precio,
+                        "availability": (p.stock > 0 || p.tipo_producto === 'digital') ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                    }
+                }
+            }))
+        };
+        schemaScript.textContent = JSON.stringify(schemaData);
+    } catch(e) {
+        console.warn('No se pudo inyectar el schema dinámico:', e);
+    }
+}
+
 // Renderizar en el DOM
 function renderProductos(arrayProductos) {
     const container = document.getElementById('productos-dinamicos-container');
@@ -200,6 +237,8 @@ function renderProductos(arrayProductos) {
         container.innerHTML = '<p style="text-align:center; width: 100%; color:#64748B; font-size:16px; margin: 40px 0;">No se encontraron productos disponibles en este momento.</p>';
         return;
     }
+
+    actualizarSchemaProductos(arrayProductos);
 
     const iconografias = arrayProductos.filter(p => !p.tipo_producto || p.tipo_producto === 'fisico');
     const digitales = arrayProductos.filter(p => p.tipo_producto === 'digital');

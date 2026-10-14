@@ -1,1 +1,7 @@
-User-agent: *\nAllow: /\n\nSitemap: https://tumarca.com/sitemap.xml
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /checkout.html
+
+Sitemap: https://iconografiabizantina.netlify.app/sitemap.xml
