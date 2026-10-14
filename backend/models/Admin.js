@@ -70,6 +70,9 @@ const Admin = {
     const recientesQ = "SELECT id, total, estado, metodo_pago, creado_en FROM pedidos WHERE DATE(creado_en AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires') = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires')::date ORDER BY id DESC";
     const { rows: recientes } = await db.query(recientesQ);
     stats.pedidosRecientes = recientes;
+    const pendientesViejosQ = "SELECT id, total, creado_en FROM pedidos WHERE estado = 'pendiente' AND creado_en < (NOW() - INTERVAL '72 hours') ORDER BY id ASC";
+    const { rows: pendientesViejos } = await db.query(pendientesViejosQ);
+    stats.pendientesViejos = pendientesViejos;
     return stats;
   },
 

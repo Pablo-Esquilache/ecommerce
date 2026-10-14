@@ -88,6 +88,7 @@ CREATE TABLE "pedidos" (
   "cp_envio" VARCHAR(20),
   "nombre_receptor" VARCHAR(200),
   "telefono_receptor" VARCHAR(50),
+  "email_pago_enviado" BOOLEAN DEFAULT FALSE,
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("cliente_id") REFERENCES "clientes" ("id") ON DELETE RESTRICT
 );

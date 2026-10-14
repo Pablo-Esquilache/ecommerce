@@ -109,26 +109,58 @@ router.post('/mercadopago', async (req, res) => {
                         return res.status(400).send('Monto abonado inconsistente con el total del pedido');
                     }
 
-                    // Actualización atómica condicional: sólo cambia a 'pagado' si NO estaba ya pagado
+                    // 1. Caso borde: Pago sobre pedido ya cancelado (evitar doble venta de obra única)
+                    if (pedidoDetails.estado === 'cancelado') {
+                        console.warn(`🚨 [Webhooks] ALERTA: Llegó pago aprobado para el Pedido #${pedidoDetails.id} que se encuentra CANCELADO.`);
+                        const emailService = require('../services/emailService');
+                        await emailService.enviarAlertaPagoPedidoCancelado(pedidoDetails, paymentInfo);
+                        return res.status(200).send('Pago recibido para pedido cancelado; administrador notificado.');
+                    }
+
+                    // 2. Actualización atómica condicional: sólo cambia a 'pagado' si está en 'pendiente'
                     const pedidoActualizado = await Pedido.marcarComoPagado(paymentInfo.external_reference);
 
-                    // Despachar correos únicamente si esta llamada realizó la transición a pagado (previene duplicados y condiciones de carrera)
-                    if (pedidoActualizado) {
-                        console.log(`✅ [Webhooks] Orden #${paymentInfo.external_reference} marcada exitosamente como PAGADO.`);
+                    // 3. Despachar correos si cambió a pagado O si el email al cliente no se había podido enviar previamente
+                    const debeEnviarEmail = Boolean(pedidoActualizado) || (pedidoDetails.estado === 'pagado' && !pedidoDetails.email_pago_enviado);
+
+                    if (debeEnviarEmail) {
+                        console.log(`✅ [Webhooks] Procesando despacho de emails para Orden #${paymentInfo.external_reference}...`);
                         
                         const emailService = require('../services/emailService');
-                        const emailPromises = [
-                            emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails)
-                        ];
-                        if (pedidoDetails.email) {
-                            emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
+                        const emailPromises = [];
+                        
+                        if (pedidoActualizado) {
+                            emailPromises.push(emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails));
                         }
-                        await Promise.race([
+                        
+                        let pagoEmailPromise = null;
+                        if (pedidoDetails.email && !pedidoDetails.email_pago_enviado) {
+                            pagoEmailPromise = emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails);
+                            emailPromises.push(pagoEmailPromise);
+                        }
+
+                        let timerId;
+                        const results = await Promise.race([
                             Promise.allSettled(emailPromises),
-                            new Promise(r => setTimeout(() => { console.warn('⚠️ [Webhooks POST] Emails excedieron 4500ms'); r(); }, 4500))
+                            new Promise(r => {
+                                timerId = setTimeout(() => {
+                                    console.warn('⚠️ [Webhooks POST] Despacho de emails superó tiempo límite');
+                                    r(null);
+                                }, 4500);
+                            })
                         ]);
+                        if (timerId) clearTimeout(timerId);
+
+                        // Si el correo de pago al cliente se completó con éxito, marcar en DB para no reintentar
+                        if (pagoEmailPromise && Array.isArray(results)) {
+                            const pagoResult = results.find(r => r.status === 'fulfilled');
+                            if (pagoResult) {
+                                await Pedido.marcarEmailPagoEnviado(pedidoDetails.id);
+                                console.log(`✉️ [Webhooks] Pedido #${pedidoDetails.id} registrado con email_pago_enviado = true`);
+                            }
+                        }
                     } else {
-                        console.log(`ℹ️ [Webhooks] Orden #${paymentInfo.external_reference} ya se encontraba pagada previamente. Se omiten emails duplicados.`);
+                        console.log(`ℹ️ [Webhooks] Orden #${paymentInfo.external_reference} ya se encontraba pagada y notificada previamente.`);
                     }
                 }
             } catch(apiError) {

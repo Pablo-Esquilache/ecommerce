@@ -425,9 +425,15 @@ const adminController = {
       
       const db = require('../config/database');
       const query = `
-        SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido, c.email as cliente_email, 
-               c.telefono as cliente_telefono, c.direccion as cliente_direccion, c.ciudad as cliente_ciudad, 
-               c.provincia as cliente_provincia, c.codigo_postal as cliente_cp
+        SELECT p.*, 
+               COALESCE(p.nombre_receptor, c.nombre || ' ' || c.apellido) as cliente_nombre,
+               c.apellido as cliente_apellido, 
+               c.email as cliente_email, 
+               COALESCE(p.telefono_receptor, c.telefono) as cliente_telefono, 
+               COALESCE(p.direccion_envio, c.direccion) as cliente_direccion, 
+               COALESCE(p.ciudad_envio, c.ciudad) as cliente_ciudad, 
+               COALESCE(p.provincia_envio, c.provincia) as cliente_provincia, 
+               COALESCE(p.cp_envio, c.codigo_postal) as cliente_cp
         FROM pedidos p
         JOIN clientes c ON p.cliente_id = c.id
         WHERE p.id = $1

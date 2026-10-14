@@ -22,7 +22,7 @@ const upload = multer({
   limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB máximo
   fileFilter: (req, file, cb) => {
     if (file.fieldname === 'archivo_digital') {
-      if (allowedDigitalMimes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
+      if (allowedDigitalMimes.includes(file.mimetype)) {
         return cb(null, true);
       }
       return cb(new Error('Formato de archivo digital no permitido (se permite PDF, ZIP o imagen).'));

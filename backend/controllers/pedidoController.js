@@ -9,7 +9,7 @@ const pedidoController = {
     try {
       let { cliente, carrito, metodo_envio, metodo_pago } = req.body;
 
-      // 1. Validaciones básicas de entrada
+      // 1. Validaciones básicas de entrada y lista blanca de métodos de pago
       if (!cliente || typeof cliente !== 'object' || !cliente.email || !cliente.nombre) {
         return res.status(400).json({ error: 'Nombre y correo electrónico del cliente son obligatorios.' });
       }
@@ -18,19 +18,12 @@ const pedidoController = {
         return res.status(400).json({ error: 'El carrito está vacío o el formato es inválido.' });
       }
 
-      // 2. Gestionar cliente
-      cliente.direccion = cliente.direccion || 'N/A';
-      cliente.codigo_postal = cliente.codigo_postal || 'N/A';
-      cliente.ciudad = cliente.ciudad || 'Digital';
-      cliente.provincia = cliente.provincia || 'Digital';
-      let clienteRecord = await Cliente.getByEmail(cliente.email);
-      if (!clienteRecord) {
-        clienteRecord = await Cliente.create(cliente);
-      } else {
-        clienteRecord = await Cliente.update(clienteRecord.id, cliente);
+      const METODOS_PAGO_VALIDOS = ['mercadopago', 'transferencia', 'transferencia_usd'];
+      if (!metodo_pago || !METODOS_PAGO_VALIDOS.includes(metodo_pago)) {
+        return res.status(400).json({ error: 'Método de pago no válido.' });
       }
 
-      // 3. Validar productos, cantidades y calcular subtotales con datos fidedignos de la DB
+      // 2. Validar productos, cantidades y calcular subtotales con datos fidedignos de la DB
       const db = require('../config/database');
       let conf = {};
       try {
@@ -69,7 +62,7 @@ const pedidoController = {
           hayFisico = true;
           // Validación preventiva de stock en servidor
           if (prodDb.stock < cant) {
-            return res.status(400).json({ 
+            return res.status(409).json({ 
               error: `Stock insuficiente para "${prodDb.nombre}". Disponible: ${prodDb.stock}, solicitado: ${cant}.` 
             });
           }
@@ -108,12 +101,46 @@ const pedidoController = {
 
       carrito = carritoValidado;
 
-      // 4. Validar costo de envío (imposibilitar negativos y omitir si es 100% digital/online)
+      // 3. Validar costo de envío (imposibilitar negativos y recalcular en servidor si aplica)
       let costo_envio = Math.max(0, Number(req.body.costo_envio) || 0);
       if (!hayFisico) {
         costo_envio = 0;
       } else if (conf.envio_gratis_activo && subtotal >= Number(conf.envio_gratis_limite) && !isUSD) {
         costo_envio = 0;
+      } else if (conf.correo_activo && conf.correo_cp && cliente.codigo_postal && cliente.codigo_postal !== 'N/A') {
+        try {
+          const correoArgentinoService = require('../services/correoArgentino');
+          let pesoTotalGramos = 0;
+          for (let it of detalles) {
+            if (it.tipo_producto !== 'digital') {
+              const prodDbRow = await db.query('SELECT peso FROM productos WHERE id = $1', [it.producto_id]);
+              const peso = parseFloat(prodDbRow.rows[0]?.peso) || 1000;
+              pesoTotalGramos += peso * it.cantidad;
+            }
+          }
+          const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cliente.codigo_postal, pesoTotalGramos);
+          if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
+            const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor));
+            const coincide = tarifasValidas.some(t => Math.abs(t - costo_envio) < 1.0);
+            if (!coincide) {
+              costo_envio = Math.min(...tarifasValidas);
+            }
+          }
+        } catch (errEnvio) {
+          console.warn('⚠️ No se pudo recalcular envío con Correo Argentino en checkout:', errEnvio.message);
+        }
+      }
+
+      // 4. Gestionar cliente (SOLO se persiste una vez validado íntegramente el carrito y stock)
+      cliente.direccion = cliente.direccion || 'N/A';
+      cliente.codigo_postal = cliente.codigo_postal || 'N/A';
+      cliente.ciudad = cliente.ciudad || 'Digital';
+      cliente.provincia = cliente.provincia || 'Digital';
+      let clienteRecord = await Cliente.getByEmail(cliente.email);
+      if (!clienteRecord) {
+        clienteRecord = await Cliente.create(cliente);
+      } else {
+        clienteRecord = await Cliente.update(clienteRecord.id, cliente);
       }
 
       const total = subtotal + costo_envio;
@@ -186,13 +213,17 @@ const pedidoController = {
       }
 
       // Proteger tiempo de ejecución en serverless (Netlify 10s timeout)
+      let timerId;
       await Promise.race([
         Promise.allSettled(emailPromises),
-        new Promise(resolve => setTimeout(() => {
-          console.warn('⚠️ [Email] El envío de correos excedió 4500ms, continuando para responder al cliente.');
-          resolve();
-        }, 4500))
+        new Promise(resolve => {
+          timerId = setTimeout(() => {
+            console.warn('⚠️ [Email] El envío de correos excedió 4500ms, continuando para responder al cliente.');
+            resolve();
+          }, 4500);
+        })
       ]);
+      if (timerId) clearTimeout(timerId);
 
       res.status(201).json({
         success: true,
@@ -202,7 +233,16 @@ const pedidoController = {
 
     } catch (error) {
       console.error("Error en checkout:", error);
-      res.status(400).json({ error: error.message || 'Error al procesar el pedido' });
+      if (process.env.SENTRY_DSN) {
+        try {
+          const Sentry = require('@sentry/node');
+          Sentry.captureException(error);
+        } catch (_) {}
+      }
+      if (error.isStockError || (error.message && error.message.toLowerCase().includes('stock insuficiente'))) {
+        return res.status(409).json({ error: error.message });
+      }
+      res.status(500).json({ error: 'Ocurrió un error al procesar tu pedido. Por favor, intenta nuevamente en unos minutos.' });
     }
   },
 
@@ -253,18 +293,32 @@ const pedidoController = {
                   emailPromises.push(emailService.enviarCorreoEntregado(pedidoDetails.email, pedidoDetails));
               }
           }
+          let timerIdStatus;
           await Promise.race([
               Promise.allSettled(emailPromises),
-              new Promise(resolve => setTimeout(() => {
-                  console.warn('⚠️ [Email] El envío de correos en cambio de estado excedió 4500ms, continuando para evitar timeout.');
-                  resolve();
-              }, 4500))
+              new Promise(resolve => {
+                  timerIdStatus = setTimeout(() => {
+                      console.warn('⚠️ [Email] El envío de correos en cambio de estado excedió 4500ms, continuando para evitar timeout.');
+                      resolve();
+                  }, 4500);
+              })
           ]);
+          if (timerIdStatus) clearTimeout(timerIdStatus);
       }
 
       res.json(pedidoActualizado);
     } catch (error) {
-      res.status(500).json({ error: 'Error al actualizar pedido' });
+      console.error("Error al actualizar pedido:", error);
+      if (process.env.SENTRY_DSN) {
+        try {
+          const Sentry = require('@sentry/node');
+          Sentry.captureException(error);
+        } catch (_) {}
+      }
+      if (error.isStockError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: 'Error al actualizar pedido: ' + (error.message || '') });
     }
   }
 };

@@ -13,6 +13,7 @@ async function ensurePedidoColumns(clientOrDb) {
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS cp_envio VARCHAR(20);
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS nombre_receptor VARCHAR(200);
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS telefono_receptor VARCHAR(50);
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS email_pago_enviado BOOLEAN DEFAULT FALSE;
       ALTER TABLE detalles_pedido ADD COLUMN IF NOT EXISTS modalidad VARCHAR(50);
     `);
     columnsChecked = true;
@@ -179,6 +180,29 @@ const Pedido = {
             console.log(`✅ [Stock] Stock restaurado (+unidades) para productos físicos/presenciales por cancelación del pedido #${id}`);
         }
 
+        // Si se reabre un pedido cancelado, verificar y re-descontar stock atómicamente
+        if (estadoAnterior === 'cancelado' && status !== 'cancelado') {
+            const { rows: detalles } = await client.query(
+                'SELECT d.producto_id, d.cantidad, d.modalidad, p.tipo_producto, p.nombre, p.stock FROM detalles_pedido d JOIN productos p ON d.producto_id = p.id WHERE d.pedido_id = $1 FOR UPDATE', 
+                [id]
+            );
+            for (let det of detalles) {
+                const esOnline = det.modalidad === 'online' || det.tipo_producto === 'digital';
+                if (!esOnline) {
+                    if (det.stock < det.cantidad) {
+                        const err = new Error(`No se puede reabrir el pedido: Stock insuficiente para "${det.nombre}". Disponible: ${det.stock}, requerido: ${det.cantidad}.`);
+                        err.isStockError = true;
+                        throw err;
+                    }
+                    await client.query('UPDATE productos SET stock = stock - $1 WHERE id = $2', [det.cantidad, det.producto_id]);
+                }
+            }
+            console.log(`✅ [Stock] Stock re-descontado (-unidades) por reapertura del pedido #${id}`);
+        }
+
+        const query = 'UPDATE pedidos SET estado = $1 WHERE id = $2 RETURNING *';
+        const { rows } = await client.query(query, [status, id]);
+
         await client.query('COMMIT');
         return rows[0];
     } catch (e) {
@@ -197,7 +221,13 @@ const Pedido = {
   },
 
   marcarComoPagado: async (id) => {
-    const query = "UPDATE pedidos SET estado = 'pagado' WHERE id = $1 AND estado <> 'pagado' RETURNING *";
+    const query = "UPDATE pedidos SET estado = 'pagado' WHERE id = $1 AND estado = 'pendiente' RETURNING *";
+    const { rows } = await db.query(query, [id]);
+    return rows[0] || null;
+  },
+
+  marcarEmailPagoEnviado: async (id) => {
+    const query = "UPDATE pedidos SET email_pago_enviado = true WHERE id = $1 RETURNING *";
     const { rows } = await db.query(query, [id]);
     return rows[0] || null;
   }

@@ -5,14 +5,15 @@ const blogController = require('../controllers/blogController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const storage = multer.memoryStorage();
+const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (ALLOWED_IMAGE_MIMES.includes(file.mimetype)) {
       return cb(null, true);
     }
-    cb(new Error('Solo se permiten archivos de imagen (JPG, PNG, WEBP, GIF).'));
+    cb(new Error('Solo se permiten archivos de imagen válidos (JPG, PNG, WEBP, GIF).'));
   }
 });
 

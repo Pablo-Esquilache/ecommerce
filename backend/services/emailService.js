@@ -83,11 +83,16 @@ const enviarOConsola = async (mailOptions) => {
             return info;
         } catch (e) {
             console.error(`❌ [EmailService ERROR CRÍTICO SMTP] No se pudo enviar correo a ${mailOptions.to}. Detalle:`, e.message || e);
+            if (process.env.SENTRY_DSN) {
+                try { const Sentry = require('@sentry/node'); Sentry.captureException(e); } catch(_) {}
+            }
             console.log('⚠️ [EmailService] Falló el envío real. Mostrando simulación de respaldo:');
             simularEnvio(mailOptions);
+            throw e;
         }
     } else {
         simularEnvio(mailOptions);
+        return { simulated: true };
     }
 };
 
@@ -356,6 +361,27 @@ const emailService = {
                     <p style="margin:0; font-size: 18px;">Stock restante: <strong>${stockRestante} unidades</strong></p>
                 </div>
                 <p>Por favor, revisa tu Panel de Administrador para reponer el inventario pronto y no perder ventas.</p>
+            `)
+        };
+        await enviarOConsola(mailOptions);
+    },
+
+    enviarAlertaPagoPedidoCancelado: async (pedidoData, paymentInfo) => {
+        const adminEmail = await getAdminEmail();
+        const monto = paymentInfo ? paymentInfo.transaction_amount : pedidoData.total;
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"Iconografía Bizantina" <noreply@iconografiabizantina.com>',
+            to: adminEmail,
+            subject: `🚨 ALERTA: Pago recibido para Pedido #${pedidoData.id} CANCELADO`,
+            html: getHtmlTemplate('Atención: Pago sobre Pedido Cancelado', `
+                <p>Se ha recibido una notificación de pago en Mercado Pago por <strong>$${monto}</strong> para el <strong>Pedido #${pedidoData.id}</strong>.</p>
+                <div style="background-color: #fee2e2; border: 1px solid #fca5a5; padding: 15px; border-radius: 6px; margin: 15px 0; color: #991b1b;">
+                    <p style="margin:0; font-weight:bold; font-size:16px;">ESTADO ACTUAL: CANCELADO</p>
+                    <p style="margin:6px 0 0; font-size:14px;">El stock de los productos NO fue alterado automáticamente para proteger tus obras de arte únicas.</p>
+                </div>
+                <p><strong>Email del cliente:</strong> ${pedidoData.email || 'No registrado'}</p>
+                <p><strong>ID de Pago Mercado Pago:</strong> ${paymentInfo ? paymentInfo.id : 'N/A'}</p>
+                <p>Por favor, ingresá al Panel de Administrador o contactá al comprador para coordinar la reapertura manual del pedido o realizar el reembolso correspondiente.</p>
             `)
         };
         await enviarOConsola(mailOptions);

@@ -396,7 +396,8 @@ async function updatePedidoStatus(id, estado) {
             fetchDashboardStats();
             fetchPedidos();
         } else {
-            alert('Error al actualizar el estado del pedido');
+            const errData = await res.json().catch(() => ({}));
+            alert(errData.error || 'Error al actualizar el estado del pedido');
             fetchPedidos(); // Reset combo box
         }
     } catch(e) { console.error(e); }
@@ -495,12 +496,24 @@ async function fetchDashboardStats() {
         if (stats.pedidosRecientes.length === 0) rTB.innerHTML = '<tr><td colspan="4">No hay pedidos recientes</td></tr>';
         stats.pedidosRecientes.forEach(p => {
             rTB.innerHTML += `<tr>
-                <td>#${p.id}</td>
-                <td>$${p.total}</td>
-                <td><span class="badge ${p.estado}">${p.estado}</span></td>
-                <td>${p.metodo_pago}</td>
+                <td>#${escapeHtml(p.id)}</td>
+                <td>$${escapeHtml(p.total)}</td>
+                <td><span class="badge ${escapeHtml(p.estado)}">${escapeHtml(p.estado)}</span></td>
+                <td>${escapeHtml(p.metodo_pago)}</td>
             </tr>`;
         });
+
+        // Alerta Pedidos Pendientes +72hs
+        const pendBox = document.getElementById('pendientes-72h-alert');
+        const pendText = document.getElementById('pendientes-72h-text');
+        if (pendBox && pendText) {
+            if (stats.pendientesViejos && stats.pendientesViejos.length > 0) {
+                pendBox.style.display = 'block';
+                pendText.innerHTML = `Tienes <strong>${stats.pendientesViejos.length}</strong> pedido(s) con más de 72 hs en estado Pendiente. Revisa la sección <a href="#pedidos" onclick="switchTab('pedidos')" style="color: #92400e; text-decoration: underline; font-weight: bold;">Pedidos</a> para verificar transferencias o resolver su cancelación.`;
+            } else {
+                pendBox.style.display = 'none';
+            }
+        }
 
         // Alerta Bajo stock
         const alertBox = document.getElementById('bajo-stock-alert');
@@ -1318,9 +1331,9 @@ async function loadUsuarios() {
         tb.innerHTML = '';
         admins.forEach(u => {
             tb.innerHTML += `<tr>
-                <td>${u.id}</td>
-                <td>${u.email}</td>
-                <td>${u.nombre || 'N/A'}</td>
+                <td>${escapeHtml(u.id)}</td>
+                <td>${escapeHtml(u.email)}</td>
+                <td>${escapeHtml(u.nombre || 'N/A')}</td>
                 <td>${new Date(u.creado_en).toLocaleDateString()}</td>
                 <td>
                     <button class="btn" style="background:#e74c3c; color:white; padding: 2px 6px; font-size:12px;" onclick="deleteUsuario(${u.id})"><i class="fas fa-trash"></i></button>
