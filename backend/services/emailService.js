@@ -154,7 +154,7 @@ const emailService = {
                 <div style="background-color: #FAF8F5; border: 1px solid #efe8df; border-left: 4px solid #C78515; padding: 20px; border-radius: 6px; margin: 20px 0;">
                     <h3 style="color: #0E2A47; margin-top: 0; margin-bottom: 12px; font-size: 18px; font-family: 'Cinzel', serif;">🎨 Inscripción Confirmada: ${nombreEsc}</h3>
                     <ul style="list-style: none; padding-left: 0; line-height: 1.8; margin: 0 0 15px 0; color: #333;">
-                        <li><strong>Modalidad elegida:</strong> <span style="text-transform: capitalize; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #ddd; font-weight: 600;">${modalidadTexto}</span></li>
+                        <li><strong>Modalidad elegida:</strong> <span style="text-transform: capitalize; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #ddd; font-weight: 600;">${escapeHtml(modalidadTexto)}</span></li>
                         ${fechaInicioTexto ? `<li><strong>Fecha de inicio:</strong> ${fechaInicioTexto}</li>` : ''}
                         ${lugarEsc ? `<li><strong>Lugar:</strong> ${lugarEsc}</li>` : ''}
                     </ul>

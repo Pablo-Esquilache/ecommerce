@@ -55,8 +55,24 @@ const pedidoController = {
         }
 
         const prodDb = resultDb.rows[0];
-        const modalidadItem = item.modalidad || 'presencial';
-        const esOnline = modalidadItem === 'online' || prodDb.tipo_producto === 'digital';
+
+        // Decisión estricta de modalidad desde la base de datos (evita manipulación fraudulenta de stock y envío)
+        let modalidadItem = 'presencial';
+        let esOnline = false;
+
+        if (prodDb.tipo_producto === 'digital') {
+          modalidadItem = 'online';
+          esOnline = true;
+        } else if (prodDb.tipo_producto === 'taller') {
+          // Sólo los talleres admiten elección entre 'online' y 'presencial'
+          const rawMod = (item.modalidad || '').toString().toLowerCase().trim();
+          modalidadItem = (rawMod === 'online') ? 'online' : 'presencial';
+          esOnline = (modalidadItem === 'online');
+        } else {
+          // Obras físicas (iconografías), viajes/retiros, etc.: SIEMPRE presencial/físico
+          modalidadItem = 'presencial';
+          esOnline = false;
+        }
 
         if (!esOnline) {
           hayFisico = true;
@@ -101,33 +117,56 @@ const pedidoController = {
 
       carrito = carritoValidado;
 
-      // 3. Validar costo de envío (imposibilitar negativos y recalcular en servidor si aplica)
-      let costo_envio = Math.max(0, Number(req.body.costo_envio) || 0);
-      if (!hayFisico) {
-        costo_envio = 0;
-      } else if (conf.envio_gratis_activo && subtotal >= Number(conf.envio_gratis_limite) && !isUSD) {
-        costo_envio = 0;
-      } else if (conf.correo_activo && conf.correo_cp && cliente.codigo_postal && cliente.codigo_postal !== 'N/A') {
-        try {
-          const correoArgentinoService = require('../services/correoArgentino');
-          let pesoTotalGramos = 0;
-          for (let it of detalles) {
-            if (it.tipo_producto !== 'digital') {
-              const prodDbRow = await db.query('SELECT peso FROM productos WHERE id = $1', [it.producto_id]);
-              const peso = parseFloat(prodDbRow.rows[0]?.peso) || 1000;
-              pesoTotalGramos += peso * it.cantidad;
+      // 3. Validar costo de envío (imposibilitar evasiones y recalcular en servidor)
+      let costo_envio = 0;
+      if (hayFisico) {
+        // Para productos físicos es obligatorio contar con dirección y código postal válidos
+        const cpCliente = (cliente.codigo_postal || '').toString().trim();
+        const dirCliente = (cliente.direccion || '').toString().trim();
+        if (!cpCliente || cpCliente === 'N/A' || !dirCliente || dirCliente === 'N/A') {
+          return res.status(400).json({ error: 'La dirección y el código postal son obligatorios para el envío de obras físicas.' });
+        }
+
+        const envioGratisAplica = Boolean(conf.envio_gratis_activo && subtotal >= Number(conf.envio_gratis_limite) && !isUSD);
+        if (envioGratisAplica) {
+          costo_envio = 0;
+        } else {
+          // Tarifa de contingencia mínima si la API externa no responde o falla
+          const TARIFA_CONTINGENCIA = Math.max(1, Number(conf.costo_envio_fijo) || 8500);
+          costo_envio = Math.max(0, Number(req.body.costo_envio) || 0);
+
+          if (conf.correo_activo && conf.correo_cp) {
+            try {
+              const correoArgentinoService = require('../services/correoArgentino');
+              let pesoTotalGramos = 0;
+              for (let it of detalles) {
+                if (it.tipo_producto !== 'digital') {
+                  const prodDbRow = await db.query('SELECT peso FROM productos WHERE id = $1', [it.producto_id]);
+                  const peso = parseFloat(prodDbRow.rows[0]?.peso) || 1000;
+                  pesoTotalGramos += peso * it.cantidad;
+                }
+              }
+              const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cpCliente, pesoTotalGramos);
+              if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
+                const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor)).filter(v => !isNaN(v) && v > 0);
+                if (tarifasValidas.length > 0) {
+                  const coincide = tarifasValidas.some(t => Math.abs(t - costo_envio) < 1.0);
+                  costo_envio = coincide ? costo_envio : Math.min(...tarifasValidas);
+                } else if (costo_envio <= 0) {
+                  costo_envio = TARIFA_CONTINGENCIA;
+                }
+              } else if (costo_envio <= 0) {
+                costo_envio = TARIFA_CONTINGENCIA;
+              }
+            } catch (errEnvio) {
+              console.warn('⚠️ No se pudo recalcular envío con Correo Argentino en checkout:', errEnvio.message);
+              if (costo_envio <= 0) {
+                costo_envio = TARIFA_CONTINGENCIA;
+              }
             }
+          } else if (costo_envio <= 0) {
+            costo_envio = TARIFA_CONTINGENCIA;
           }
-          const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cliente.codigo_postal, pesoTotalGramos);
-          if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
-            const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor));
-            const coincide = tarifasValidas.some(t => Math.abs(t - costo_envio) < 1.0);
-            if (!coincide) {
-              costo_envio = Math.min(...tarifasValidas);
-            }
-          }
-        } catch (errEnvio) {
-          console.warn('⚠️ No se pudo recalcular envío con Correo Argentino en checkout:', errEnvio.message);
         }
       }
 

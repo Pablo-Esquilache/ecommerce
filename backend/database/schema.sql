@@ -30,6 +30,9 @@ CREATE TABLE "administradores" (
   "email" VARCHAR(100) UNIQUE NOT NULL,
   "password" VARCHAR(255) NOT NULL,
   "nombre" VARCHAR(100) NOT NULL,
+  "otp_code" VARCHAR(10),
+  "reset_token" VARCHAR(255),
+  "reset_token_expires" TIMESTAMP,
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -67,6 +70,11 @@ CREATE TABLE "productos" (
   "tipo_producto" VARCHAR(50) DEFAULT 'fisico',
   "archivo_digital" VARCHAR(255),
   "video_url" VARCHAR(255),
+  "activo" BOOLEAN DEFAULT true,
+  "fecha_inicio" DATE,
+  "fecha_cierre_inscripcion" DATE,
+  "modalidad" VARCHAR(50),
+  "lugar" VARCHAR(255),
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

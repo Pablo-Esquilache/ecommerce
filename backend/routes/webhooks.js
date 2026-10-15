@@ -84,87 +84,91 @@ router.post('/mercadopago', async (req, res) => {
             console.log(`[Webhooks] Verificando pago original ID: ${dataId} en Mercado Pago...`);
             const axios = require('axios');
 
-            try {
-                const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
-                const response = await axios.get(`https://api.mercadopago.com/v1/payments/${dataId}`, {
-                    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
-                });
+            const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
+            const response = await axios.get(`https://api.mercadopago.com/v1/payments/${dataId}`, {
+                headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+            });
 
-                const paymentInfo = response.data;
-                console.log(`[Webhooks] Status Real: ${paymentInfo.status} para la referencia (Pedido ID) ${paymentInfo.external_reference}`);
+            const paymentInfo = response.data;
+            console.log(`[Webhooks] Status Real: ${paymentInfo.status} para la referencia (Pedido ID) ${paymentInfo.external_reference}`);
 
-                if (paymentInfo.status === 'approved' && paymentInfo.external_reference) {
-                    const pedidoDetails = await Pedido.getById(paymentInfo.external_reference);
-                    if (!pedidoDetails) {
-                        console.error(`🚨 [Webhooks] Pedido no encontrado para referencia: ${paymentInfo.external_reference}`);
-                        return res.status(404).send('Pedido no encontrado');
+            if (paymentInfo.status === 'approved' && paymentInfo.external_reference) {
+                const pedidoDetails = await Pedido.getById(paymentInfo.external_reference);
+                if (!pedidoDetails) {
+                    console.error(`🚨 [Webhooks] Pedido no encontrado para referencia: ${paymentInfo.external_reference}`);
+                    return res.status(404).send('Pedido no encontrado');
+                }
+
+                // Validar que el monto cobrado coincida con el total del pedido
+                const montoCobrado = Number(paymentInfo.transaction_amount);
+                const totalEsperado = Number(pedidoDetails.total);
+
+                if (isNaN(montoCobrado) || montoCobrado < (totalEsperado - 0.01)) {
+                    console.error(`🚨 [Webhooks] ALERTA DE SEGURIDAD: Discrepancia de monto en Pedido #${pedidoDetails.id}. Esperado: ${totalEsperado}, Cobrado: ${montoCobrado}`);
+                    return res.status(400).send('Monto abonado inconsistente con el total del pedido');
+                }
+
+                // 1. Caso borde: Pago sobre pedido ya cancelado (evitar doble venta de obra única)
+                if (pedidoDetails.estado === 'cancelado') {
+                    console.warn(`🚨 [Webhooks] ALERTA: Llegó pago aprobado para el Pedido #${pedidoDetails.id} que se encuentra CANCELADO.`);
+                    const emailService = require('../services/emailService');
+                    await emailService.enviarAlertaPagoPedidoCancelado(pedidoDetails, paymentInfo);
+                    return res.status(200).send('Pago recibido para pedido cancelado; administrador notificado.');
+                }
+
+                // 2. Actualización atómica condicional: sólo cambia a 'pagado' si está en 'pendiente'
+                const pedidoActualizado = await Pedido.marcarComoPagado(paymentInfo.external_reference);
+
+                // 3. Despachar correos si cambió a pagado O si el email al cliente no se había podido enviar previamente
+                const debeEnviarEmail = Boolean(pedidoActualizado) || (pedidoDetails.estado === 'pagado' && !pedidoDetails.email_pago_enviado);
+
+                if (debeEnviarEmail) {
+                    console.log(`✅ [Webhooks] Procesando despacho de emails para Orden #${paymentInfo.external_reference}...`);
+                    
+                    const emailService = require('../services/emailService');
+                    const emailPromises = [];
+                    
+                    if (pedidoActualizado) {
+                        emailPromises.push(emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails));
+                    }
+                    
+                    let clienteEmailIndex = -1;
+                    if (pedidoDetails.email && !pedidoDetails.email_pago_enviado) {
+                        clienteEmailIndex = emailPromises.length;
+                        emailPromises.push(emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails));
                     }
 
-                    // Validar que el monto cobrado coincida con el total del pedido
-                    const montoCobrado = Number(paymentInfo.transaction_amount);
-                    const totalEsperado = Number(pedidoDetails.total);
+                    let timerId;
+                    const results = await Promise.race([
+                        Promise.allSettled(emailPromises),
+                        new Promise(r => {
+                            timerId = setTimeout(() => {
+                                console.warn('⚠️ [Webhooks POST] Despacho de emails superó tiempo límite');
+                                r(null);
+                            }, 4500);
+                        })
+                    ]);
+                    if (timerId) clearTimeout(timerId);
 
-                    if (isNaN(montoCobrado) || montoCobrado < (totalEsperado - 0.01)) {
-                        console.error(`🚨 [Webhooks] ALERTA DE SEGURIDAD: Discrepancia de monto en Pedido #${pedidoDetails.id}. Esperado: ${totalEsperado}, Cobrado: ${montoCobrado}`);
-                        return res.status(400).send('Monto abonado inconsistente con el total del pedido');
-                    }
-
-                    // 1. Caso borde: Pago sobre pedido ya cancelado (evitar doble venta de obra única)
-                    if (pedidoDetails.estado === 'cancelado') {
-                        console.warn(`🚨 [Webhooks] ALERTA: Llegó pago aprobado para el Pedido #${pedidoDetails.id} que se encuentra CANCELADO.`);
-                        const emailService = require('../services/emailService');
-                        await emailService.enviarAlertaPagoPedidoCancelado(pedidoDetails, paymentInfo);
-                        return res.status(200).send('Pago recibido para pedido cancelado; administrador notificado.');
-                    }
-
-                    // 2. Actualización atómica condicional: sólo cambia a 'pagado' si está en 'pendiente'
-                    const pedidoActualizado = await Pedido.marcarComoPagado(paymentInfo.external_reference);
-
-                    // 3. Despachar correos si cambió a pagado O si el email al cliente no se había podido enviar previamente
-                    const debeEnviarEmail = Boolean(pedidoActualizado) || (pedidoDetails.estado === 'pagado' && !pedidoDetails.email_pago_enviado);
-
-                    if (debeEnviarEmail) {
-                        console.log(`✅ [Webhooks] Procesando despacho de emails para Orden #${paymentInfo.external_reference}...`);
-                        
-                        const emailService = require('../services/emailService');
-                        const emailPromises = [];
-                        
-                        if (pedidoActualizado) {
-                            emailPromises.push(emailService.enviarCorreoNuevaVentaAdmin(pedidoDetails));
-                        }
-                        
-                        let pagoEmailPromise = null;
-                        if (pedidoDetails.email && !pedidoDetails.email_pago_enviado) {
-                            pagoEmailPromise = emailService.enviarCorreoPago(pedidoDetails.email, pedidoDetails);
-                            emailPromises.push(pagoEmailPromise);
-                        }
-
-                        let timerId;
-                        const results = await Promise.race([
-                            Promise.allSettled(emailPromises),
-                            new Promise(r => {
-                                timerId = setTimeout(() => {
-                                    console.warn('⚠️ [Webhooks POST] Despacho de emails superó tiempo límite');
-                                    r(null);
-                                }, 4500);
-                            })
-                        ]);
-                        if (timerId) clearTimeout(timerId);
-
-                        // Si el correo de pago al cliente se completó con éxito, marcar en DB para no reintentar
-                        if (pagoEmailPromise && Array.isArray(results)) {
-                            const pagoResult = results.find(r => r.status === 'fulfilled');
-                            if (pagoResult) {
-                                await Pedido.marcarEmailPagoEnviado(pedidoDetails.id);
-                                console.log(`✉️ [Webhooks] Pedido #${pedidoDetails.id} registrado con email_pago_enviado = true`);
+                    // Si se intentó el correo de pago al cliente, verificar EXCLUSIVAMENTE su resultado
+                    if (clienteEmailIndex !== -1 && Array.isArray(results) && results[clienteEmailIndex]) {
+                        const clienteResult = results[clienteEmailIndex];
+                        if (clienteResult.status === 'fulfilled') {
+                            await Pedido.marcarEmailPagoEnviado(pedidoDetails.id);
+                            console.log(`✉️ [Webhooks] Pedido #${pedidoDetails.id} registrado con email_pago_enviado = true`);
+                        } else {
+                            console.error(`❌ [Webhooks] Falló el despacho de correo al cliente para Pedido #${pedidoDetails.id}:`, clienteResult.reason);
+                            if (process.env.SENTRY_DSN) {
+                                try {
+                                    const Sentry = require('@sentry/node');
+                                    Sentry.captureException(clienteResult.reason);
+                                } catch (_) {}
                             }
                         }
-                    } else {
-                        console.log(`ℹ️ [Webhooks] Orden #${paymentInfo.external_reference} ya se encontraba pagada y notificada previamente.`);
                     }
+                } else {
+                    console.log(`ℹ️ [Webhooks] Orden #${paymentInfo.external_reference} ya se encontraba pagada y notificada previamente.`);
                 }
-            } catch(apiError) {
-               console.error('Error al chequear status en la API de Mercado Pago:', apiError.message);
             }
         } else {
              console.log("Notificación MP ignorada o no es un pago. Type:", topic);
@@ -175,6 +179,12 @@ router.post('/mercadopago', async (req, res) => {
 
     } catch (error) {
         console.error("Error crítico en el receptor POST de Webhooks MP:", error);
+        if (process.env.SENTRY_DSN) {
+            try {
+                const Sentry = require('@sentry/node');
+                Sentry.captureException(error);
+            } catch (_) {}
+        }
         res.status(500).send('Error interno');
     }
 });

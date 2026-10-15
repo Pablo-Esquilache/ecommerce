@@ -90,6 +90,24 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = false;
         });
     }
+
+    // Botón de Arrepentimiento (Ley N° 24.240 y Res. 424/2020)
+    window.solicitarArrepentimiento = function() {
+        const contactoSec = document.getElementById('contacto');
+        if (contactoSec) {
+            contactoSec.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            window.location.href = '/#contacto';
+            return;
+        }
+        const asunto = document.getElementById('contacto-asunto');
+        const mensaje = document.getElementById('contacto-mensaje');
+        if (asunto) asunto.value = 'Solicitud de Arrepentimiento / Revocación (Ley N° 24.240)';
+        if (mensaje) {
+            mensaje.placeholder = 'Por favor indicá tu número de pedido, fecha de compra y el motivo para coordinar la devolución...';
+            mensaje.focus();
+        }
+    };
 });
 
 async function checkMercadoPagoReturn() {
