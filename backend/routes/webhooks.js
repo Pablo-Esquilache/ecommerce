@@ -151,19 +151,22 @@ router.post('/mercadopago', async (req, res) => {
                     if (timerId) clearTimeout(timerId);
 
                     // Si se intentó el correo de pago al cliente, verificar EXCLUSIVAMENTE su resultado
-                    if (clienteEmailIndex !== -1 && Array.isArray(results) && results[clienteEmailIndex]) {
-                        const clienteResult = results[clienteEmailIndex];
-                        if (clienteResult.status === 'fulfilled') {
+                    if (clienteEmailIndex !== -1) {
+                        const clienteResult = (Array.isArray(results) && results[clienteEmailIndex]) ? results[clienteEmailIndex] : null;
+                        if (clienteResult && clienteResult.status === 'fulfilled') {
                             await Pedido.marcarEmailPagoEnviado(pedidoDetails.id);
                             console.log(`✉️ [Webhooks] Pedido #${pedidoDetails.id} registrado con email_pago_enviado = true`);
                         } else {
-                            console.error(`❌ [Webhooks] Falló el despacho de correo al cliente para Pedido #${pedidoDetails.id}:`, clienteResult.reason);
+                            const razonFallo = clienteResult?.reason || new Error('Timeout o fallo al despachar correo de pago al cliente');
+                            console.error(`❌ [Webhooks] Falló o venció el despacho de correo al cliente para Pedido #${pedidoDetails.id}:`, razonFallo);
                             if (process.env.SENTRY_DSN) {
                                 try {
                                     const Sentry = require('@sentry/node');
-                                    Sentry.captureException(clienteResult.reason);
+                                    Sentry.captureException(razonFallo);
                                 } catch (_) {}
                             }
+                            // Si el correo del cliente falló, responder 500 para forzar el reintento automático del webhook por Mercado Pago
+                            return res.status(500).send('Error enviando correo de confirmación al cliente; solicitando reintento a Mercado Pago.');
                         }
                     }
                 } else {

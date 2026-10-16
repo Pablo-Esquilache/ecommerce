@@ -74,14 +74,19 @@ const pedidoController = {
           esOnline = false;
         }
 
+        // Control de stock / cupo (aplica a obras físicas, talleres presenciales y viajes)
         if (!esOnline) {
-          hayFisico = true;
-          // Validación preventiva de stock en servidor
           if (prodDb.stock < cant) {
             return res.status(409).json({ 
               error: `Stock insuficiente para "${prodDb.nombre}". Disponible: ${prodDb.stock}, solicitado: ${cant}.` 
             });
           }
+        }
+
+        // Determinar si contiene obras físicas tangibles (iconografías) que requieran encomienda postal
+        const esObraFisica = (!prodDb.tipo_producto || prodDb.tipo_producto === 'fisico');
+        if (esObraFisica) {
+          hayFisico = true;
         }
 
         let precioReal = isUSD && Number(prodDb.precio_usd) > 0 ? Number(prodDb.precio_usd) : Number(prodDb.precio);
@@ -117,10 +122,12 @@ const pedidoController = {
 
       carrito = carritoValidado;
 
-      // 3. Validar costo de envío (imposibilitar evasiones y recalcular en servidor)
+      // 3. Validar costo de envío (imposibilitar evasiones y respetar configuración del admin)
       let costo_envio = 0;
+      let metodoEnvioFinal = metodo_envio || 'Digital';
+
       if (hayFisico) {
-        // Para productos físicos es obligatorio contar con dirección y código postal válidos
+        // Para obras físicas es obligatorio contar con dirección y código postal válidos
         const cpCliente = (cliente.codigo_postal || '').toString().trim();
         const dirCliente = (cliente.direccion || '').toString().trim();
         if (!cpCliente || cpCliente === 'N/A' || !dirCliente || dirCliente === 'N/A') {
@@ -130,44 +137,50 @@ const pedidoController = {
         const envioGratisAplica = Boolean(conf.envio_gratis_activo && subtotal >= Number(conf.envio_gratis_limite) && !isUSD);
         if (envioGratisAplica) {
           costo_envio = 0;
-        } else {
-          // Tarifa de contingencia mínima si la API externa no responde o falla
-          const TARIFA_CONTINGENCIA = Math.max(1, Number(conf.costo_envio_fijo) || 8500);
-          costo_envio = Math.max(0, Number(req.body.costo_envio) || 0);
-
-          if (conf.correo_activo && conf.correo_cp) {
-            try {
-              const correoArgentinoService = require('../services/correoArgentino');
-              let pesoTotalGramos = 0;
-              for (let it of detalles) {
-                if (it.tipo_producto !== 'digital') {
-                  const prodDbRow = await db.query('SELECT peso FROM productos WHERE id = $1', [it.producto_id]);
-                  const peso = parseFloat(prodDbRow.rows[0]?.peso) || 1000;
-                  pesoTotalGramos += peso * it.cantidad;
-                }
-              }
-              const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cpCliente, pesoTotalGramos);
-              if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
-                const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor)).filter(v => !isNaN(v) && v > 0);
-                if (tarifasValidas.length > 0) {
-                  const coincide = tarifasValidas.some(t => Math.abs(t - costo_envio) < 1.0);
-                  costo_envio = coincide ? costo_envio : Math.min(...tarifasValidas);
-                } else if (costo_envio <= 0) {
-                  costo_envio = TARIFA_CONTINGENCIA;
-                }
-              } else if (costo_envio <= 0) {
-                costo_envio = TARIFA_CONTINGENCIA;
-              }
-            } catch (errEnvio) {
-              console.warn('⚠️ No se pudo recalcular envío con Correo Argentino en checkout:', errEnvio.message);
-              if (costo_envio <= 0) {
-                costo_envio = TARIFA_CONTINGENCIA;
+          metodoEnvioFinal = 'Envío Gratis';
+        } else if (conf.correo_activo && conf.correo_cp) {
+          // El admin tiene Correo Argentino activo: intentamos cotizar en servidor
+          let cotizacionExitosa = false;
+          try {
+            const correoArgentinoService = require('../services/correoArgentino');
+            let pesoTotalGramos = 0;
+            for (let it of detalles) {
+              if (!it.tipo_producto || it.tipo_producto === 'fisico') {
+                const prodDbRow = await db.query('SELECT peso FROM productos WHERE id = $1', [it.producto_id]);
+                const peso = parseFloat(prodDbRow.rows[0]?.peso) || 1000;
+                pesoTotalGramos += peso * it.cantidad;
               }
             }
-          } else if (costo_envio <= 0) {
-            costo_envio = TARIFA_CONTINGENCIA;
+            const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cpCliente, pesoTotalGramos);
+            if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
+              const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor)).filter(v => !isNaN(v) && v > 0);
+              if (tarifasValidas.length > 0) {
+                const clienteEnvioMonto = Number(req.body.costo_envio) || 0;
+                const coincide = tarifasValidas.some(t => Math.abs(t - clienteEnvioMonto) < 1.0);
+                costo_envio = coincide ? clienteEnvioMonto : Math.min(...tarifasValidas);
+                cotizacionExitosa = true;
+                metodoEnvioFinal = req.body.metodo_envio || 'Correo Argentino';
+              }
+            }
+          } catch (errEnvio) {
+            console.warn('⚠️ No se pudo cotizar con Correo Argentino en checkout:', errEnvio.message);
           }
+
+          // Si Correo Argentino falló al cotizar o no devolvió opciones:
+          // Pasa a contingencia "A convenir con el vendedor" (costo $0 en checkout, flete se arregla por fuera)
+          if (!cotizacionExitosa) {
+            costo_envio = 0;
+            metodoEnvioFinal = 'A convenir con el vendedor';
+          }
+        } else {
+          // El admin tiene Correo Argentino desactivado: Envío por fuera / a convenir
+          costo_envio = 0;
+          metodoEnvioFinal = 'A convenir con el vendedor';
         }
+      } else {
+        // No hay obras físicas (talleres presenciales/online, viajes o cursos digitales)
+        costo_envio = 0;
+        metodoEnvioFinal = req.body.metodo_envio || (detalles.some(d => d.tipo_producto === 'viaje') ? 'Reserva de Viaje' : 'Inscripción Digital / Acceso');
       }
 
       // 4. Gestionar cliente (SOLO se persiste una vez validado íntegramente el carrito y stock)
@@ -190,7 +203,7 @@ const pedidoController = {
         costo_envio,
         total,
         metodo_pago,
-        metodo_envio,
+        metodo_envio: metodoEnvioFinal,
         direccion_envio: cliente.direccion,
         ciudad_envio: cliente.ciudad,
         provincia_envio: cliente.provincia,

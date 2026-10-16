@@ -108,6 +108,16 @@ document.addEventListener('DOMContentLoaded', () => {
             mensaje.focus();
         }
     };
+
+    // Auto-activar si viene con parámetro de arrepentimiento desde Términos y Condiciones
+    const qParams = new URLSearchParams(window.location.search);
+    if (qParams.get('arrepentimiento') === 'true' || window.location.hash === '#arrepentimiento') {
+        setTimeout(() => {
+            if (typeof window.solicitarArrepentimiento === 'function') {
+                window.solicitarArrepentimiento();
+            }
+        }, 300);
+    }
 });
 
 async function checkMercadoPagoReturn() {
@@ -119,7 +129,7 @@ async function checkMercadoPagoReturn() {
     
     if (pago === 'exitoso' || status === 'success' || collectionStatus === 'approved') {
         const ordenTexto = externalRef ? ` #${externalRef}` : '';
-        alert(`¡Pago exitoso! Tu orden${ordenTexto} ha sido confirmada.`);
+        alert(`¡Muchas gracias por tu compra! Estamos procesando la acreditación de tu pago para la orden${ordenTexto}. En breve recibirás el comprobante con todos los detalles en tu correo electrónico.`);
         carrito = [];
         saveCart();
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -127,7 +137,7 @@ async function checkMercadoPagoReturn() {
         alert("El pago no ha sido procesado o fue rechazado.");
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (pago === 'pendiente' || status === 'pending' || collectionStatus === 'in_process') {
-        alert("Tu pago está pendiente de aprobación. Te avisaremos cuando se confirme.");
+        alert("Tu pago está pendiente de aprobación. Te avisaremos por correo cuando se confirme.");
         carrito = [];
         saveCart();
         window.history.replaceState({}, document.title, window.location.pathname);
