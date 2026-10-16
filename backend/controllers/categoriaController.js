@@ -144,17 +144,30 @@ exports.deleteSubcategoriaByName = async (req, res) => {
 };
 
 const supabase = require("../config/supabase");
+const imageOptimizer = require("../services/imageOptimizer");
+
 async function uploadToSupabase(file, bucket = "productos") {
     if (!file) return null;
+
+    let bufferToUpload = file.buffer;
+    let contentType = file.mimetype;
+    let fileExt = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
+
+    const optResult = await imageOptimizer.optimize(file, { maxWidth: 800, quality: 82 });
+    if (optResult) {
+        bufferToUpload = optResult.buffer;
+        contentType = optResult.mimetype;
+        fileExt = optResult.extension;
+    }
+
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    const ext = (file.originalname || "").split(".").pop().replace(/[^a-zA-Z0-9]/g, "");
-    const filename = uniqueSuffix + "." + (ext || "bin");
+    const filename = uniqueSuffix + "." + (fileExt || "bin");
     
     const { data, error } = await supabase
       .storage
       .from(bucket)
-      .upload(filename, file.buffer, {
-        contentType: file.mimetype
+      .upload(filename, bufferToUpload, {
+        contentType: contentType
       });
       
     if (error) {
