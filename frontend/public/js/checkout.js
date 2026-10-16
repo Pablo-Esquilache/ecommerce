@@ -265,11 +265,12 @@ async function calcularEnvio() {
         } else {
             if (opcionesLista) {
                 opcionesLista.innerHTML = `
-                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background:#fff3cd; color:#856404;">
-                        <p style="margin:0 0 10px 0;"><i class="fas fa-info-circle"></i> A convenir con el vendedor</p>
+                    <div style="padding: 12px; border: 1px solid #f6d365; border-radius: 6px; background:#fff9e6; color:#7a5500;">
+                        <p style="margin:0 0 6px 0; font-weight:600;"><i class="fas fa-handshake"></i> Envío a convenir con el vendedor</p>
+                        <p style="margin:0 0 8px 0; font-size:12.5px; line-height:1.4;">El despacho se coordinará y abonará directamente con el vendedor ($0 en esta orden).</p>
                         <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
                             <input type="radio" name="opcion_envio" id="envio_convenir" value="0" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir')">
-                            <span style="margin-left: 8px;">Pagaré el envío al momento de recibir la obra</span>
+                            <span style="margin-left: 8px; font-weight:500;">Coordinar envío tras la compra</span>
                         </label>
                     </div>
                 `;
@@ -278,8 +279,19 @@ async function calcularEnvio() {
         }
     } catch (e) {
         console.error('Error calculando envio:', e);
-        if (opcionesLista) opcionesLista.innerHTML = '<p style="color:#e74c3c;">Ocurrió un error al cotizar. Coordinaremos el envío tras la compra.</p>';
-        seleccionarOpcionEnvio(0, 'A convenir con vendedor', 'A_CONVENIR');
+        if (opcionesLista) {
+            opcionesLista.innerHTML = `
+                <div style="padding: 12px; border: 1px solid #f6d365; border-radius: 6px; background:#fff9e6; color:#7a5500;">
+                    <p style="margin:0 0 6px 0; font-weight:600;"><i class="fas fa-handshake"></i> Envío a convenir con el vendedor</p>
+                    <p style="margin:0 0 8px 0; font-size:12.5px; line-height:1.4;">No se pudo conectar con el cotizador postal. Coordinaremos el despacho directamente contigo tras la compra.</p>
+                    <label style="display:flex; align-items:center; cursor:pointer; margin:0;">
+                        <input type="radio" name="opcion_envio" id="envio_convenir_err" value="0" checked onchange="seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir')">
+                        <span style="margin-left: 8px; font-weight:500;">Coordinar envío tras la compra ($0 en esta orden)</span>
+                    </label>
+                </div>
+            `;
+        }
+        seleccionarOpcionEnvio(0, 'A convenir con el vendedor', 'A convenir');
     }
 }
 

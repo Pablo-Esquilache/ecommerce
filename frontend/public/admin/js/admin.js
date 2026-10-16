@@ -266,11 +266,19 @@ function renderAdminPedidos(pedidos) {
     paginatedItems.forEach(p => {
         const isPagado = p.estado === 'pagado';
         const isSend = p.estado === 'enviado';
+        const metodoEnvioLower = (p.metodo_envio || '').toLowerCase();
+        const isAConvenir = metodoEnvioLower.includes('convenir');
+        const isDigitalONoEnvio = metodoEnvioLower.includes('digital') || metodoEnvioLower.includes('viaje') || metodoEnvioLower.includes('inscripci');
+
         let envioHtml = `<span style="color:#aaa; font-size:12px;">N/A</span>`;
-        if (p.metodo_envio !== 'Digital') {
+        if (!isDigitalONoEnvio) {
             if (p.tracking_number) {
                 envioHtml = `
-                    <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado a MiCorreo (Orden #${p.id})"><i class="fas fa-check-circle"></i></div>
+                    <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado a MiCorreo (${escapeHtml(p.tracking_number)})"><i class="fas fa-check-circle"></i></div>
+                `;
+            } else if (isAConvenir) {
+                envioHtml = `
+                    <span style="background:#fef3c7; color:#b45309; border:1px solid #fcd34d; padding:3px 7px; border-radius:4px; font-size:0.75em; font-weight:bold; display:inline-block; white-space:nowrap;" title="Envío a coordinar y cobrar por fuera con el cliente"><i class="fas fa-handshake"></i> A convenir</span>
                 `;
             } else {
                 envioHtml = `
@@ -355,6 +363,12 @@ async function verEticket(pedidoId) {
         
         const fecha = new Date(p.fecha_creacion || Date.now()).toLocaleDateString('es-AR');
 
+        const envioNombre = p.metodo_envio ? escapeHtml(p.metodo_envio) : 'Envío';
+        const envioCosto = parseFloat(p.costo_envio || 0);
+        const envioInfo = envioCosto > 0 
+            ? `${envioNombre}: $${envioCosto.toLocaleString('es-AR')}`
+            : `${envioNombre}: $0.00`;
+
         document.getElementById('eticket-content').innerHTML = `
             <div style="text-align:center; border-bottom:1px dashed #ccc; padding-bottom:10px; margin-bottom:10px;">
                 <h3 style="margin:0;">Iconografía Bizantina</h3>
@@ -373,7 +387,7 @@ async function verEticket(pedidoId) {
                 ${detalleHtml}
             </div>
             <div style="text-align:right; margin-top:10px; font-size:18px; font-weight:bold; border-top:1px dashed #ccc; padding-top:10px;">
-                <small>Envío (Contra Reembolso): $0.00</small><br>
+                <small style="font-weight:normal; font-size:13px; color:#555;">${envioInfo}</small><br>
                 TOTAL: $${parseFloat(p.total).toLocaleString('es-AR')}
             </div>
         `;
@@ -725,9 +739,10 @@ function toggleProductType() {
     }
 }
 
-// Helper para comprimir imágenes en el cliente antes de subirlas
-async function compressImage(file, maxWidth = 800, quality = 0.8) {
-    if (!file || !file.type.startsWith('image/')) return file; // Si no es imagen, no tocar
+// Helper para comprimir imágenes en el cliente antes de subirlas (optimiza tamaño sin sobrecargar el servidor)
+async function compressImage(file, maxWidth = 1400, quality = 0.85) {
+    if (!file || !file.type || !file.type.startsWith('image/')) return file; // Si no es imagen, no tocar
+    if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file; // Preservar vectores y GIF
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -749,16 +764,23 @@ async function compressImage(file, maxWidth = 800, quality = 0.8) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
+                const exportType = 'image/jpeg';
                 canvas.toBlob((blob) => {
-                    // Recrear un objeto File a partir del Blob comprimido
-                    const compressedFile = new File([blob], file.name, {
-                        type: file.type,
+                    if (!blob) {
+                        resolve(file);
+                        return;
+                    }
+                    const newFileName = file.name.replace(/\.[^/.]+$/, ".jpg");
+                    const compressedFile = new File([blob], newFileName, {
+                        type: exportType,
                         lastModified: Date.now(),
                     });
                     resolve(compressedFile);
-                }, file.type, quality);
+                }, exportType, quality);
             };
+            img.onerror = () => resolve(file);
         };
+        reader.onerror = () => resolve(file);
     });
 }
 
