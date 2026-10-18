@@ -80,19 +80,19 @@
     }
     </script>
 
-    <!-- CSS del Sistema -->
+    <!-- Preconnects de Terceros -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Preloads Condicionales y Críticos de LCP -->
+    <link rel="preload" as="image" href="img/portada1.webp" media="(min-width: 769px)" fetchpriority="high">
+    <link rel="preload" as="image" href="img/portada1_vertical.webp" media="(max-width: 768px)" fetchpriority="high">
+
+    <!-- CSS del Sistema y Tipografía -->
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Sentry Error Tracking -->
-    
-    <!-- Botón Flotante Scroll Top -->
-    <button class="scroll-top-btn" id="scroll-top-btn" aria-label="Volver arriba" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-    
-
 </head>
 <body>
     <!-- Navbar -->
@@ -110,14 +110,14 @@
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
             <div class="nav-icons">
-                <div class="cart-icon" onclick="toggleCart()">
+                <div class="cart-icon" onclick="toggleCart()" role="button" tabindex="0" aria-label="Ver carrito de compras">
                     <i class="fas fa-shopping-cart"></i>
                     <span id="cart-count">0</span>
                 </div>
                 <!-- Menu hamburguesa -->
-                <div class="menu-toggle" aria-label="Abrir menú" onclick="toggleMenu()">
+                <button type="button" class="menu-toggle" aria-label="Abrir menú" onclick="toggleMenu()">
                     <i class="fas fa-bars"></i>
-                </div>
+                </button>
             </div>
         </div>
     </nav>
@@ -135,46 +135,46 @@
         <!-- Carrusel de Imágenes -->
         <div class="carousel-bg hero-carousel-short" id="hero-carousel">
             <div class="carousel-slide active" id="slide1" style="background-image: url('img/portada1.webp'); background-position: center center;"></div>
-            <div class="carousel-slide" id="slide2" style="background-image: url('img/portada2.webp'); background-position: center center;"></div>
-            <div class="carousel-slide" id="slide3" style="background-image: url('img/portada3.webp'); background-position: center center;"></div>
-            <!-- Capa oscura superpuesta opcional -->
-            <!-- Sin overlay oscuro para preservar colores y textos de las portadas -->
+            <div class="carousel-slide" id="slide2" data-bg="img/portada2.webp" style="background-position: center center;"></div>
+            <div class="carousel-slide" id="slide3" data-bg="img/portada3.webp" style="background-position: center center;"></div>
             
-            <!-- Flechas manuales -->
-            <button class="carousel-control prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
-            <button class="carousel-control next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+            <!-- Flechas manuales accesibles -->
+            <button class="carousel-control prev" onclick="prevSlide()" aria-label="Diapositiva anterior"><i class="fas fa-chevron-left"></i></button>
+            <button class="carousel-control next" onclick="nextSlide()" aria-label="Diapositiva siguiente"><i class="fas fa-chevron-right"></i></button>
         </div>
-
-        <!-- Contenido Frontal removido a pedido -->
     </header>
 
-    <!-- Tarjetas de Categorías Dinámicas -->
-    <section class="categorias-cards-section">
-        <div class="container">
-            <div class="categorias-grid" id="categorias-grid">
-                <!-- Se generan por JS -->
+    <!-- Contenido Principal -->
+    <main id="main-content">
+        <!-- Tarjetas de Categorías Dinámicas -->
+        <section class="categorias-cards-section">
+            <div class="container">
+                <div class="categorias-grid" id="categorias-grid">
+                    <!-- Se generan por JS -->
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Catálogo de Productos -->
-    <section class="productos-section" id="productos">
-        <div class="container">
-            <h2>Nuestros Productos</h2>
-            
-            <div class="filters" style="display:none;">
-                <input type="text" id="buscador" placeholder="Buscar por nombre...">
-                <select id="categoria-filtro">
-                    <option value="">Todas las categorías</option>
-                    <!-- Categorías dinámicas -->
-                </select>
-            </div>
+        <!-- Catálogo de Productos -->
+        <section class="productos-section" id="productos">
+            <div class="container">
+                <h2>Nuestros Productos</h2>
+                
+                <div class="filters" style="display:none;">
+                    <label for="buscador" class="sr-only">Buscar por nombre</label>
+                    <input type="text" id="buscador" placeholder="Buscar por nombre...">
+                    <label for="categoria-filtro" class="sr-only">Filtrar por categoría</label>
+                    <select id="categoria-filtro">
+                        <option value="">Todas las categorías</option>
+                        <!-- Categorías dinámicas -->
+                    </select>
+                </div>
 
-            <div id="productos-dinamicos-container">
-                <!-- Productos y paginaciones inyectados por JS -->
+                <div id="productos-dinamicos-container">
+                    <!-- Productos y paginaciones inyectados por JS -->
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
             <!-- Sobre mí / Quiénes Somos -->
     <section class="about-section" id="quienes-somos">
@@ -184,7 +184,7 @@
             <!-- Tarjeta 1: Giselle Ochoa (Foto a la izquierda, texto a la derecha) -->
             <div class="about-card">
                 <div class="about-card-img">
-                    <img src="img/quienes_somos_1.webp" alt="Giselle Ochoa - Iconógrafa" loading="lazy">
+                    <img src="img/quienes_somos_1.webp" alt="Giselle Ochoa - Iconógrafa" loading="lazy" width="588" height="586">
                 </div>
                 <div class="about-card-content">
                     <h3>Giselle Ochoa — Iconógrafa</h3>
@@ -200,7 +200,7 @@
             <!-- Tarjeta 2: Iconografía Bizantina (Foto a la izquierda, texto a la derecha) -->
             <div class="about-card">
                 <div class="about-card-img">
-                    <img src="img/quienes_somos_2.webp" alt="Iconografía Bizantina Sagrada" loading="lazy">
+                    <img src="img/quienes_somos_2.webp" alt="Iconografía Bizantina Sagrada" loading="lazy" width="692" height="836">
                 </div>
                 <div class="about-card-content">
                     <h3>Iconografía Bizantina</h3>
@@ -226,6 +226,7 @@
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Información Importante / Contacto -->
     <footer id="contacto">
@@ -246,15 +247,19 @@
                 <ul>
                     <li><a href="/politica-envios.html">Política de Envíos</a></li>
                     <li><a href="/terminos-condiciones.html">Términos y Condiciones</a></li>
-                    <li><a href="javascript:void(0)" onclick="solicitarArrepentimiento()" style="color: #b91c1c; font-weight: 600;"><i class="fas fa-undo"></i> Botón de arrepentimiento</a></li>
+                    <li><a href="/?arrepentimiento=true#contacto" onclick="solicitarArrepentimiento(event)" class="btn-arrepentimiento-link"><i class="fas fa-undo"></i> Botón de arrepentimiento</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h3>Dejanos tu consulta</h3>
                 <form id="form-contacto" class="contacto-form">
+                    <label for="contacto-nombre" class="sr-only">Nombre completo</label>
                     <input type="text" id="contacto-nombre" placeholder="Nombre completo" required>
+                    <label for="contacto-email" class="sr-only">Email de contacto</label>
                     <input type="email" id="contacto-email" placeholder="Email de contacto" required>
+                    <label for="contacto-asunto" class="sr-only">Asunto</label>
                     <input type="text" id="contacto-asunto" placeholder="Asunto" required>
+                    <label for="contacto-mensaje" class="sr-only">Escribe tu mensaje aquí</label>
                     <textarea id="contacto-mensaje" placeholder="Escribe tu mensaje aquí..." required></textarea>
                     <button type="submit" class="btn">Enviar Mensaje</button>
                 </form>
@@ -269,7 +274,7 @@
     <div class="side-cart" id="side-cart">
         <div class="cart-header">
             <h3>Tu Carrito</h3>
-            <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+            <button class="close-cart" onclick="toggleCart()" aria-label="Cerrar carrito"><i class="fas fa-times"></i></button>
         </div>
         <div class="cart-items" id="cart-items">
             <!-- Items del carrito -->
@@ -286,13 +291,12 @@
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
     <!-- Botón Flotante de WhatsApp -->
-    <a href="#" target="_blank" id="wa-btn" aria-label="Contactar por WhatsApp" style="display:flex; position:fixed; bottom:25px; right:25px; background-color:#25d366; color:white; width:60px; height:60px; border-radius:50px; text-align:center; font-size:35px; box-shadow: 2px 2px 3px #999; z-index:1000; align-items:center; justify-content:center; text-decoration:none; transition: all 0.3s ease; opacity: 0; pointer-events: none;">
+    <a href="https://wa.me/?text=Hola%2C%20me%20comunico%20desde%20tu%20p%C3%A1gina%20web" target="_blank" rel="noopener noreferrer" id="wa-btn" aria-label="Contactar por WhatsApp" style="display:flex; position:fixed; bottom:25px; right:25px; background-color:#25d366; color:white; width:60px; height:60px; border-radius:50px; text-align:center; font-size:35px; box-shadow: 2px 2px 3px #999; z-index:1000; align-items:center; justify-content:center; text-decoration:none; transition: all 0.3s ease; opacity: 0; pointer-events: none;">
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    
     <!-- Botón Flotante Scroll Top -->
-    <button class="scroll-top-btn" id="scroll-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <button class="scroll-top-btn" id="scroll-top-btn" aria-label="Volver arriba" onclick="window.scrollTo({top:0, behavior:'smooth'})">
         <i class="fas fa-arrow-up"></i>
     </button>
     

@@ -92,12 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Botón de Arrepentimiento (Ley N° 24.240 y Res. 424/2020)
-    window.solicitarArrepentimiento = function() {
+    window.solicitarArrepentimiento = function(e) {
+        if (e && e.preventDefault) e.preventDefault();
         const contactoSec = document.getElementById('contacto');
         if (contactoSec) {
             contactoSec.scrollIntoView({ behavior: 'smooth' });
         } else {
-            window.location.href = '/#contacto';
+            window.location.href = '/?arrepentimiento=true#contacto';
             return;
         }
         const asunto = document.getElementById('contacto-asunto');
@@ -592,12 +593,30 @@ function goToCheckout() {
 let carouselInterval;
 let currentSlideIdx = 0;
 
+function lazyLoadCarouselSlides() {
+    document.querySelectorAll('.carousel-slide[data-bg]').forEach(slide => {
+        const bg = slide.getAttribute('data-bg');
+        if (bg) {
+            slide.style.backgroundImage = `url('${bg}')`;
+            slide.classList.add('loaded');
+            slide.removeAttribute('data-bg');
+        }
+    });
+}
+
 function initCarousel() {
     const slides = document.querySelectorAll('.carousel-slide');
     if (slides.length === 0) return;
     
     currentSlideIdx = 0;
     startCarousel();
+
+    // Cargar diapositivas secundarias tras el primer render para no competir con el LCP
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => setTimeout(lazyLoadCarouselSlides, 800));
+    } else {
+        setTimeout(lazyLoadCarouselSlides, 1200);
+    }
 }
 
 function startCarousel() {
@@ -610,6 +629,9 @@ function startCarousel() {
 window.changeSlide = function(newIdx) {
     const slides = document.querySelectorAll('.carousel-slide');
     if (slides.length === 0) return;
+    
+    // Asegurar carga de fondos si el usuario cambia antes del timeout
+    lazyLoadCarouselSlides();
     
     slides[currentSlideIdx].classList.remove('active');
     

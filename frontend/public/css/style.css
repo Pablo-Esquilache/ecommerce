@@ -123,6 +123,35 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
     display: none;
     cursor: pointer;
     font-size: 24px;
+    background: none;
+    border: none;
+    padding: 0;
+    outline: none;
+}
+
+/* Screen Reader Only Utility Class (WCAG 2.1) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Enlace Accesible Botón de Arrepentimiento (Contraste > 7:1) */
+.btn-arrepentimiento-link {
+    color: #fca5a5 !important;
+    font-weight: 600;
+    text-decoration: underline;
+    display: inline-block;
+    transition: color 0.2s ease;
+}
+.btn-arrepentimiento-link:hover {
+    color: #ffffff !important;
 }
 
 /* Hero & Carousel */
@@ -612,8 +641,8 @@ footer {
     .filters { flex-direction: column; align-items: center; }
     
     #slide1 { background-image: url('../img/portada1_vertical.webp') !important; }
-    #slide2 { background-image: url('../img/portada2_vertical.webp') !important; }
-    #slide3 { background-image: url('../img/portada3_vertical.webp') !important; }
+    #slide2.loaded { background-image: url('../img/portada2_vertical.webp') !important; }
+    #slide3.loaded { background-image: url('../img/portada3_vertical.webp') !important; }
 }
 
 /* Contact Form */
@@ -1118,11 +1147,13 @@ body {
 /* Buttons */
 .btn {
     background-color: var(--primary) !important;
-    color: #fff !important;
+    color: #0E2A47 !important;
+    font-weight: 700 !important;
     border: 1px solid var(--primary) !important;
 }
 .btn:hover {
     background-color: #A86E10 !important;
+    color: #FFFFFF !important;
     border-color: #A86E10 !important;
 }
 
@@ -1693,12 +1724,12 @@ footer, .footer {
 
 .btn-modal-action {
     background: var(--accent-color);
-    color: #FFFFFF;
+    color: #0E2A47;
     border: none;
     padding: 10px 22px;
     border-radius: 6px;
     font-size: 0.92rem;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
