@@ -4,11 +4,12 @@ const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const rateLimit = require('express-rate-limit');
 
-// Escudo Anti Fuerza Bruta
+// Escudo Anti Fuerza Bruta (Ajustado para evitar bloqueos accidentales de administrador)
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 3, // Límite de 3 intentos
-    message: { error: 'Demasiados intentos fallidos. Tu IP ha sido bloqueada temporalmente por 15 minutos.' },
+    windowMs: 2 * 60 * 1000, // 2 minutos
+    max: 30, // 30 intentos permitidos
+    skipSuccessfulRequests: true,
+    message: { error: 'Demasiados intentos fallidos. Por favor aguardá un momento antes de volver a intentar.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
