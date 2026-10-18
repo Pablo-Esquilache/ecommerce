@@ -146,8 +146,30 @@ async function checkMercadoPagoReturn() {
 
 // Mobile Menu
 function toggleMenu() {
-    document.querySelector('.nav-links').classList.toggle('active');
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) navLinks.classList.toggle('active');
 }
+
+function closeMenu() {
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks && navLinks.classList.contains('active')) {
+        navLinks.classList.remove('active');
+    }
+}
+
+// Cerrar menú móvil al hacer clic en cualquier enlace de navegación o al tocar afuera
+document.addEventListener('click', (e) => {
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks || !navLinks.classList.contains('active')) return;
+
+    const isLink = e.target.closest('.nav-links a');
+    const isToggle = e.target.closest('.menu-toggle');
+    const isInsideNav = e.target.closest('.nav-links');
+
+    if (isLink || (!isInsideNav && !isToggle)) {
+        closeMenu();
+    }
+});
 
 // Obtener productos de la API
 async function fetchProductos() {

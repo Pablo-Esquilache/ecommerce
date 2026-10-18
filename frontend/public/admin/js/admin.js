@@ -113,7 +113,7 @@ async function initDashboard() {
     fetchConfiguracion(); // Precargar Módulo de Ajustes
     loadCategorias(); // Cargar categorías para el modal de productos
     fetchArticulosBlog(); // Precargar Artículos del Blog
-    setupSupabaseRealtime(); // Arrancar WebSocket
+    initAdminPolling(); // Iniciar polling inteligente de novedades
 
     // Restaurar última pestaña activa
     const lastTab = localStorage.getItem('admin_active_tab') || 'dashboard';
@@ -171,13 +171,13 @@ function toggleSidebar(forceState) {
 
 let adminPedidosCache = [];
 
-async function fetchPedidos() {
+async function fetchPedidos(preservePage = false) {
     try {
         const res = await fetch(`${API_URL}/pedidos`, { headers: authHeaders() });
         const data = await res.json();
         adminPedidosCache = Array.isArray(data) ? data : [];
         poblarFiltroProductosPedidos();
-        aplicarFiltrosPedidos();
+        aplicarFiltrosPedidos(preservePage);
     } catch(e) { 
         adminPedidosCache = [];
         console.error('Error cargando pedidos:', e); 
@@ -222,7 +222,7 @@ function poblarFiltroProductosPedidos() {
     }
 }
 
-function aplicarFiltrosPedidos() {
+function aplicarFiltrosPedidos(preservePage = false) {
     const estado = document.getElementById('admin-filter-pedidos-estado')?.value || '';
     const tipo = document.getElementById('admin-filter-pedidos-tipo')?.value || '';
     const prodId = document.getElementById('admin-filter-pedidos-producto')?.value || '';
@@ -240,7 +240,9 @@ function aplicarFiltrosPedidos() {
         return true;
     });
 
-    currentAdminPagePedidos = 1;
+    if (!preservePage) {
+        currentAdminPagePedidos = 1;
+    }
     renderAdminPedidos(filtrados);
 }
 
@@ -564,7 +566,7 @@ function renderAdminProductos(lista) {
     pTB.innerHTML = '';
     
     if (!Array.isArray(lista) || lista.length === 0) {
-        pTB.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No se encontraron productos</td></tr>';
+        pTB.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No se encontraron productos</td></tr>';
         const pCont = document.getElementById('productos-pagination');
         if(pCont) pCont.innerHTML = '';
         return;
@@ -600,12 +602,14 @@ function renderAdminProductos(lista) {
             <td>${tipoDisplay}</td>
             <td><div style="font-size:0.9em;font-weight:bold;">ARS ${p.precio}</div><div style="font-size:0.8em;color:gray;">USD ${p.precio_usd || 0}</div></td>
             <td>${stockDisplay}</td>
-            <td style="display:flex; gap:10px; align-items:center;">
-                <button class="btn" style="background:#f1c40f; color:#fff; padding: 4px 8px;" onclick="editarProducto(${p.id})">Editar</button>
-                <label class="switch" title="Activar/Desactivar Producto">
-                    <input type="checkbox" ${p.activo ? 'checked' : ''} onchange="toggleProductoActivo(${p.id})">
-                    <span class="slider"></span>
-                </label>
+            <td>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn" style="background:#f1c40f; color:#fff; padding: 4px 8px;" onclick="editarProducto(${p.id})">Editar</button>
+                    <label class="switch" title="Activar/Desactivar Producto">
+                        <input type="checkbox" ${p.activo ? 'checked' : ''} onchange="toggleProductoActivo(${p.id})">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </td>
         </tr>`;
     });
@@ -1709,46 +1713,91 @@ async function quickAddSubcategoria() {
     } catch(e) { alert('Error de conexión'); }
 }
 
-async function setupSupabaseRealtime() {
+// ==========================================
+// AUTO-ACTUALIZACIÓN SILENCIOSA DEL PANEL (POLLING INTELIGENTE)
+// ==========================================
+let adminPollingTimer = null;
+let lastNovedadesHash = null;
+let isPollingInProgress = false;
+
+async function checkAdminNovedades() {
+    const token = localStorage.getItem('admin_token');
+    if (!token || document.visibilityState !== 'visible' || isPollingInProgress) return;
+
+    // Si el administrador está interactuando con un modal abierto, no interrumpir
+    const modalAbierto = document.querySelector('.modal[style*="display: block"], .modal[style*="display: flex"]');
+    if (modalAbierto) return;
+
+    isPollingInProgress = true;
     try {
-        if (typeof supabase === 'undefined') {
-            console.warn('⚠️ Supabase JS library no está disponible en este momento');
+        const res = await fetch(`${API_URL}/admin/novedades`, { headers: authHeaders() });
+        if (res.status === 401) {
+            // Sesión expirada: detener polling
+            if (adminPollingTimer) clearInterval(adminPollingTimer);
             return;
         }
-        const res = await fetch(`${API_URL}/admin/supabase-keys`, { headers: authHeaders() });
         if (!res.ok) return;
-        const keys = await res.json();
-        if (!keys || !keys.url || !keys.key) return;
-        
-        const { createClient } = supabase;
-        const supa = createClient(keys.url, keys.key);
-        
-        supa.channel('admin-pedidos-channel')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'pedidos' },
-                (payload) => {
-                    console.log('Realtime Update - Nuevo pedido o cambio detectado:', payload);
-                    // Recargar datos silenciosamente
-                    if (document.getElementById('resumen-view').classList.contains('active')) {
-                        cargarResumen();
-                    }
-                    if (document.getElementById('pedidos-view').classList.contains('active')) {
-                        cargarPedidos();
-                    }
-                    if (document.getElementById('clientes-view').classList.contains('active')) {
-                        fetchClientes();
-                    }
-                }
-            )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('✅ Conectado a Supabase Realtime');
-                }
-            });
-    } catch (e) {
-        console.error('Error configurando Realtime:', e);
+
+        const data = await res.json();
+        if (!data || !data.hash) return;
+
+        if (lastNovedadesHash === null) {
+            // Primera ejecución: guardar firma inicial
+            lastNovedadesHash = data.hash;
+            return;
+        }
+
+        if (data.hash !== lastNovedadesHash) {
+            console.log('🔔 [Novedades] Se detectó actividad en pedidos o ventas. Actualizando panel...');
+            lastNovedadesHash = data.hash;
+
+            // Actualizar TODO el ecosistema interconectado del panel:
+            fetchDashboardStats();         // 1. Métricas e ingresos
+            fetchPedidos(true);            // 2. Tabla de pedidos (preservando página si estaba navegando)
+            fetchProductos();              // 3. Stock y cupos restantes de productos
+            fetchClientes();               // 4. Clientes y registros
+
+            mostrarNotificacionNovedad('🔔 Nueva actividad detectada. Panel actualizado.');
+        }
+    } catch (err) {
+        console.warn('⚠️ No se pudo verificar novedades del panel:', err.message);
+    } finally {
+        isPollingInProgress = false;
     }
+}
+
+function initAdminPolling() {
+    if (adminPollingTimer) clearInterval(adminPollingTimer);
+
+    // Consulta inicial inmediata
+    checkAdminNovedades();
+
+    // Consulta periódica cada 45 segundos (solo activa si la pestaña está visible)
+    adminPollingTimer = setInterval(checkAdminNovedades, 45000);
+
+    // Al regresar a la pestaña del navegador, chequear de inmediato
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkAdminNovedades();
+        }
+    });
+}
+
+function mostrarNotificacionNovedad(mensaje) {
+    let toast = document.getElementById('admin-toast-novedades');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'admin-toast-novedades';
+        toast.style.cssText = 'position:fixed; bottom:25px; right:25px; background:#0E2A47; color:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3); z-index:99999; font-size:14px; display:flex; align-items:center; gap:10px; transition:all 0.3s ease; opacity:0; transform:translateY(10px); border-left:4px solid #f1c40f; pointer-events:none;';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<i class="fas fa-bell" style="color:#f1c40f;"></i> <span>${escapeHtml(mensaje)}</span>`;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+    }, 4500);
 }
 
 

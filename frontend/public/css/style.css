@@ -593,11 +593,13 @@ footer {
     .nav-links {
         display: none;
         position: absolute;
-        top: 60px; left: 0; width: 100%;
+        top: 100%; left: 0; width: 100%;
         background: var(--white);
         flex-direction: column;
         text-align: center;
         padding: 20px 0;
+        margin: 0;
+        border-top: none;
         box-shadow: var(--shadow);
     }
     .nav-links.active {
@@ -672,8 +674,9 @@ footer {
     
     .menu-toggle { display: block; margin-left: 20px; }
     .nav-links { 
-        display: none; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; 
+        display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; 
         background: var(--white); box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; text-align: center; gap: 15px;
+        margin: 0; border-top: none;
         z-index: 1000;
     }
     .nav-links.active { display: flex; }
@@ -1150,9 +1153,12 @@ footer, .footer {
 
 /* --- MOBILE FIXES --- */
 @media (max-width: 768px) {
-    /* Fondo del menu hamburguesa en Grafito */
+    /* Fondo del menu hamburguesa en Grafito y pegado al 100% sin luz */
     .nav-links {
         background-color: var(--secondary) !important;
+        top: 100% !important;
+        margin: 0 !important;
+        border-top: none !important;
     }
     
     /* Grilla de productos de a 2 por fila */

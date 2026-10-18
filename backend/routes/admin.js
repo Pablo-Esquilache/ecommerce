@@ -27,7 +27,7 @@ router.get('/clientes/excel', authMiddleware, adminController.exportClientesExce
 router.get('/pedidos/excel', authMiddleware, adminController.exportPedidosExcel);
 router.get('/configuracion', authMiddleware, adminController.getConfiguracion);
 router.put('/configuracion', authMiddleware, adminController.updateConfiguracion);
-router.get('/supabase-keys', authMiddleware, adminController.getSupabaseKeys);
+router.get('/novedades', authMiddleware, adminController.getNovedades);
 
 // Flujo de Cambio de Contraseña de 2 Pasos (OTP)
 router.post('/change-password', authMiddleware, adminController.changePassword); // (Legacy o Fallback)

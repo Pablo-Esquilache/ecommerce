@@ -514,11 +514,30 @@ const adminController = {
   }
 };
 
-adminController.getSupabaseKeys = (req, res) => {
+adminController.getNovedades = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        COUNT(*)::int AS total_pedidos,
+        COALESCE(MAX(id), 0)::int AS max_id,
+        COALESCE(SUM(total), 0)::numeric AS suma_total,
+        COUNT(*) FILTER (WHERE estado = 'pagado')::int AS pagados,
+        COUNT(*) FILTER (WHERE estado = 'pendiente')::int AS pendientes,
+        COUNT(*) FILTER (WHERE estado = 'enviado')::int AS enviados
+      FROM pedidos;
+    `;
+    const { rows } = await db.query(query);
+    const stats = rows[0] || { total_pedidos: 0, max_id: 0, suma_total: 0, pagados: 0, pendientes: 0, enviados: 0 };
+    const hash = `${stats.total_pedidos}-${stats.max_id}-${stats.pagados}-${stats.pendientes}-${stats.enviados}`;
     res.json({
-        url: process.env.SUPABASE_URL,
-        key: process.env.SUPABASE_KEY
+      success: true,
+      hash,
+      stats
     });
+  } catch (e) {
+    console.error('Error obteniendo novedades en admin:', e);
+    res.status(500).json({ error: 'Error del servidor al consultar novedades' });
+  }
 };
 
 module.exports = adminController;
