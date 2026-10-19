@@ -1732,9 +1732,10 @@ async function checkAdminNovedades() {
     try {
         const res = await fetch(`${API_URL}/admin/novedades`, { headers: authHeaders() });
         if (res.status === 401) {
-            // Sesión expirada: detener polling
+            // Sesión expirada: detener polling y redirigir al login
             if (adminPollingTimer) clearInterval(adminPollingTimer);
-            return;
+            alert('Tu sesión ha expirado por seguridad. Por favor, vuelve a iniciar sesión.');
+            return logout();
         }
         if (!res.ok) return;
 
@@ -1966,7 +1967,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (imgUrl) formData.append('imagen_portada_url', imgUrl);
 
             const ytInput = document.getElementById('art-youtube-url');
-            if (ytInput) formData.append('youtube_url', ytInput.value.trim());
+            const ytRaw = ytInput ? ytInput.value.trim() : '';
+            if (ytRaw) {
+                const match = ytRaw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+                const isValidDirect = /^[A-Za-z0-9_-]{11}$/.test(ytRaw);
+                if (!match && !isValidDirect) {
+                    alert('El enlace de YouTube ingresado no es válido. Debe ser un enlace de video de YouTube (ej. https://www.youtube.com/watch?v=... o https://youtu.be/...).');
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                    return;
+                }
+            }
+            if (ytInput) formData.append('youtube_url', ytRaw);
 
             const fileInput = document.getElementById('art-imagen-file');
             if (fileInput && fileInput.files[0]) {

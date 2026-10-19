@@ -24,6 +24,20 @@ async function uploadToSupabase(file, bucket = 'productos') {
   return publicUrlData.publicUrl;
 }
 
+function extractAndValidateYouTubeId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+  if (match && /^[A-Za-z0-9_-]{11}$/.test(match[1])) {
+    return match[1];
+  }
+  if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
+  }
+  return null;
+}
+
 const blogController = {
   // Ruta pública: NUNCA lee req.query.all, siempre devuelve sólo artículos con activo = true
   getPublicAll: async (req, res) => {
@@ -102,12 +116,21 @@ const blogController = {
         imagen_portada = await uploadToSupabase(req.files['imagen_portada'][0]);
       }
 
+      let validatedYoutubeUrl = null;
+      if (youtube_url && typeof youtube_url === 'string' && youtube_url.trim()) {
+        const ytId = extractAndValidateYouTubeId(youtube_url);
+        if (!ytId) {
+          return res.status(400).json({ error: 'El enlace de YouTube no es válido. Debe contener un ID de 11 caracteres válido (ej: https://www.youtube.com/watch?v=... o https://youtu.be/...)' });
+        }
+        validatedYoutubeUrl = `https://www.youtube.com/watch?v=${ytId}`;
+      }
+
       const nuevoArticulo = await ArticuloBlog.create({
         titulo: titulo.trim(),
         subtitulo: (subtitulo || '').trim(),
         contenido: contenido.trim(),
         imagen_portada,
-        youtube_url: youtube_url ? youtube_url.trim() : null
+        youtube_url: validatedYoutubeUrl
       });
 
       res.status(201).json(nuevoArticulo);
@@ -141,7 +164,15 @@ const blogController = {
       };
 
       if (youtube_url !== undefined) {
-        updateData.youtube_url = youtube_url.trim() || null;
+        if (youtube_url && typeof youtube_url === 'string' && youtube_url.trim()) {
+          const ytId = extractAndValidateYouTubeId(youtube_url);
+          if (!ytId) {
+            return res.status(400).json({ error: 'El enlace de YouTube no es válido. Debe contener un ID de 11 caracteres válido.' });
+          }
+          updateData.youtube_url = `https://www.youtube.com/watch?v=${ytId}`;
+        } else {
+          updateData.youtube_url = null;
+        }
       }
 
       const articuloActualizado = await ArticuloBlog.update(id, updateData);

@@ -523,12 +523,16 @@ adminController.getNovedades = async (req, res) => {
         COALESCE(SUM(total), 0)::numeric AS suma_total,
         COUNT(*) FILTER (WHERE estado = 'pagado')::int AS pagados,
         COUNT(*) FILTER (WHERE estado = 'pendiente')::int AS pendientes,
-        COUNT(*) FILTER (WHERE estado = 'enviado')::int AS enviados
+        COUNT(*) FILTER (WHERE estado = 'preparando')::int AS preparando,
+        COUNT(*) FILTER (WHERE estado = 'enviado')::int AS enviados,
+        COUNT(*) FILTER (WHERE estado = 'entregado')::int AS entregados,
+        COUNT(*) FILTER (WHERE estado = 'cancelado')::int AS cancelados,
+        COALESCE(MD5(STRING_AGG(id::text || ':' || estado, ',' ORDER BY id DESC)), 'empty') AS state_hash
       FROM pedidos;
     `;
     const { rows } = await db.query(query);
-    const stats = rows[0] || { total_pedidos: 0, max_id: 0, suma_total: 0, pagados: 0, pendientes: 0, enviados: 0 };
-    const hash = `${stats.total_pedidos}-${stats.max_id}-${stats.pagados}-${stats.pendientes}-${stats.enviados}`;
+    const stats = rows[0] || { total_pedidos: 0, max_id: 0, suma_total: 0, pagados: 0, pendientes: 0, preparando: 0, enviados: 0, entregados: 0, cancelados: 0, state_hash: 'empty' };
+    const hash = `${stats.total_pedidos}-${stats.max_id}-${stats.state_hash}`;
     res.json({
       success: true,
       hash,

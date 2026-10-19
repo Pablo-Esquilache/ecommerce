@@ -3,8 +3,9 @@
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --primary-color: #0E2A47;
     --accent-color: #C78515;
-    --primary: #2563EB;
-    --secondary: #06B6D4;
+    --primary: #C78515;
+    --primary-text: #8F5F0A;
+    --secondary: #1F2937;
     --bg: #F8F9FA;
     --text: #0F172A;
     --light-text: #64748B;
@@ -327,7 +328,7 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 .producto-precio {
     font-size: 16px;
     font-weight: bold;
-    color: var(--primary);
+    color: var(--primary-text);
     margin-bottom: 15px;
 }
 .btn-add {
@@ -1116,6 +1117,7 @@ footer {
 /* --- REBRANDING: GRAPHITE + ORANGE --- */
 :root {
     --primary: #C78515;
+    --primary-text: #8F5F0A;
     --primary-hover: #A86E10;
     --secondary: #1F2937;
     --bg: #F3F4F6;

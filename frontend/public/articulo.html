@@ -285,11 +285,21 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function getYouTubeEmbedUrl(url) {
+        function extractYouTubeId(url) {
             if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+            const match = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+            if (match && /^[A-Za-z0-9_-]{11}$/.test(match[1])) {
+                return match[1];
+            }
+            if (/^[A-Za-z0-9_-]{11}$/.test(String(url).trim())) {
+                return String(url).trim();
+            }
+            return null;
+        }
+
+        function getYouTubeEmbedUrl(url) {
+            const id = extractYouTubeId(url);
+            return id ? `https://www.youtube.com/embed/${id}` : null;
         }
 
         async function cargarDetalleArticulo() {
@@ -375,7 +385,7 @@
                                 </div>
                             </div>
                             <div>
-                                <i class="far fa-calendar-alt" style="color:#C78515;"></i> Publicado el ${fecha}
+                                <i class="far fa-calendar-alt" style="color:#8F5F0A;"></i> Publicado el ${fecha}
                             </div>
                         </div>
 
@@ -390,7 +400,7 @@
                             </a>
 
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <span style="font-weight: 600; font-size: 14px; color: #555;"><i class="fas fa-share-alt" style="color: #C78515;"></i> Compartir:</span>
+                                <span style="font-weight: 600; font-size: 14px; color: #555;"><i class="fas fa-share-alt" style="color: #8F5F0A;"></i> Compartir:</span>
                                 
                                 <!-- WhatsApp directo -->
                                 <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(art.titulo + ' - ' + window.location.href)}" target="_blank" rel="noopener noreferrer" title="Compartir por WhatsApp" style="background: #25D366; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: transform 0.2s;">

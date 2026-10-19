@@ -4,12 +4,12 @@ const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const rateLimit = require('express-rate-limit');
 
-// Escudo Anti Fuerza Bruta (Ajustado para evitar bloqueos accidentales de administrador)
+// Escudo Anti Fuerza Bruta (10 intentos fallidos cada 15 min; logins exitosos no cuentan)
 const loginLimiter = rateLimit({
-    windowMs: 2 * 60 * 1000, // 2 minutos
-    max: 30, // 30 intentos permitidos
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 10, // 10 intentos fallidos permitidos
     skipSuccessfulRequests: true,
-    message: { error: 'Demasiados intentos fallidos. Por favor aguardá un momento antes de volver a intentar.' },
+    message: { error: 'Demasiados intentos fallidos. Por razones de seguridad, aguardá 15 minutos antes de volver a intentar.' },
     standardHeaders: true,
     legacyHeaders: false,
 });

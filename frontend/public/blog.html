@@ -134,7 +134,7 @@
         }
         .blog-card-meta {
             font-size: 0.8rem;
-            color: #C78515;
+            color: #8F5F0A;
             font-weight: 600;
             margin-bottom: 10px;
             display: flex;
@@ -246,11 +246,21 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function getYouTubeThumbnail(url) {
+        function extractYouTubeId(url) {
             if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg` : null;
+            const match = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+            if (match && /^[A-Za-z0-9_-]{11}$/.test(match[1])) {
+                return match[1];
+            }
+            if (/^[A-Za-z0-9_-]{11}$/.test(String(url).trim())) {
+                return String(url).trim();
+            }
+            return null;
+        }
+
+        function getYouTubeThumbnail(url) {
+            const id = extractYouTubeId(url);
+            return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
         }
 
         let blogArticulosCache = [];
