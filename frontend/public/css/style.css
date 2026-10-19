@@ -155,14 +155,13 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 }
 
 /* Hero & Carousel */
-/* Hero & Carousel Flotante Calibrado 100vh */
+/* Hero & Carousel Flotante a 100vh (Barra + Portada ocupan 100% viewport) */
 .hero {
     margin: 68px auto 0 auto;
     max-width: 1240px;
     width: calc(100% - 40px);
-    height: 54vh;
-    min-height: 400px;
-    max-height: 515px;
+    height: calc(100vh - 68px);
+    min-height: 520px;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
@@ -636,7 +635,9 @@ footer {
     }
     .menu-toggle { display: block; }
     .hero {
-    height: 50vh; min-height: 400px; } /* Volvemos a 100vh porque ahora tenemos fotos verticales */
+        height: calc(100vh - 65px);
+        min-height: 480px;
+    }
     .hero-content h1 { font-size: 32px; }
     .filters { flex-direction: column; align-items: center; }
     
@@ -908,9 +909,9 @@ nav.glass-navbar ul.nav-links li a:hover {
 .carousel-control.prev { left: 20px; }
 .carousel-control.next { right: 20px; }
 
-/* Tarjetas DinÃƒÆ’Ã‚Â¡micas */
+/* Tarjetas Dinámicas */
 .categorias-cards-section {
-    padding: 0 0 35px 0;
+    padding: 40px 0 30px 0;
     background-color: transparent;
     position: relative;
     z-index: 20;
@@ -920,8 +921,8 @@ nav.glass-navbar ul.nav-links li a:hover {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    max-width: 980px;
-    margin: -75px auto 0 auto; /* Solapamiento de cubo flotante */
+    max-width: 1200px;
+    margin: 0 auto;
     position: relative;
     z-index: 25;
 }
@@ -1049,20 +1050,23 @@ nav.glass-navbar ul.nav-links li a:hover {
 
 
 
-/* Ajuste mÃƒÆ’Ã‚Â³vil para CategorÃƒÆ’Ã‚Â­as (2 por fila) */
+/* Ajuste móvil para Categorías (2 por fila) y Hero a pantalla completa */
 @media (max-width: 992px) {
     .hero {
         margin: 65px auto 0 auto;
         width: calc(100% - 24px);
-        height: 48vh;
-        min-height: 320px;
+        height: calc(100vh - 65px);
+        min-height: 480px;
         border-radius: 18px;
+    }
+    .categorias-cards-section {
+        padding: 30px 0 20px 0;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 14px !important;
         max-width: 480px;
-        margin: -65px auto 0 auto !important;
+        margin: 0 auto !important;
     }
 }
 
@@ -1070,15 +1074,18 @@ nav.glass-navbar ul.nav-links li a:hover {
     .hero {
         margin: 62px auto 0 auto;
         width: calc(100% - 16px);
-        height: 45vh;
-        min-height: 280px;
+        height: calc(100vh - 62px);
+        min-height: 440px;
         border-radius: 14px;
+    }
+    .categorias-cards-section {
+        padding: 24px 0 16px 0;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
         max-width: 100%;
-        margin: -50px auto 0 auto !important;
+        margin: 0 auto !important;
     }
     .cat-card {
         border-radius: 14px;
