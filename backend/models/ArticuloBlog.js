@@ -11,6 +11,7 @@ async function ensureTable() {
       subtitulo TEXT,
       contenido TEXT NOT NULL,
       imagen_portada TEXT,
+      youtube_url TEXT,
       activo BOOLEAN DEFAULT true,
       creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -18,6 +19,7 @@ async function ensureTable() {
   `;
   try {
     await db.query(ddl);
+    await db.query(`ALTER TABLE articulos_blog ADD COLUMN IF NOT EXISTS youtube_url TEXT;`);
     tableChecked = true;
   } catch (err) {
     console.error('Error asegurando tabla articulos_blog:', err);
@@ -47,31 +49,37 @@ const ArticuloBlog = {
 
   create: async (data) => {
     await ensureTable();
-    const { titulo, subtitulo, contenido, imagen_portada } = data;
+    const { titulo, subtitulo, contenido, imagen_portada, youtube_url } = data;
     const query = `
-      INSERT INTO articulos_blog (titulo, subtitulo, contenido, imagen_portada, activo)
-      VALUES ($1, $2, $3, $4, true)
+      INSERT INTO articulos_blog (titulo, subtitulo, contenido, imagen_portada, youtube_url, activo)
+      VALUES ($1, $2, $3, $4, $5, true)
       RETURNING *
     `;
-    const values = [titulo, subtitulo || '', contenido, imagen_portada || null];
+    const values = [titulo, subtitulo || '', contenido, imagen_portada || null, youtube_url || null];
     const { rows } = await db.query(query, values);
     return rows[0];
   },
 
   update: async (id, data) => {
     await ensureTable();
-    const { titulo, subtitulo, contenido, imagen_portada } = data;
+    const { titulo, subtitulo, contenido, imagen_portada, youtube_url } = data;
     let query = `
       UPDATE articulos_blog 
       SET titulo = $1, subtitulo = $2, contenido = $3, actualizado_en = CURRENT_TIMESTAMP
     `;
     const values = [titulo, subtitulo || '', contenido];
+    let paramIndex = 4;
+
+    if (youtube_url !== undefined) {
+      query += `, youtube_url = $${paramIndex++}`;
+      values.push(youtube_url || null);
+    }
 
     if (imagen_portada) {
-      query += `, imagen_portada = $4 WHERE id = $5 RETURNING *`;
+      query += `, imagen_portada = $${paramIndex++} WHERE id = $${paramIndex} RETURNING *`;
       values.push(imagen_portada, id);
     } else {
-      query += ` WHERE id = $4 RETURNING *`;
+      query += ` WHERE id = $${paramIndex} RETURNING *`;
       values.push(id);
     }
 

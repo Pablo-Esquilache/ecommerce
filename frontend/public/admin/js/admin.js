@@ -1851,10 +1851,11 @@ function renderAdminArticulosBlog(lista) {
             ? '<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:0.85em; font-weight:bold;">Publicado</span>'
             : '<span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:4px; font-size:0.85em; font-weight:bold;">Oculto</span>';
 
+        const ytBadge = art.youtube_url ? '<i class="fab fa-youtube" style="color:#e74c3c; margin-left:6px; font-size:14px;" title="Tiene video de YouTube"></i>' : '';
         bTB.innerHTML += `<tr>
             <td>${art.id}</td>
             <td>${imgHtml}</td>
-            <td style="font-weight:600; max-width:220px;">${escapeHtml(art.titulo)}</td>
+            <td style="font-weight:600; max-width:220px;">${escapeHtml(art.titulo)}${ytBadge}</td>
             <td style="color:#666; font-size:0.9em; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(art.subtitulo || '')}">${escapeHtml(art.subtitulo || '-')}</td>
             <td style="font-size:0.85em; color:#555;">${fecha}</td>
             <td>${estadoBadge}</td>
@@ -1879,6 +1880,8 @@ async function abrirModalArticulo(id = null) {
     const form = document.getElementById('form-articulo');
     if (form) form.reset();
     document.getElementById('art-id').value = '';
+    const ytInput = document.getElementById('art-youtube-url');
+    if (ytInput) ytInput.value = '';
     const prevCont = document.getElementById('art-preview-container');
     if (prevCont) prevCont.style.display = 'none';
 
@@ -1894,6 +1897,7 @@ async function abrirModalArticulo(id = null) {
             document.getElementById('art-subtitulo').value = art.subtitulo || '';
             document.getElementById('art-contenido').value = art.contenido || '';
             document.getElementById('art-imagen-url').value = art.imagen_portada || '';
+            if (ytInput) ytInput.value = art.youtube_url || '';
 
             if (art.imagen_portada) {
                 const prevImg = document.getElementById('art-preview-img');
@@ -1960,6 +1964,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const imgUrl = document.getElementById('art-imagen-url').value.trim();
             if (imgUrl) formData.append('imagen_portada_url', imgUrl);
+
+            const ytInput = document.getElementById('art-youtube-url');
+            if (ytInput) formData.append('youtube_url', ytInput.value.trim());
 
             const fileInput = document.getElementById('art-imagen-file');
             if (fileInput && fileInput.files[0]) {

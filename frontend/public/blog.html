@@ -246,6 +246,13 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function getYouTubeThumbnail(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg` : null;
+        }
+
         let blogArticulosCache = [];
 
         async function cargarArticulosBlog() {
@@ -287,14 +294,16 @@
                     year: 'numeric'
                 });
 
-                const portadaUrl = art.imagen_portada || '/img/portada1.webp';
+                const portadaUrl = art.imagen_portada || getYouTubeThumbnail(art.youtube_url) || '/img/portada1.webp';
                 const titEsc = escapeHtml(art.titulo);
                 const subEsc = art.subtitulo ? escapeHtml(art.subtitulo) : '';
+                const videoBadge = art.youtube_url ? `<span class="blog-video-badge" style="position: absolute; bottom: 10px; right: 10px; background: rgba(14, 42, 71, 0.9); color: #FAF8F5; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; backdrop-filter: blur(4px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(199, 133, 21, 0.5);"><i class="fas fa-play" style="color: #e74c3c; font-size: 10px;"></i> Video</span>` : '';
 
                 return `
                     <a href="articulo.html?id=${art.id}" class="blog-card">
                         <div class="blog-card-img-wrap">
                             <img src="${portadaUrl}" alt="${titEsc}" loading="lazy">
+                            ${videoBadge}
                         </div>
                         <div class="blog-card-body">
                             <div class="blog-card-meta">

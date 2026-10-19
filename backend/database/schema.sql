@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS "articulos_blog" (
   "subtitulo" TEXT,
   "contenido" TEXT NOT NULL,
   "imagen_portada" TEXT,
+  "youtube_url" TEXT,
   "activo" BOOLEAN DEFAULT true,
   "creado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   "actualizado_en" TIMESTAMP DEFAULT CURRENT_TIMESTAMP

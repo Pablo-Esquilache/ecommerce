@@ -90,7 +90,7 @@ const blogController = {
 
   create: async (req, res) => {
     try {
-      const { titulo, subtitulo, contenido, imagen_portada_url } = req.body;
+      const { titulo, subtitulo, contenido, imagen_portada_url, youtube_url } = req.body;
       if (!titulo || !contenido) {
         return res.status(400).json({ error: 'El título y el contenido son obligatorios' });
       }
@@ -106,7 +106,8 @@ const blogController = {
         titulo: titulo.trim(),
         subtitulo: (subtitulo || '').trim(),
         contenido: contenido.trim(),
-        imagen_portada
+        imagen_portada,
+        youtube_url: youtube_url ? youtube_url.trim() : null
       });
 
       res.status(201).json(nuevoArticulo);
@@ -119,7 +120,7 @@ const blogController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const { titulo, subtitulo, contenido, imagen_portada_url } = req.body;
+      const { titulo, subtitulo, contenido, imagen_portada_url, youtube_url } = req.body;
 
       if (!titulo || !contenido) {
         return res.status(400).json({ error: 'El título y el contenido son obligatorios' });
@@ -132,12 +133,18 @@ const blogController = {
         imagen_portada = await uploadToSupabase(req.files['imagen_portada'][0]);
       }
 
-      const articuloActualizado = await ArticuloBlog.update(id, {
+      const updateData = {
         titulo: titulo.trim(),
         subtitulo: (subtitulo || '').trim(),
         contenido: contenido.trim(),
         imagen_portada
-      });
+      };
+
+      if (youtube_url !== undefined) {
+        updateData.youtube_url = youtube_url.trim() || null;
+      }
+
+      const articuloActualizado = await ArticuloBlog.update(id, updateData);
 
       if (!articuloActualizado) {
         return res.status(404).json({ error: 'Artículo no encontrado' });

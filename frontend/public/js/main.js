@@ -834,7 +834,8 @@ const CATEGORIAS_DETALLES = {
     parrafos: [
       "En esta sección podés adquirir pinturas sacras auténticas y originales, creadas individualmente bajo los cánones estéticos y teológicos de la tradición bizantina milenaria.",
       "Además de las obras disponibles en catálogo, podés solicitar íconos personalizados por encargo: podés elegir la advocación mariana, Cristo, santos patronos o escenas bíblicas particulares, así como las dimensiones y detalles ornamentales específicos para capillas, oratorios familiares, parroquias, o como regalo conmemorativo de bodas, bautismos y ordenaciones.",
-      "Cada obra es una pieza única de colección y devoción. Se realiza sobre tablas de madera maciza preparadas artesanalmente con levkas (yeso y cola de conejo), doradas con pan de oro legítimo, y pintadas pacientemente mediante la técnica histórica del temple al huevo con pigmentos minerales y naturales molidos a mano. Cada pintura se entrega lista para colgar, firmada por la artista y con su certificado de autenticidad y memoria técnica."
+      "Cada obra es una pieza única de colección y devoción. Se realiza sobre tablas de madera maciza preparadas artesanalmente con levkas (yeso y cola de conejo), doradas con pan de oro legítimo, y pintadas pacientemente mediante la técnica histórica del temple al huevo con pigmentos minerales y naturales molidos a mano. Cada pintura se entrega lista para colgar, firmada por la artista y con su certificado de autenticidad y memoria técnica.",
+      "Importante: Al tratarse de obras de arte sacro elaboradas a mano y personalizadas, las iconografías a pedido o que no cuenten con disponibilidad inmediata pueden tener un plazo de fabricación artesanal de hasta 20 días antes de su despacho."
     ],
     botonTexto: "Ver obras disponibles",
     categoriaFiltro: "Iconografías"
