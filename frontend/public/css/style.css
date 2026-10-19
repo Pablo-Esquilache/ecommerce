@@ -155,13 +155,13 @@ h1, h2, h3, h4, h5, h6, .section-dynamic-title {
 }
 
 /* Hero & Carousel */
-/* Hero & Carousel Flotante a 100vh (Barra + Portada ocupan 100% viewport) */
+/* Hero & Carousel Flotante (Barra + Portada ocupan viewport con margen holgado) */
 .hero {
     margin: 68px auto 0 auto;
     max-width: 1240px;
     width: calc(100% - 40px);
-    height: calc(100vh - 68px);
-    min-height: 520px;
+    height: calc(100vh - 73px);
+    min-height: 515px;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
@@ -635,8 +635,8 @@ footer {
     }
     .menu-toggle { display: block; }
     .hero {
-        height: calc(100vh - 65px);
-        min-height: 480px;
+        height: calc(100vh - 70px);
+        min-height: 475px;
     }
     .hero-content h1 { font-size: 32px; }
     .filters { flex-direction: column; align-items: center; }
@@ -911,7 +911,7 @@ nav.glass-navbar ul.nav-links li a:hover {
 
 /* Tarjetas Dinámicas */
 .categorias-cards-section {
-    padding: 40px 0 30px 0;
+    padding: 45px 0 30px 0;
     background-color: transparent;
     position: relative;
     z-index: 20;
@@ -1055,12 +1055,12 @@ nav.glass-navbar ul.nav-links li a:hover {
     .hero {
         margin: 65px auto 0 auto;
         width: calc(100% - 24px);
-        height: calc(100vh - 65px);
-        min-height: 480px;
+        height: calc(100vh - 70px);
+        min-height: 475px;
         border-radius: 18px;
     }
     .categorias-cards-section {
-        padding: 30px 0 20px 0;
+        padding: 35px 0 20px 0;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -1074,12 +1074,12 @@ nav.glass-navbar ul.nav-links li a:hover {
     .hero {
         margin: 62px auto 0 auto;
         width: calc(100% - 16px);
-        height: calc(100vh - 62px);
-        min-height: 440px;
+        height: calc(100vh - 67px);
+        min-height: 435px;
         border-radius: 14px;
     }
     .categorias-cards-section {
-        padding: 24px 0 16px 0;
+        padding: 29px 0 16px 0;
     }
     .categorias-grid {
         grid-template-columns: repeat(2, 1fr) !important;
