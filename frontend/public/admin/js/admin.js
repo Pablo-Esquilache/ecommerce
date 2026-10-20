@@ -14,6 +14,8 @@ function escapeHtml(str) {
 let currentAdminPageProductos = 1;
 let currentAdminPagePedidos = 1;
 let currentAdminPageClientes = 1;
+let currentAdminPagePedidosRecientes = 1;
+let currentAdminPageCategorias = 1;
 const ITEMS_PER_PAGE_ADMIN = 10;
 window.adminCorreoActivo = false;
 
@@ -507,6 +509,41 @@ async function verHistorialCliente(clienteId) {
     }
 }
 
+let dashboardPedidosRecientesCache = [];
+
+function renderDashboardPedidosRecientes(lista = dashboardPedidosRecientesCache) {
+    const rTB = document.getElementById('pedidos-recientes-tb');
+    if (!rTB) return;
+    rTB.innerHTML = '';
+    if (!Array.isArray(lista) || lista.length === 0) {
+        rTB.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 15px;">No hay pedidos recientes</td></tr>';
+        const pCont = document.getElementById('pedidos-recientes-pagination');
+        if (pCont) pCont.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(lista.length / ITEMS_PER_PAGE_ADMIN);
+    if (currentAdminPagePedidosRecientes > totalPages) currentAdminPagePedidosRecientes = totalPages;
+    if (currentAdminPagePedidosRecientes < 1) currentAdminPagePedidosRecientes = 1;
+
+    const start = (currentAdminPagePedidosRecientes - 1) * ITEMS_PER_PAGE_ADMIN;
+    const paginatedItems = lista.slice(start, start + ITEMS_PER_PAGE_ADMIN);
+
+    paginatedItems.forEach(p => {
+        rTB.innerHTML += `<tr>
+            <td>#${escapeHtml(p.id)}</td>
+            <td>$${escapeHtml(p.total)}</td>
+            <td><span class="badge ${escapeHtml(p.estado)}">${escapeHtml(p.estado)}</span></td>
+            <td>${escapeHtml(p.metodo_pago)}</td>
+        </tr>`;
+    });
+
+    renderAdminPagination('pedidos-recientes-pagination', totalPages, currentAdminPagePedidosRecientes, (page) => {
+        currentAdminPagePedidosRecientes = page;
+        renderDashboardPedidosRecientes(lista);
+    });
+}
+
 async function fetchDashboardStats() {
     try {
         const res = await fetch(`${API_URL}/admin/dashboard`, { headers: authHeaders() });
@@ -518,17 +555,8 @@ async function fetchDashboardStats() {
         document.getElementById('total-ventas').innerText = stats.ventas.cantidad_pedidos || 0;
 
         // Tabla Pedidos Recientes
-        const rTB = document.getElementById('pedidos-recientes-tb');
-        rTB.innerHTML = '';
-        if (stats.pedidosRecientes.length === 0) rTB.innerHTML = '<tr><td colspan="4">No hay pedidos recientes</td></tr>';
-        stats.pedidosRecientes.forEach(p => {
-            rTB.innerHTML += `<tr>
-                <td>#${escapeHtml(p.id)}</td>
-                <td>$${escapeHtml(p.total)}</td>
-                <td><span class="badge ${escapeHtml(p.estado)}">${escapeHtml(p.estado)}</span></td>
-                <td>${escapeHtml(p.metodo_pago)}</td>
-            </tr>`;
-        });
+        dashboardPedidosRecientesCache = Array.isArray(stats.pedidosRecientes) ? stats.pedidosRecientes : [];
+        renderDashboardPedidosRecientes(dashboardPedidosRecientesCache);
 
         // Alerta Pedidos Pendientes +72hs
         const pendBox = document.getElementById('pendientes-72h-alert');
@@ -1463,41 +1491,64 @@ async function generarEnvio(pedidoId) {
 
 let currentCategorias = [];
 
+function renderCategoriasTable(lista = currentCategorias) {
+    const tbody = document.getElementById('categorias-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!Array.isArray(lista) || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">No hay categorías registradas</td></tr>';
+        const pCont = document.getElementById('categorias-pagination');
+        if (pCont) pCont.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(lista.length / ITEMS_PER_PAGE_ADMIN);
+    if (currentAdminPageCategorias > totalPages) currentAdminPageCategorias = totalPages;
+    if (currentAdminPageCategorias < 1) currentAdminPageCategorias = 1;
+
+    const start = (currentAdminPageCategorias - 1) * ITEMS_PER_PAGE_ADMIN;
+    const paginatedItems = lista.slice(start, start + ITEMS_PER_PAGE_ADMIN);
+
+    paginatedItems.forEach(cat => {
+        const tr = document.createElement('tr');
+        
+        // Highlight if missing image
+        const imgHtml = cat.imagen_url 
+            ? `<img src="${cat.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`
+            : `<div style="width: 50px; height: 50px; background: #ffebee; border: 1px dashed #f44336; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f44336;" title="Falta imagen"><i class="fas fa-exclamation-triangle"></i></div>`;
+        
+        // Subcategorias badges
+        const subsHtml = (cat.subcategorias || []).map(sub => 
+            `<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">${escapeHtml(sub)} <i class="fas fa-times" style="cursor:pointer; color:#999; margin-left:4px;" onclick="deleteSubcategoria('${escapeHtml(cat.nombre)}', '${escapeHtml(sub)}')"></i></span>`
+        ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
+        
+        tr.innerHTML = `
+            <td>${imgHtml}</td>
+            <td><strong>${escapeHtml(cat.nombre)}</strong></td>
+            <td>${subsHtml}</td>
+            <td>
+                <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(${cat.id}, '${escapeHtml(cat.nombre)}', '${escapeHtml(cat.imagen_url || '')}')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(${cat.id})" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
+                <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('${escapeHtml(cat.nombre)}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    renderAdminPagination('categorias-pagination', totalPages, currentAdminPageCategorias, (page) => {
+        currentAdminPageCategorias = page;
+        renderCategoriasTable(lista);
+    });
+}
+
 async function loadCategorias() {
     try {
         const res = await fetch('/api/categorias/tree');
         if (!res.ok) throw new Error('Error al cargar categorias');
         currentCategorias = await res.json();
         
-        const tbody = document.getElementById('categorias-tbody');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '';
-        currentCategorias.forEach(cat => {
-            const tr = document.createElement('tr');
-            
-            // Highlight if missing image
-            const imgHtml = cat.imagen_url 
-                ? `<img src="${cat.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`
-                : `<div style="width: 50px; height: 50px; background: #ffebee; border: 1px dashed #f44336; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f44336;" title="Falta imagen"><i class="fas fa-exclamation-triangle"></i></div>`;
-            
-            // Subcategorias badges
-            const subsHtml = cat.subcategorias.map(sub => 
-                `<span style="background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; display: inline-block; margin-bottom: 4px;">${escapeHtml(sub)} <i class="fas fa-times" style="cursor:pointer; color:#999; margin-left:4px;" onclick="deleteSubcategoria('${escapeHtml(cat.nombre)}', '${escapeHtml(sub)}')"></i></span>`
-            ).join('') || '<span style="color: #999; font-size: 13px;">Sin subcategorías</span>';
-            
-            tr.innerHTML = `
-                <td>${imgHtml}</td>
-                <td><strong>${escapeHtml(cat.nombre)}</strong></td>
-                <td>${subsHtml}</td>
-                <td>
-                    <button class="btn btn-sm btn-secondary" onclick="openCategoriaModal(${cat.id}, '${escapeHtml(cat.nombre)}', '${escapeHtml(cat.imagen_url || '')}')" title="Editar Categoría"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="openSubcategoriaModal(${cat.id})" title="Añadir Subcategoría"><i class="fas fa-plus"></i> Sub</button>
-                    <button class="btn btn-sm" style="background: #e74c3c; color: white;" onclick="deleteCategoria('${escapeHtml(cat.nombre)}')" title="Eliminar"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+        renderCategoriasTable(currentCategorias);
 
         // Update selects
         const catSelect = document.getElementById('prod-cat');

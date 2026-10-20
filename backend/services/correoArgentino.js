@@ -5,8 +5,8 @@ const db = require('../config/database');
 const correoArgentinoService = {
   getToken: async () => {
     try {
-      const USER = process.env.CORREO_ARG_USER;
-      const PASS = process.env.CORREO_ARG_PASS;
+      const USER = process.env.CORREO_ARG_USER || process.env.CORREO_ARGENTINO_USER;
+      const PASS = process.env.CORREO_ARG_PASS || process.env.CORREO_ARGENTINO_PASS;
       const credentials = Buffer.from(`${USER}:${PASS}`).toString('base64');
       
       const response = await fetch(`${API_BASE_URL}/token`, {
@@ -33,7 +33,7 @@ const correoArgentinoService = {
       const token = await correoArgentinoService.getToken();
       
       const confRes = await db.query('SELECT correo_customer_id FROM configuracion LIMIT 1');
-      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id;
+      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id || process.env.CORREO_ARG_CUSTOMER_ID || process.env.CORREO_ARGENTINO_CUSTOMER_ID;
       
       if (!CUSTOMER_ID) {
         throw new Error('El ID de cliente de Correo Argentino no está configurado en el panel.');
@@ -98,7 +98,7 @@ const correoArgentinoService = {
       const token = await correoArgentinoService.getToken();
       
       const confRes = await db.query('SELECT correo_customer_id FROM configuracion LIMIT 1');
-      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id;
+      const CUSTOMER_ID = confRes.rows[0]?.correo_customer_id || process.env.CORREO_ARG_CUSTOMER_ID || process.env.CORREO_ARGENTINO_CUSTOMER_ID;
       
       if (!CUSTOMER_ID) {
         throw new Error('El ID de cliente de Correo Argentino no está configurado en el panel.');
