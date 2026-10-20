@@ -15,6 +15,7 @@ let currentAdminPageProductos = 1;
 let currentAdminPagePedidos = 1;
 let currentAdminPageClientes = 1;
 const ITEMS_PER_PAGE_ADMIN = 10;
+window.adminCorreoActivo = false;
 
 function renderAdminPagination(containerId, totalPages, currentPage, onPageClick) {
     const cont = document.getElementById(containerId);
@@ -274,9 +275,14 @@ function renderAdminPedidos(pedidos) {
 
         let envioHtml = `<span style="color:#aaa; font-size:12px;">N/A</span>`;
         if (!isDigitalONoEnvio) {
+            const correoHabilitado = Boolean(window.adminCorreoActivo);
             if (p.tracking_number) {
                 envioHtml = `
                     <div style="color:#2ecc71; font-size:14px; margin-bottom: 2px;" title="Exportado a MiCorreo (${escapeHtml(p.tracking_number)})"><i class="fas fa-check-circle"></i></div>
+                `;
+            } else if (!correoHabilitado) {
+                envioHtml = `
+                    <span style="background:#fef3c7; color:#b45309; border:1px solid #fcd34d; padding:3px 7px; border-radius:4px; font-size:0.75em; font-weight:bold; display:inline-block; white-space:nowrap;" title="Envío a coordinar y cobrar por fuera con el cliente"><i class="fas fa-handshake"></i> A convenir</span>
                 `;
             } else if (isAConvenir) {
                 envioHtml = `
@@ -1145,6 +1151,10 @@ async function fetchConfiguracion() {
             document.getElementById('conf-banco-usd-alias').value = conf.banco_usd_alias || '';
             
             document.getElementById('conf-correo-activo').checked = conf.correo_activo || false;
+            window.adminCorreoActivo = Boolean(conf.correo_activo);
+            if (Array.isArray(adminPedidosCache) && adminPedidosCache.length > 0) {
+                aplicarFiltrosPedidos(true);
+            }
             document.getElementById('conf-correo-cp').value = conf.correo_cp || '';
             document.getElementById('conf-correo-customer-id').value = conf.correo_customer_id || '';
 
@@ -1227,8 +1237,12 @@ async function guardarConfiguracion() {
         });
 
         if (res.ok) {
+            window.adminCorreoActivo = Boolean(payload.correo_activo);
             alert('Configuración guardada exitosamente');
             fetchConfiguracion(); // Recargar validación visual
+            if (Array.isArray(adminPedidosCache) && adminPedidosCache.length > 0) {
+                aplicarFiltrosPedidos(true);
+            }
         } else {
             const data = await res.json();
             alert(data.error || 'Error al guardar la configuración');
