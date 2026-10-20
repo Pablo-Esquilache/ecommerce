@@ -280,7 +280,12 @@ function renderAdminPedidos(pedidos) {
                 `;
             } else if (isAConvenir) {
                 envioHtml = `
-                    <span style="background:#fef3c7; color:#b45309; border:1px solid #fcd34d; padding:3px 7px; border-radius:4px; font-size:0.75em; font-weight:bold; display:inline-block; white-space:nowrap;" title="Envío a coordinar y cobrar por fuera con el cliente"><i class="fas fa-handshake"></i> A convenir</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="background:#fef3c7; color:#b45309; border:1px solid #fcd34d; padding:3px 7px; border-radius:4px; font-size:0.75em; font-weight:bold; display:inline-block; white-space:nowrap;" title="Envío a coordinar y cobrar por fuera con el cliente"><i class="fas fa-handshake"></i> A convenir</span>
+                        <button class="btn" style="background:#95a5a6; color:white; padding:4px 8px; font-size:12px;" title="Exportar a Correo Argentino" onclick="generarEnvio(${p.id})">
+                            <i class="fas fa-file-export"></i>
+                        </button>
+                    </div>
                 `;
             } else {
                 envioHtml = `

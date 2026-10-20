@@ -153,7 +153,7 @@ const pedidoController = {
             }
             const cotizacion = await correoArgentinoService.cotizarEnvio(conf.correo_cp, cpCliente, pesoTotalGramos);
             if (cotizacion && cotizacion.opciones && cotizacion.opciones.length > 0) {
-              const tarifasValidas = cotizacion.opciones.map(o => Number(o.valor)).filter(v => !isNaN(v) && v > 0);
+              const tarifasValidas = cotizacion.opciones.map(o => Number(o.costo !== undefined ? o.costo : o.valor)).filter(v => !isNaN(v) && v > 0);
               if (tarifasValidas.length > 0) {
                 const clienteEnvioMonto = Number(req.body.costo_envio) || 0;
                 const coincide = tarifasValidas.some(t => Math.abs(t - clienteEnvioMonto) < 1.0);

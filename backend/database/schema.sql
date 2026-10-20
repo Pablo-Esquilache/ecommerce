@@ -179,3 +179,24 @@ CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria);
 CREATE INDEX IF NOT EXISTS idx_productos_subcategoria ON productos(subcategoria);
 CREATE INDEX IF NOT EXISTS idx_pedidos_tracking ON pedidos(tracking_number);
 
+-- ============================================================
+-- STORAGE Y BUCKETS EN SUPABASE
+-- ============================================================
+
+-- 1. Bucket público para fotos de productos, categorías y blog
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('productos', 'productos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Bucket privado para archivos descargables de cursos digitales
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('digitales', 'digitales', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. Políticas de Acceso RLS para Storage de Supabase
+-- Permitir lectura pública de las imágenes en el bucket 'productos'
+DROP POLICY IF EXISTS "Acceso publico imagenes productos" ON storage.objects;
+CREATE POLICY "Acceso publico imagenes productos"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'productos');
+
